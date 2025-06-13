@@ -13,7 +13,7 @@
   },
   "servers": [
         {
-          "url": "https://pricingapi.baselinehq.com"
+          "url": "https://pricingapi.baselinehq.cloud"
         }
       ],
   "host": "pricingapi.baselinehq.com",

@@ -1,33 +1,43 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'BaselineHQ Pricing API'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The BaselineHQ Pricing API provides real-time access to cloud instance pricing and cost optimization recommendations across multiple cloud providers. 
 
-## Welcome
+## Supported Cloud Providers
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+We currently support the following cloud providers:
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+- **AWS (Amazon Web Services)**
+  - EC2 instances
 
-## Authentication
+- **GCP (Google Cloud Platform)**
+  - Compute Engine instances
+ 
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+- **DigitalOcean**
+  - Droplets
+  - All regions
+  - Standard and premium instance pricing
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+- **Hetzner**
+  - Cloud instances
+  - All regions
+  - Standard instance pricing
+
+## API Endpoints
+
+### Pricing Endpoint
+The pricing endpoint (`/pricing`) provides detailed cost information for specific cloud instances. You can query pricing for any supported instance type, region, and provider combination. The endpoint returns:
+- Hourly costs for CPU and RAM
+- Total cost per hour
+- Raw pricing data from the provider
+- Instance specifications
+
+### Recommendations Endpoint
+The recommendations endpoint (`/recommendations`) analyzes your current instance configuration and suggests cost-effective alternatives across all supported providers. The endpoint provides:
+- Cost comparison with current setup
+- Potential savings (hourly, monthly, yearly)
+- Alternative instance types
+- Cross-provider recommendations

@@ -1,217 +1,348 @@
 {
-  "openapi": "3.1.0",
+  "schemes": [],
+  "swagger": "2.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+      "description": "This is the Pricing API for the Baseline platform.",
+      "title": "Pricing API",
+      "contact": {},
+      "license": {
+          "name": "Apache 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      },
+      "version": "1.0"
   },
   "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
+        {
+          "url": "https://pricingapi.baselinehq.com"
+        }
+      ],
+  "host": "pricingapi.baselinehq.com",
+  "basePath": "/",
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+      "/pricing": {
+          "post": {
+              "description": "Get pricing",
+              "consumes": [
+                  "application/json"
+              ],
+              "produces": [
+                  "application/json"
+              ],
+              "summary": "Get  pricing for an instance",
+              "parameters": [
+                  {
+                      "description": "Instance",
+                      "name": "instance",
+                      "in": "body",
+                      "required": true,
+                      "schema": {
+                          "$ref": "#/definitions/types.Instance"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Pricing for a given instance",
+                      "schema": {
+                          "$ref": "#/definitions/types.InstancePricing"
+                      }
+                  }
+              }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
+      },
+      "/recommendations": {
+          "post": {
+              "description": "Get recommendations\nRecommendations, InstancePricing, VM, and Savings",
+              "summary": "Get recommendations",
+              "parameters": [
+                  {
+                      "description": "Instance",
+                      "name": "instance",
+                      "in": "body",
+                      "required": true,
+                      "schema": {
+                          "$ref": "#/definitions/recommendations.Request"
+                      }
+                  }
+              ],
+              "responses": {}
+          }
+      }
+  },
+  "definitions": {
+      "recommendations.Predicates": {
+          "description": "Predicates for filtering recommendations Regions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers Regions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers",
+          "type": "object",
+          "properties": {
+              "availability_zones": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                      "type": "string"
                   }
-                }
+              },
+              "instance_types": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "providers": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "regions": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "usage_types": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
               }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
-        }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+      "recommendations.Request": {
+          "type": "object",
+          "properties": {
+              "availability_zone": {
+                  "type": "string",
+                  "example": "us-east-1a"
+              },
+              "instance_type": {
+                  "type": "string",
+                  "example": "t2.micro"
+              },
+              "operating_system": {
+                  "type": "string",
+                  "example": "linux"
+              },
+              "predicates": {
+                  "description": "@description\tPredicates for filtering recommendations\n\t@description\tRegions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers\n\t@param\t\t\tpredicates\tbody\trecommendations.Predicates\ttrue\t\"Predicates\"\n\t@return\t\t\tpredicates recommendations.Predicates \"Predicates\"\n\t@router\t\t\t/recommendations [post]",
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/recommendations.Predicates"
+                      }
+                  ]
+              },
+              "provider": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.Provider"
+                      }
+                  ],
+                  "example": "aws"
+              },
+              "region": {
+                  "type": "string",
+                  "example": "us-east-1"
+              },
+              "service": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.Service"
+                      }
+                  ],
+                  "example": "AmazonEC2"
+              },
+              "usage": {
+                  "description": "@summary\t\tUsage for a recommendation\n\t@description\tUsage for a recommendation\n\t@description\tCPUCores and RAMGB\n\t@param\t\t\tusage\tbody\ttypes.VM\ttrue\t\"Usage\"\n\t@return\t\t\tusage types.VM \"Usage\"\n\t@router\t\t\t/recommendations [post]",
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.VM"
+                      }
+                  ]
+              },
+              "usage_type": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.UsageType"
+                      }
+                  ],
+                  "example": "ondemand"
+              },
+              "vm": {
+                  "$ref": "#/definitions/types.VM"
               }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+      "types.Instance": {
+          "type": "object",
+          "properties": {
+              "availability_zone": {
+                  "type": "string",
+                  "example": "us-east-1a"
+              },
+              "instance_type": {
+                  "type": "string",
+                  "example": "t2.micro"
+              },
+              "operating_system": {
+                  "type": "string",
+                  "example": "linux"
+              },
+              "provider": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.Provider"
+                      }
+                  ],
+                  "example": "aws"
+              },
+              "region": {
+                  "type": "string",
+                  "example": "us-east-1"
+              },
+              "service": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.Service"
+                      }
+                  ],
+                  "example": "AmazonEC2"
+              },
+              "usage_type": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.UsageType"
+                      }
+                  ],
+                  "example": "ondemand"
+              },
+              "vm": {
+                  "$ref": "#/definitions/types.VM"
               }
-            }
           }
-        ]
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+      "types.InstancePricing": {
+          "type": "object",
+          "properties": {
+              "availability_zone": {
+                  "type": "string",
+                  "example": "us-east-1a"
+              },
+              "cost_per_hour": {
+                  "type": "number"
+              },
+              "cpu_cores_cost_per_hour": {
+                  "type": "number"
+              },
+              "instance_type": {
+                  "type": "string",
+                  "example": "t2.micro"
+              },
+              "operating_system": {
+                  "type": "string"
+              },
+              "provider": {
+                  "$ref": "#/definitions/types.Provider"
+              },
+              "ram_gb_cost_per_hour": {
+                  "type": "number"
+              },
+              "raw_pricing_data": {
+                  "type": "object",
+                  "additionalProperties": {}
+              },
+              "region": {
+                  "type": "string",
+                  "example": "us-east-1"
+              },
+              "service": {
+                  "$ref": "#/definitions/types.Service"
+              },
+              "usage_type": {
+                  "allOf": [
+                      {
+                          "$ref": "#/definitions/types.UsageType"
+                      }
+                  ],
+                  "example": "ONDEMAND"
+              }
           }
-        }
+      },
+      "types.Provider": {
+          "type": "string",
+          "enum": [
+              "GCP",
+              "AWS",
+              "DigitalOcean",
+              "Azure",
+              "Hetzner",
+              "Base"
+          ],
+          "x-enum-comments": {
+              "Base": "Base provider for default pricing, no specific cloud provider"
+          },
+          "x-enum-varnames": [
+              "GCP",
+              "AWS",
+              "DigitalOcean",
+              "Azure",
+              "Hetzner",
+              "Base"
+          ]
+      },
+      "types.Service": {
+          "type": "string",
+          "enum": [
+              "ComputeEngine",
+              "AmazonEC2",
+              "Droplet",
+              "AzureCompute",
+              "HetznerCompute",
+              "BaseCompute"
+          ],
+          "x-enum-varnames": [
+              "ComputeEngine",
+              "AmazonEC2",
+              "Droplet",
+              "AzureCompute",
+              "HetznerCompute",
+              "BaseCompute"
+          ]
+      },
+      "types.UsageType": {
+          "type": "string",
+          "enum": [
+              "SPOT_PREEMPTIBLE",
+              "ONDEMAND",
+              "RESERVED",
+              "ONDEMAND_CUSTOM",
+              "SPOT_PREEMPTIBLE_CUSTOM",
+              "RESERVED_CUSTOM",
+              "SOLE_TENANCY",
+              "CUSTOM",
+              "EXTENDED"
+          ],
+          "x-enum-varnames": [
+              "SPOT_PREEMPTIBLE",
+              "ONDEMAND",
+              "RESERVED",
+              "ONDEMAND_CUSTOM",
+              "SPOT_PREEMPTIBLE_CUSTOM",
+              "RESERVED_CUSTOM",
+              "SOLE_TENANCY",
+              "CUSTOM",
+              "EXTENDED"
+          ]
+      },
+      "types.VM": {
+          "type": "object",
+          "properties": {
+              "cpu_cores": {
+                  "type": "number",
+                  "example": 1
+              },
+              "ram_gb": {
+                  "type": "number",
+                  "example": 10
+              }
+          }
       }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
   }
 }

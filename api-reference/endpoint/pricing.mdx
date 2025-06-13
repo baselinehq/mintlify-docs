@@ -1,0 +1,180 @@
+---
+title: 'Pricing'
+api: "POST https://pricingapi.baselinehq.com/pricing"
+---
+
+<RequestExample>
+```bash
+curl -X 'POST' \
+  'http://pricingapi.baselinehq.com/pricing' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "availability_zone": "us-east-1a",
+  "instance_type": "t2.micro",
+  "operating_system": "linux",
+  "provider": "aws",
+  "region": "us-east-1",
+  "service": "AmazonEC2",
+  "usage_type": "ondemand",
+  "vm": {
+    "cpu_cores": 1,
+    "ram_gb": 10
+  }
+}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json
+{
+  "availability_zone": "us-east-1a",
+  "cost_per_hour": 0,
+  "cpu_cores_cost_per_hour": 0,
+  "instance_type": "t2.micro",
+  "operating_system": "string",
+  "provider": "GCP",
+  "ram_gb_cost_per_hour": 0,
+  "raw_pricing_data": {
+    "additionalProp1": "string",
+    "additionalProp2": "string",
+    "additionalProp3": "string"
+  },
+  "region": "us-east-1",
+  "service": "ComputeEngine",
+  "usage_type": "ONDEMAND"
+}
+```
+</ResponseExample>
+
+Get pricing information for cloud instances
+
+## Request Body
+
+<ParamField body="availability_zone" type="string" required>
+  The availability zone where the resource will be deployed.
+  
+  Example: `us-east1-a`
+</ParamField>
+
+<ParamField body="instance_type" type="string" required>
+  The type of instance to get pricing for.
+  
+  Example: `n2-custom-1-1024-ext`
+</ParamField>
+
+<ParamField body="operating_system" type="string" required>
+  The operating system of the instance.
+  
+  Example: `linux`
+</ParamField>
+
+<ParamField body="provider" type="string" required>
+  The cloud provider.
+  
+  Example: `gcp`
+</ParamField>
+
+<ParamField body="region" type="string" required>
+  The region where the resource will be deployed.
+  
+  Example: `us-east1`
+</ParamField>
+
+<ParamField body="service" type="string" required>
+  The cloud service name.
+  
+  Example: `ComputeEngine`
+</ParamField>
+
+<ParamField body="usage_type" type="string" required>
+  The type of usage.
+  
+  Example: `ondemand`
+</ParamField>
+
+<ParamField body="vm" type="object" required>
+  Virtual machine specifications.
+  
+  <Expandable title="VM Properties">
+    <ParamField body="cpu_cores" type="number" required>
+      Number of CPU cores.
+      
+      Example: `1`
+    </ParamField>
+    
+    <ParamField body="ram_gb" type="number" required>
+      Amount of RAM in gigabytes.
+      
+      Example: `10`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="availability_zone" type="string">
+  The availability zone of the resource.
+</ResponseField>
+
+<ResponseField name="cost_per_hour" type="number">
+  The total cost per hour for the resource.
+  
+  Example: `0.073981`
+</ResponseField>
+
+<ResponseField name="cpu_cores_cost_per_hour" type="number">
+  The cost per hour for CPU cores.
+  
+  Example: `0.031611`
+</ResponseField>
+
+<ResponseField name="instance_type" type="string">
+  The type of instance.
+  
+  Example: `N2`
+</ResponseField>
+
+<ResponseField name="operating_system" type="string">
+  The operating system of the instance.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  The cloud provider.
+  
+  Example: `GCP`
+</ResponseField>
+
+<ResponseField name="ram_gb_cost_per_hour" type="number">
+  The cost per hour for RAM.
+  
+  Example: `0.004237`
+</ResponseField>
+
+<ResponseField name="raw_pricing_data" type="object">
+  Detailed pricing information from the cloud provider.
+  
+  <Expandable title="Raw Pricing Data">
+    <ResponseField name="services" type="object">
+      Contains service-specific pricing details including resource family, resource group, service display name, and usage type.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="region" type="string">
+  The region where the resource is deployed.
+  
+  Example: `us-east-1`
+</ResponseField>
+
+<ResponseField name="service" type="string">
+  The cloud service name.
+  
+  Example: `ComputeEngine`
+</ResponseField>
+
+<ResponseField name="usage_type" type="string">
+  The type of usage.
+  
+  Example: `ONDEMAND`
+</ResponseField>

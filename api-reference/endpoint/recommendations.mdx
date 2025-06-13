@@ -1,0 +1,316 @@
+---
+title: 'Recommendations'
+api: "POST https://pricingapi.baselinehq.com/recommendations"
+description: 'Get instance recommendations, across clouds'
+---
+
+<RequestExample>
+```bash
+curl -X 'POST' \
+  'https://pricingapi.baselinehq.com/recommendations' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "availability_zone": "us-east-1a",
+  "instance_type": "t2.micro",
+  "operating_system": "linux",
+  "predicates": {
+    "availability_zones": ["string"],
+    "instance_types": ["string"],
+    "providers": ["string"],
+    "regions": ["string"],
+    "usage_types": ["string"]
+  },
+  "provider": "aws",
+  "region": "us-east-1",
+  "service": "AmazonEC2",
+  "usage": {
+    "cpu_cores": 1,
+    "ram_gb": 10
+  },
+  "usage_type": "ondemand",
+  "vm": {
+    "cpu_cores": 1,
+    "ram_gb": 10
+  }
+}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json
+{
+  "base": [
+    {
+      "instance_pricing": {
+        "cpu_cores_cost_per_hour": 0.031611,
+        "ram_gb_cost_per_hour": 0.004237,
+        "cost_per_hour": 0.073981,
+        "usage_type": "ONDEMAND",
+        "instance_type": "N2",
+        "region": "us-east1",
+        "provider": "GCP",
+        "service": "ComputeEngine",
+        "operating_system": "",
+        "availability_zone": ""
+      },
+      "vm": null,
+      "savings": {
+        "percentage": 0,
+        "amount_per_hour": 0,
+        "amount_per_month": 0,
+        "amount_per_year": 0
+      }
+    }
+  ],
+  "c-2": [
+    {
+      "instance_pricing": {
+        "cpu_cores_cost_per_hour": 0.024671,
+        "ram_gb_cost_per_hour": 0.003289,
+        "cost_per_hour": 0.0625,
+        "usage_type": "ONDEMAND",
+        "instance_type": "c-2",
+        "region": "nyc1",
+        "provider": "DigitalOcean",
+        "service": "Droplet",
+        "operating_system": "",
+        "availability_zone": ""
+      },
+      "vm": {
+        "cpu_cores": 2,
+        "ram_gb": 4
+      },
+      "savings": {
+        "percentage": 15.518,
+        "amount_per_hour": 0.011481,
+        "amount_per_month": 8.381,
+        "amount_per_year": 100.573
+      }
+    }
+  ]
+}
+```
+</ResponseExample>
+
+Get cost-saving recommendations for cloud instances
+
+## Request Body
+
+<ParamField body="availability_zone" type="string" required>
+  The availability zone where the resource will be deployed.
+  
+  Example: `us-east-1a`
+</ParamField>
+
+<ParamField body="instance_type" type="string" required>
+  The type of instance to get recommendations for.
+  
+  Example: `t2.micro`
+</ParamField>
+
+<ParamField body="operating_system" type="string" required>
+  The operating system of the instance.
+  
+  Example: `linux`
+</ParamField>
+
+<ParamField body="predicates" type="object" required>
+  Filter criteria for recommendations. Used to limit the scope of recommendations to specific providers, regions, instance types, etc.
+  
+  <Expandable title="Predicates Properties">
+    <ParamField body="availability_zones" type="array" required>
+      List of availability zones to consider for recommendations. If empty, all availability zones will be considered.
+      
+      Example: `["us-east-1a", "us-east-1b"]`
+    </ParamField>
+    
+    <ParamField body="instance_types" type="array" required>
+      List of instance types to consider for recommendations. If empty, all instance types will be considered.
+      
+      Example: `["t2.micro", "t3.micro"]`
+    </ParamField>
+    
+    <ParamField body="providers" type="array" required>
+      List of cloud providers to consider for recommendations. If empty, all supported providers will be considered.
+      
+      Example: `["aws", "gcp"]`
+    </ParamField>
+    
+    <ParamField body="regions" type="array" required>
+      List of regions to consider for recommendations. If empty, all regions will be considered.
+      
+      Example: `["us-east-1", "us-west-1"]`
+    </ParamField>
+    
+    <ParamField body="usage_types" type="array" required>
+      List of usage types to consider for recommendations. If empty, all usage types will be considered.
+      
+      Example: `["ondemand", "reserved"]`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="provider" type="string" required>
+  The cloud provider of the current instance.
+  
+  Example: `aws`
+</ParamField>
+
+<ParamField body="region" type="string" required>
+  The region where the current instance is deployed.
+  
+  Example: `us-east-1`
+</ParamField>
+
+<ParamField body="service" type="string" required>
+  The cloud service name of the current instance.
+  
+  Example: `AmazonEC2`
+</ParamField>
+
+<ParamField body="usage" type="object" required>
+  Current usage specifications of the instance.
+  
+  <Expandable title="Usage Properties">
+    <ParamField body="cpu_cores" type="number" required>
+      Number of CPU cores currently in use.
+      
+      Example: `1`
+    </ParamField>
+    
+    <ParamField body="ram_gb" type="number" required>
+      Amount of RAM in gigabytes currently in use.
+      
+      Example: `10`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="usage_type" type="string" required>
+  The type of usage for the current instance.
+  
+  Example: `ondemand`
+</ParamField>
+
+<ParamField body="vm" type="object" required>
+  Virtual machine specifications of the current instance.
+  
+  <Expandable title="VM Properties">
+    <ParamField body="cpu_cores" type="number" required>
+      Number of CPU cores allocated to the instance.
+      
+      Example: `1`
+    </ParamField>
+    
+    <ParamField body="ram_gb" type="number" required>
+      Amount of RAM in gigabytes allocated to the instance.
+      
+      Example: `10`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+The response contains recommendations grouped by instance type. Each recommendation includes:
+
+<ResponseField name="instance_pricing" type="object">
+  Pricing information for the recommended instance.
+  
+  <Expandable title="Instance Pricing Properties">
+    <ResponseField name="cpu_cores_cost_per_hour" type="number">
+      Cost per hour for CPU cores.
+      
+      Example: `0.031611`
+    </ResponseField>
+    
+    <ResponseField name="ram_gb_cost_per_hour" type="number">
+      Cost per hour for RAM.
+      
+      Example: `0.004237`
+    </ResponseField>
+    
+    <ResponseField name="cost_per_hour" type="number">
+      Total cost per hour.
+      
+      Example: `0.073981`
+    </ResponseField>
+    
+    <ResponseField name="usage_type" type="string">
+      Type of usage (e.g., ONDEMAND).
+    </ResponseField>
+    
+    <ResponseField name="instance_type" type="string">
+      Type of instance.
+      
+      Example: `N2`
+    </ResponseField>
+    
+    <ResponseField name="region" type="string">
+      Region where the instance is located.
+      
+      Example: `us-east1`
+    </ResponseField>
+    
+    <ResponseField name="provider" type="string">
+      Cloud provider.
+      
+      Example: `GCP`
+    </ResponseField>
+    
+    <ResponseField name="service" type="string">
+      Cloud service name.
+      
+      Example: `ComputeEngine`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="vm" type="object">
+  Virtual machine specifications for the recommendation.
+  
+  <Expandable title="VM Properties">
+    <ResponseField name="cpu_cores" type="number">
+      Number of CPU cores.
+      
+      Example: `2`
+    </ResponseField>
+    
+    <ResponseField name="ram_gb" type="number">
+      Amount of RAM in gigabytes.
+      
+      Example: `4`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="savings" type="object">
+  Cost savings information.
+  
+  <Expandable title="Savings Properties">
+    <ResponseField name="percentage" type="number">
+      Percentage of cost savings.
+      
+      Example: `15.518`
+    </ResponseField>
+    
+    <ResponseField name="amount_per_hour" type="number">
+      Amount saved per hour.
+      
+      Example: `0.011481`
+    </ResponseField>
+    
+    <ResponseField name="amount_per_month" type="number">
+      Amount saved per month.
+      
+      Example: `8.381`
+    </ResponseField>
+    
+    <ResponseField name="amount_per_year" type="number">
+      Amount saved per year.
+      
+      Example: `100.573`
+    </ResponseField>
+  </Expandable>
+</ResponseField>

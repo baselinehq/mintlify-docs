@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "BaselineHQ Documentation",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -35,7 +35,7 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Pricing API",
         "groups": [
           {
             "group": "API Documentation",
@@ -44,12 +44,10 @@
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Pricing API",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/pricing",
+              "api-reference/endpoint/recommendations"
             ]
           }
         ]

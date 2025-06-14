@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "BaselineHQ Documentation",
   "colors": {
-    "primary": "#16A34A",
+    "primary": "#0a3171",
     "light": "#07C983",
-    "dark": "#15803D"
+    "dark": "#0a3171"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,22 +14,70 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Introduction",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "architecture"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Products",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              {
+                "page": "costgraph/overview",
+                "icon": "chart-line"
+              },
+              {
+                "page": "costgraph/installation",
+                "icon": "download"
+              },
+              {
+                "page": "costgraph/configuration",
+                "icon": "gear"
+              },
+              {
+                "page": "costgraph/usage",
+                "icon": "play"
+              },
+              {
+                "page": "pricing-api/overview",
+                "icon": "dollar-sign"
+              },
+              {
+                "page": "pricing-api/quickstart",
+                "icon": "rocket"
+              },
+              {
+                "page": "pricing-api/providers",
+                "icon": "cloud"
+              }
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              {
+                "page": "concepts/how-costgraph-works",
+                "icon": "lightbulb"
+              },
+              {
+                "page": "concepts/finops-fundamentals",
+                "icon": "book"
+              }
+            ]
+          },
+          {
+            "group": "Support",
+            "pages": [
+              {
+                "page": "support/faq",
+                "icon": "circle-question"
+              },
+              {
+                "page": "support/community",
+                "icon": "users"
+              }
             ]
           }
         ]
@@ -57,17 +105,17 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "https://docs.baselinehq.cloud",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
+          "href": "https://community.baselinehq.com",
           "icon": "slack"
         },
         {
           "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "href": "https://blog.baselinehq.com",
           "icon": "newspaper"
         }
       ]
@@ -80,21 +128,21 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Talk to Sales",
+        "href": "https://calendly.com/contact-baselinehq/30min"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Try CostGraph",
+      "href": "https://costgraph.baselinehq.cloud/"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/costgraph_dev",
+      "github": "https://github.com/baselinehq",
+      "linkedin": "https://linkedin.com/company/baselinehq"
     }
   }
 }

@@ -7,35 +7,25 @@ The BaselineHQ Pricing API provides real-time access to cloud instance pricing a
 
 ## Supported Cloud Providers
 
-We currently support the following cloud providers:
+| Provider | Service | Regions | Pricing Type |
+|----------|---------|---------|--------------|
+| AWS | EC2 instances | All regions | On-demand, Reserved |
+| GCP | Compute Engine | All regions | On-demand, Committed Use |
+| DigitalOcean | Droplets | All regions | Standard, Premium |
+| Hetzner | Cloud instances | All regions | Standard |
+| OVH | Instances | All regions | On-demand, Reserved |
 
-- **AWS (Amazon Web Services)**
-  - EC2 instances
-
-- **GCP (Google Cloud Platform)**
-  - Compute Engine instances
- 
-
-- **DigitalOcean**
-  - Droplets
-  - All regions
-  - Standard and premium instance pricing
-
-- **Hetzner**
-  - Cloud instances
-  - All regions
-  - Standard instance pricing
 
 ## API Endpoints
 
-### Pricing Endpoint
+### Pricing 
 The pricing endpoint (`/pricing`) provides detailed cost information for specific cloud instances. You can query pricing for any supported instance type, region, and provider combination. The endpoint returns:
 - Hourly costs for CPU and RAM
 - Total cost per hour
 - Raw pricing data from the provider
 - Instance specifications
 
-### Recommendations Endpoint
+### Recommendations
 The recommendations endpoint (`/recommendations`) analyzes your current instance configuration and suggests cost-effective alternatives across all supported providers. The endpoint provides:
 - Cost comparison with current setup
 - Potential savings (hourly, monthly, yearly)

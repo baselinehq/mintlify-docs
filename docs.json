@@ -11,73 +11,39 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "CostGraph",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart",
-              "architecture"
-            ]
-          },
-          {
-            "group": "Products",
-            "pages": [
-              {
-                "page": "costgraph/overview",
-                "icon": "chart-line"
-              },
-              {
-                "page": "costgraph/installation",
-                "icon": "download"
-              },
-              {
-                "page": "costgraph/configuration",
-                "icon": "gear"
-              },
-              {
-                "page": "costgraph/usage",
-                "icon": "play"
-              },
-              {
-                "page": "pricing-api/overview",
-                "icon": "dollar-sign"
-              },
-              {
-                "page": "pricing-api/quickstart",
-                "icon": "rocket"
-              },
-              {
-                "page": "pricing-api/providers",
-                "icon": "cloud"
-              }
+              "costgraph/overview",
+              "costgraph/architecture"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
-              {
-                "page": "concepts/how-costgraph-works",
-                "icon": "lightbulb"
-              },
-              {
-                "page": "concepts/finops-fundamentals",
-                "icon": "book"
-              }
+              "concepts/how-it-works"
             ]
           },
           {
-            "group": "Support",
+            "group": "Installation",
             "pages": [
-              {
-                "page": "support/faq",
-                "icon": "circle-question"
-              },
-              {
-                "page": "support/community",
-                "icon": "users"
-              }
+              "costgraph/installation/kubernetes",
+              "costgraph/installation/agent"
+            ]
+          },
+          {
+            "group": "Build on Costgraph",
+            "pages": [
+              "costgraph/build/overview"
+            ]
+          },
+          {
+            "group": "Changelog",
+            "pages": [
+              "changelog/costgraph/operator",
+              "changelog/costgraph/agent"
             ]
           }
         ]
@@ -86,16 +52,25 @@
         "tab": "Pricing API",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Getting Started",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/authentication"
             ]
           },
           {
-            "group": "Pricing API",
+            "group": "API Reference",
             "pages": [
               "api-reference/endpoint/pricing",
               "api-reference/endpoint/recommendations"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "api-reference/examples/getting-started",
+              "api-reference/examples/recommendations",
+              "api-reference/examples/filtering"
             ]
           }
         ]
@@ -110,12 +85,12 @@
         },
         {
           "anchor": "Community",
-          "href": "https://community.baselinehq.com",
-          "icon": "slack"
+          "href": "https://x.com/costgraph_dev",
+          "icon": "x"
         },
         {
           "anchor": "Blog",
-          "href": "https://blog.baselinehq.com",
+          "href": "https://costgraph.baselinehq.cloud/blog",
           "icon": "newspaper"
         }
       ]
@@ -128,14 +103,14 @@
   "navbar": {
     "links": [
       {
-        "label": "Talk to Sales",
-        "href": "https://calendly.com/contact-baselinehq/30min"
+        "label": "Talk to support",
+        "href": "mailto:contact@baselinehq.cloud"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Try CostGraph",
-      "href": "https://costgraph.baselinehq.cloud/"
+      "label": "Dashboard",
+      "href": "https://costgraph.baselinehq.cloud"
     }
   },
   "footer": {

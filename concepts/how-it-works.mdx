@@ -1,0 +1,43 @@
+---
+title: "How Does Costgraph Work?"
+---
+
+
+This guide walks through the algorithm Costgraph utilises in providing recommendations.
+
+## Costgraph Algorithm
+
+Costgraph is a tool that provides recommendations for the requests and limits of containers in a Kubernetes cluster. The recommendations are based on the historical utilisation of the resources in the cluster. The algorithm used by Costgraph is as follows:
+
+<Tabs>
+  <Tab title="Recommendation Algorithm">
+    Costgraph works by:
+    1. Fetching a maximum of 45 days metric data from Prometheus on resource utilisation with a 5-minute granularity.
+    2. Aggregating the fetch information by container and node, each metric is partitioned by namespace.
+    3. Filtering is done on the data retrieved to remove outliers and optimise the stable trend of the captured window.
+    4. We use the filtered data to generate recommendations for the requests and limits.
+    5. The generated recommendations are computed per container and node per each namespace the application runs.
+    6. Each recommendation is deployed to parquet and the resulting files are ingested into Postgres.
+  </Tab>
+  <Tab title="QoS Algorithm">
+    In obtaining the requests and limits, Costgraph uses the algorithm:
+    1. The *Current* value is always the requests from kubernetes if specified. If not, then there is no QoS, and we use our computed value.
+    2. When defining the *Recommendation*, we compute two values, the scaled computed value which is the `100 * computed_value / expected_utilisation_percent` and the minimum request over the maximum 45 day period we sampled utilisation metrics
+    3. The *Recommendation* is the `max(scaled computed value, minimum request)`
+    4. The *Savings* is the difference between the *Current* and the *Recommendation*
+  </Tab>
+  <Tab title="Resource Quota Algorithm">
+    In any cluster, the recommended resource quota at any time is double the limits in use at the point of recommendation.
+
+    ```bash
+    recommended_resource_quota_namespace = 2 * total_limit_in_use_namespace
+    ```
+
+    We use the recommended limit values to compute the recommended resource quota values.
+  </Tab>
+</Tabs>
+
+## Cost Usage Reporting (CUR) Pricing
+All pricing information on Costgraph is provided through OpenCost. The list of providers supported can be found on the [OpenCost page](https://opencost.io/docs/configuration/)
+
+Once the CPU and Memory values are computed, the values are multiplied by the per-hour CPU and Memory pricing to obtain the pricing results.

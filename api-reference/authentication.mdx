@@ -1,0 +1,89 @@
+---
+title: Authentication
+---
+
+# Authentication
+
+Some endpoints such as the [recommendations endpoint](/api-reference/endpoint/recommendations) require authentication. Follow these steps to get started:
+
+<Steps>
+  <Step title="Obtain an API Key">
+    To use the API, you'll need an API key. Create an account on [costgraph.baselinehq.cloud](https://costgraph.baselinehq.cloud/) to obtain your API key.
+
+    <img height="400" src="/images/api-key.png" />
+  </Step>
+  <Step title="Create Request File">
+    Create a file named `rec.json` with the following content:
+
+    ```json
+    {
+      "region": "nyc1",
+      "provider": "digitalocean",
+      "instance_type": "s-4vcpu-16gb-amd",
+      "operating_system": "linux",
+      "service": "Droplet",
+      "usage_type": "ondemand",
+      "availability_zone": "",
+      "predicates": {
+        "usage_types": ["ondemand"]
+      },
+      "vm": {
+        "cpu_cores": 4,
+        "ram_gb": 16
+      },
+      "usage": {
+        "cpu_cores": 3,
+        "ram_gb": 5
+      }
+    }
+    ```
+  </Step>
+  <Step title="Make the Request">
+    Use curl to make the request to the recommendations endpoint:
+
+    ```bash
+    curl -H 'Authorization: Bearer YOUR_API_KEY' \
+         -XPOST https://pricing.baselinehq.cloud/recommendations \
+         -d@rec.json
+    ```
+  </Step>
+</Steps>
+
+## Using the API Key
+
+Include your API key in the `Authorization` header of your requests:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+Replace `YOUR_API_KEY` with the API key you obtained from the dashboard.
+
+
+## Example Usage
+
+Here's a complete example using curl:
+
+```bash
+# Store your API key in an environment variable
+export COSTGRAPH_API_KEY="your-api-key"
+
+# Make an authenticated request
+curl -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+     -H "Content-Type: application/json" \
+     -XPOST https://pricing.baselinehq.cloud/recommendations \
+     -d@rec.json
+```
+
+## Errors
+
+If authentication fails, you'll receive a 401 Unauthorized response:
+
+```json
+{
+  "error": "Unauthorized",
+}
+```
+
+
+

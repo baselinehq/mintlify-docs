@@ -1,0 +1,250 @@
+
+
+
+## Prerequisites
+Before you begin, you will need to have the following:
+- [Helm](https://helm.sh/docs/intro/install/)
+
+
+### Prometheus
+
+If you do not have prometheus-server installed on your cluster, you can use the installation guide below:
+
+- Add the chart to deploy prometheus on the cluster.
+```shell
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+```
+
+<Accordion title="Existing Prometheus installations">
+
+If you already have Prometheus running in your cluster, you can skip these installation steps and proceed directly to the [Configuration](#configuration) section.
+
+In your Helm `values.yaml`, set the `prometheus_endpoint` to your existing Prometheus URL.
+
+For example, if you're using the **kube-prometheus-stack**, the endpoint is typically:
+
+```yaml
+prometheus_endpoint: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc:9090
+```
+
+</Accordion>
+
+- Install the operator to begin collecting metrics for workloads on the cluster.
+```shell
+helm install prometheus prometheus-community/prometheus --namespace prometheus-system --create-namespace
+kubectl wait --for=condition=available --timeout=10m -n prometheus-system deploy/prometheus-server
+```
+
+### Obtain an API Key
+
+To run the CostGraph operator, you must create an account on [costgraph.baselinehq.cloud](https://costgraph.baselinehq.cloud/) to obtain an API key.
+
+<img height="400" src="/images/api-key.png" />
+
+### Setup a plan
+
+Once you obtain an API key, setup a plan to allow the API key to have billing enabled.
+
+<Warning>
+Setting up a plan
+
+You must have a plan setup for your organization to use the operator. Not doing so will cause the operator to fail on startup.
+</Warning>
+
+<Tip>Free Plan Available For Developers</Tip>
+
+There's a free plan available on the `One-Time` tab to begin using CostGraph without any payment.
+
+<img height="400" src="/images/billing.png" />
+
+### Helm configuration
+
+In deploying the CostGraph operator, the charts are available in the GitHub repository [costgraph-charts](https://github.com/BaselineHQ/costgraph-charts)
+
+Run the helm command below to import the charts into the repository to begin deploying the operator.
+
+```shell
+helm repo add costgraph https://baselinehq.github.io/costgraph-charts/
+helm repo update
+```
+
+## Configuration
+
+### CostGraph
+Create a configuration file with the helm updates that are required in deploying the package
+
+```yaml
+domain: <your-company-subdomain>
+costgraph:
+  config:
+    costgraph_instance_name: <instance-name>
+    prometheus_endpoint: <prometheus-address>
+    api_key: <your-api-key>
+```
+
+<Tip>Using Multiple Cost Centers</Tip>
+
+If you have an existing CostGraph instance, you can configure replication to that cost center by appending the relevant cluster names to the `costgraph_instance_master_domains` configuration.
+
+You can append multiple clusters to the configuration, this will be the `costgraph_instance_name` of the instance you want to view costs from.
+
+```yaml
+costgraph:
+  config:
+    costgraph_instance_master_domains:
+      - name: "<cluster-to-replicate-to>"
+```
+
+### Expected Utilisation Percentages
+
+If you want to configure expected utilisation percentages for recommendations on the CostGraph instance, you can change it using the following configuration:
+
+```yaml
+costgraph:
+  config:
+    expected_utilisation_percent:
+      cpu: 80
+      memory: 80
+```
+
+By default, the expected utilisation is set to 80% for both CPU and Memory. You can change this to your desired value.
+
+### Superset
+To configure the superset credentials, update the configuration for the superset setting.
+
+```yaml
+costgraph:
+  config:
+    superset_admin_username: admin
+    superset_admin_password: admin
+```
+
+### Postgres
+
+<Warning>Postgres Configuration</Warning>
+
+Only use this if you have an existing postgres instance or manage a Postgres instance outside Kubernetes eg AWS Aurora etc.
+
+If you want to use an existing database instance, add in this configuration
+
+```yaml
+postgres:
+  enabled: false
+  config:
+    postgres_db: postgres
+    postgres_user: username
+    postgres_password: password
+    pg_data_directory: /var/lib/postgresql/data
+    postgres_host: db_hostname
+    postgres_port: db_port
+```
+
+If you want to have a PVC for the database, set the pvc configuration to `true` and update the size for the PVC.
+
+<Note>This will create a StatefulSet for the database instance and does not directly configure a PVC for the database.</Note>
+
+```yaml
+postgres:
+    pvc:
+      enabled: true
+      size: 10Gi
+```
+
+## Deployment
+Finally deploy the configuration with the updated settings for your CostGraph instance
+
+```shell
+helm install costgraph costgraph/costgraph -f <values-file>
+```
+
+## Post Deployment
+
+In the tabs below, you will find features available to you after the helm deployment is complete and resources are provisioned successfully.
+
+<Tabs>
+  <Tab title="Accessing Superset">
+    <Tip>Superset Credentials</Tip>
+
+    Unless modified, the username and password for the superset instance is `admin` and `admin`
+
+    Once the deployment is complete, you can access the CostGraph dashboard on the domain `costgraph.$domain` and login with the credentials provided in the configuration file.
+
+    ### Accessing the dashboard 
+
+    Ensure that the domain is accessible from the network you are connecting from. If you are using a local cluster, you can use the `kubectl port-forward` command to access the dashboard.
+
+    <Tabs>
+      <Tab title="Port Forwarding">
+        The quickest way to access the dashboard is to use port forwarding. This will forward the port `8088` on your local machine to the port `80` on the CostGraph service.
+        ```shell
+        python -m webbrowser -t http://localhost:8088
+        kubectl port-forward -n costgraph svc/costgraph 8088:80
+        ```
+        
+        You can then access the dashboard on `localhost:8088` in your browser.
+      </Tab>
+      <Tab title="Ingress">
+        If you have an ingress controller installed, you can access the dashboard using the ingress controller's URL.
+
+        For users of `nginx-ingress`, you can use the following command to get the ingress controller's URL:
+
+        ```yaml
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: costgraph
+          namespace: costgraph
+        spec:
+          ingressClassName: nginx
+          rules:
+          - host: costgraph.<your-domain>
+            http:
+              paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: costgraph
+                    port:
+                      number: 80
+        ```   
+
+        <Tip>Ingress Annotations</Tip>
+        For kubernetes version < 1.18 or traefik v1 (chart 1.x – 2.x) use the `kubernetes.io/ingress.class` annotation to specify the ingress class.
+      </Tab>
+    </Tabs>
+
+    <img height="400" src="/images/showcase.gif" />
+  </Tab>
+  <Tab title="Prometheus Metrics">
+    The operator comes pre-installed with a prometheus server allowing you to view metrics as available on the database in the prometheus dashboard.
+
+    <Note>Exposing Prometheus Metrics</Note>
+        
+    You must have service auto-discovery enabled for kubernetes services to have the operator metrics scraped by the prometheus server.
+
+    <Note>If you installed prometheus-server using this guide, you have auto-discovery enabled by default for kubernetes services.</Note>
+
+    If you do not see any targets with `costgraph`, the scrape configuration will need to be manually added as a static target to your prometheus instance.
+
+    ```yaml
+    - job_name: 'costgraph'
+    honor_labels: true
+    scrape_interval: 1m
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['costgraph.costgraph:9090']
+    ```
+
+    All metrics are prefixed with the `costgraph_` prefix and can be viewed for your usage in Grafana, Perses or your preferred dashboard tool.
+
+    <img height="400" src="/images/prometheus.png" />
+  </Tab>
+  <Tab title="Grafana Dashboard">
+    Once you have the operator running, you can install the Grafana dashboard to view the metrics in a more user-friendly format. The Grafana dashboard is available in the [costgraph-manifests](https://github.com/baselinehq/costgraph-manifests) repository.
+
+    <img height="400" src="/images/grafana.png" />
+  </Tab>
+</Tabs>

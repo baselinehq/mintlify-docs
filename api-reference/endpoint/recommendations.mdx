@@ -2,13 +2,16 @@
 title: 'Recommendations'
 api: "POST https://pricing.baselinehq.cloud/recommendations"
 description: 'Get instance recommendations, across clouds'
+authMethod: 'key'
 ---
+
 
 <RequestExample>
 ```bash
 curl -X 'POST' \
   'https://pricing.baselinehq.cloud/recommendations' \
   -H 'accept: application/json' \
+  -H 'Authorization: Bearer <your-api-key>' \
   -H 'Content-Type: application/json' \
   -d '{
   "availability_zone": "us-east-1a",

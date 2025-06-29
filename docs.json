@@ -34,6 +34,13 @@
             ]
           },
           {
+            "group": "Configuration",
+            "pages": [
+              "costgraph/configuration/kubernetes",
+              "costgraph/configuration/agent"
+            ]
+          },
+          {
             "group": "Build on Costgraph",
             "pages": [
               "costgraph/build/overview"
@@ -62,7 +69,8 @@
             "group": "API Reference",
             "pages": [
               "api-reference/endpoint/pricing",
-              "api-reference/endpoint/recommendations"
+              "api-reference/endpoint/recommendations",
+              "api-reference/endpoint/providers"
             ]
           },
           {

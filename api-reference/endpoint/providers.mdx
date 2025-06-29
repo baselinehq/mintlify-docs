@@ -1,0 +1,171 @@
+---
+title: 'Providers'
+api: "GET https://pricing.baselinehq.cloud/providers"
+description: 'Fetch all available providers'
+authMethod: 'key'
+responseType: 'json'
+---
+
+<RequestExample>
+```bash
+curl -H 'Authorization: Bearer <your-api-key>' \
+  'https://pricing.baselinehq.cloud/providers' \
+  -H 'accept: application/json'
+```
+</RequestExample> 
+
+
+<ResponseExample>
+```json
+{
+  "aws": {
+    "provider": "AWS",
+    "predicates": {
+      "regions": ["us-east-1", "ap-northeast-2", "..."],
+      "usage_types": ["RESERVED", "ONDEMAND", "..."],
+      "availability_zones": ["us-east-1a", "us-east-1b", "..."],
+      "providers": ["AWS"],
+      "operating_systems": ["Linux", "Windows", "..."],
+      "services": ["AmazonEC2"]
+    }
+  },
+  "azure": {
+    "provider": "Azure",
+    "predicates": {
+      "regions": ["centralus", "eastus", "..."],
+      "usage_types": ["ONDEMAND", "RESERVED", "..."],
+      "availability_zones": ["0", "1", "..."],
+      "providers": ["Azure"],
+      "operating_systems": ["linux", "windows"],
+      "services": ["AzureCompute"]
+    }
+  },
+  "base": {
+    "provider": "Base",
+    "predicates": {
+      "regions": [],
+      "usage_types": [],
+      "availability_zones": [],
+      "providers": [],
+      "operating_systems": [],
+      "services": []
+    }
+  },
+  "digitalocean": {
+    "provider": "DigitalOcean",
+    "predicates": {
+      "regions": ["ams3", "nyc1", "..."],
+      "usage_types": ["ONDEMAND"],
+      "availability_zones": [],
+      "providers": ["DigitalOcean"],
+      "operating_systems": [],
+      "services": ["Droplet"]
+    }
+  },
+  "gcp": {
+    "provider": "GCP",
+    "predicates": {
+      "regions": ["us-east1", "europe-west1", "..."],
+      "usage_types": ["ONDEMAND", "RESERVED", "..."],
+      "availability_zones": ["us-east1-b", "europe-west1-d", "..."],
+      "providers": ["GCP"],
+      "operating_systems": [],
+      "services": ["ComputeEngine"]
+    }
+  },
+  "hetzner": {
+    "provider": "Hetzner",
+    "predicates": {
+      "regions": ["fsn1", "hel1", "..."],
+      "usage_types": ["ONDEMAND"],
+      "availability_zones": [],
+      "providers": ["Hetzner"],
+      "operating_systems": [],
+      "services": ["HetznerCompute"]
+    }
+  },
+  "ovhcloud": {
+    "provider": "OVHCloud",
+    "predicates": {
+      "regions": ["GRA9", "WAW1", "..."],
+      "usage_types": ["ONDEMAND"],
+      "availability_zones": [],
+      "providers": ["OVHCloud"],
+      "operating_systems": ["linux", "windows"],
+      "services": ["OVHPublicCloud"]
+    }
+  }
+}
+
+```
+</ResponseExample>
+
+
+## Response
+
+The response contains information about all available cloud providers and their supported features.
+
+<ResponseField name="[provider_key]" type="object">
+  Information about a specific cloud provider.
+  
+  <Expandable title="Provider Properties">
+    <ResponseField name="provider" type="string">
+      The display name of the cloud provider.
+      
+      Example: `"AWS"`
+    </ResponseField>
+    
+    <ResponseField name="predicates" type="object">
+      Available filtering options and supported values for this provider.
+      
+      <Expandable title="Predicates Properties">
+        <ResponseField name="regions" type="array">
+          List of available regions for this provider.
+          
+          Example: `["us-east-1", "ap-northeast-2", "..."]`
+        </ResponseField>
+        
+        <ResponseField name="usage_types" type="array">
+          List of supported usage types (e.g., on-demand, reserved).
+          
+          Example: `["RESERVED", "ONDEMAND", "..."]`
+        </ResponseField>
+        
+        <ResponseField name="availability_zones" type="array">
+          List of available availability zones for this provider.
+          
+          Example: `["us-east-1a", "us-east-1b", "..."]`
+        </ResponseField>
+        
+        <ResponseField name="providers" type="array">
+          List containing the provider name (used for consistency).
+          
+          Example: `["AWS"]`
+        </ResponseField>
+        
+        <ResponseField name="operating_systems" type="array">
+          List of supported operating systems for this provider.
+          
+          Example: `["Linux", "Windows"]`
+        </ResponseField>
+        
+        <ResponseField name="services" type="array">
+          List of cloud services offered by this provider.
+          
+          Example: `["AmazonEC2"]`
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Supported Providers
+
+The API currently supports the following cloud providers:
+
+- **AWS** - Amazon Web Services
+- **Azure** - Microsoft Azure
+- **DigitalOcean** - DigitalOcean Droplets
+- **GCP** - Google Cloud Platform
+- **Hetzner** - Hetzner Cloud
+- **OVHCloud** - OVH Public Cloud

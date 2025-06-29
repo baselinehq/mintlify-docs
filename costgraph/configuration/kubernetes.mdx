@@ -1,0 +1,682 @@
+---
+Title:  Kubernetes Configuration
+---
+
+# Kubernetes Configuration
+
+The CostGraph operator supports additional configuration options for the operator deployment via Helm `values.yaml`.
+
+## Configuration Options
+
+
+## Basic Setup Example 
+```yaml
+domain: "evilcorp.org"
+
+costgraph:
+  config:
+    costgraph_instance_name: "my-costgraph"
+    prometheus_endpoint: "http://prometheus-server.prometheus-system"
+    api_key: "<your-api-key>"
+
+postgres:
+  enabled: true
+  config:
+    postgres_db: costgraph
+    postgres_user: user
+    postgres_password: password
+    postgres_host: db
+    postgres_port: 5432
+```
+
+
+<ParamField body="domain" type="string" required>
+  The domain name for your CostGraph instance.
+  
+  Example: `"evilcorp.org"`
+</ParamField>
+
+<ParamField body="os" type="string">
+  The operating system for the deployment.
+  
+  Example: `"linux"`
+</ParamField>
+
+<ParamField body="arch" type="string">
+  The architecture for the deployment.
+  
+  Example: `"amd64"`
+</ParamField>
+
+<ParamField body="affinity" type="object">
+  Kubernetes affinity rules for pod scheduling.
+  
+  <Expandable title="Affinity Properties">
+    <ParamField body="nodeAffinity" type="object">
+      Node affinity rules for pod scheduling.
+      
+      <Expandable title="Node Affinity Properties">
+        <ParamField body="requiredDuringSchedulingIgnoredDuringExecution" type="object">
+          Required node affinity rules.
+          
+          <Expandable title="Required Rules Properties">
+            <ParamField body="nodeSelectorTerms" type="array">
+              List of node selector terms.
+              
+              <Expandable title="Node Selector Term Properties">
+                <ParamField body="matchExpressions" type="array">
+                  List of match expressions for node selection.
+                  
+                  <Expandable title="Match Expression Properties">
+                    <ParamField body="key" type="string">
+                      The node label key to match.
+                      
+                      Example: `"kubernetes.io/os"`
+                    </ParamField>
+                    
+                    <ParamField body="operator" type="string">
+                      The operator for the match expression.
+                      
+                      Example: `"In"`
+                    </ParamField>
+                    
+                    <ParamField body="values" type="array">
+                      List of values to match against.
+                      
+                      Example: `["linux", "amd64"]`
+                    </ParamField>
+                  </Expandable>
+                </ParamField>
+              </Expandable>
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="postgres" type="object">
+  PostgreSQL database configuration.
+  
+  <Expandable title="PostgreSQL Properties">
+    <ParamField body="image" type="string">
+      PostgreSQL Docker image.
+      
+      Example: `"postgres"`
+    </ParamField>
+    
+    <ParamField body="tag" type="string">
+      PostgreSQL Docker image tag.
+      
+      Example: `"14-alpine"`
+    </ParamField>
+    
+    <ParamField body="enabled" type="boolean">
+      Whether to enable PostgreSQL deployment.
+      
+      Example: `true`
+    </ParamField>
+    
+    <ParamField body="pvc" type="object">
+      Persistent Volume Claim configuration.
+      
+      <Expandable title="PVC Properties">
+        <ParamField body="enabled" type="boolean">
+          Whether to enable PVC for PostgreSQL.
+          
+          Example: `false`
+        </ParamField>
+        
+        <ParamField body="size" type="string">
+          Size of the PVC.
+          
+          Example: `"10Gi"`
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="resources" type="object">
+      Resource limits and requests for PostgreSQL.
+      
+      <Expandable title="Resources Properties">
+        <ParamField body="requests" type="object">
+          Resource requests.
+          
+          <Expandable title="Requests Properties">
+            <ParamField body="memory" type="string">
+              Memory request.
+              
+              Example: `"100Mi"`
+            </ParamField>
+            
+            <ParamField body="cpu" type="string">
+              CPU request.
+              
+              Example: `"250m"`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField body="limits" type="object">
+          Resource limits.
+          
+          <Expandable title="Limits Properties">
+            <ParamField body="memory" type="string">
+              Memory limit.
+              
+              Example: `"1Gi"`
+            </ParamField>
+            
+            <ParamField body="cpu" type="string">
+              CPU limit.
+              
+              Example: `"2"`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="config" type="object">
+      PostgreSQL configuration settings.
+      
+      <Expandable title="Config Properties">
+        <ParamField body="postgres_db" type="string">
+          Database name.
+          
+          Example: `"costgraph"`
+        </ParamField>
+        
+        <ParamField body="postgres_user" type="string">
+          Database user.
+          
+          Example: `"user"`
+        </ParamField>
+        
+        <ParamField body="postgres_password" type="string">
+          Database password.
+          
+          Example: `"password"`
+        </ParamField>
+        
+        <ParamField body="pg_data_directory" type="string">
+          PostgreSQL data directory.
+          
+          Example: `"/var/lib/postgresql/data"`
+        </ParamField>
+        
+        <ParamField body="postgres_host" type="string">
+          PostgreSQL host.
+          
+          Example: `"db"`
+        </ParamField>
+        
+        <ParamField body="postgres_port" type="number">
+          PostgreSQL port.
+          
+          Example: `5432`
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costgraph" type="object">
+  CostGraph application configuration.
+  
+  <Expandable title="CostGraph Properties">
+    <ParamField body="chat" type="object">
+      CostGraph chat service configuration.
+      
+      <Expandable title="Chat Properties">
+        <ParamField body="image" type="string">
+          Chat service Docker image.
+          
+          Example: `"ghcr.io/baselinehq/costgraph-chat"`
+        </ParamField>
+        
+        <ParamField body="tag" type="string">
+          Chat service Docker image tag.
+          
+          Example: `"latest"`
+        </ParamField>
+        
+        <ParamField body="port" type="number">
+          Chat service port.
+          
+          Example: `8000`
+        </ParamField>
+        
+        <ParamField body="ingress" type="object">
+          Ingress configuration for chat service.
+          
+          <Expandable title="Ingress Properties">
+            <ParamField body="annotations" type="object">
+              Ingress annotations.
+              
+              Example: `{}`
+            </ParamField>
+            
+            <ParamField body="tls" type="object">
+              TLS configuration.
+              
+              <Expandable title="TLS Properties">
+                <ParamField body="enabled" type="boolean">
+                  Whether TLS is enabled.
+                  
+                  Example: `false`
+                </ParamField>
+                
+                <ParamField body="secret_name" type="string">
+                  TLS secret name.
+                  
+                  Example: `""`
+                </ParamField>
+              </Expandable>
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField body="resources" type="object">
+          Resource limits and requests for chat service.
+          
+          <Expandable title="Resources Properties">
+            <ParamField body="requests" type="object">
+              Resource requests.
+              
+              <Expandable title="Requests Properties">
+                <ParamField body="memory" type="string">
+                  Memory request.
+                  
+                  Example: `"100Mi"`
+                </ParamField>
+                
+                <ParamField body="cpu" type="string">
+                  CPU request.
+                  
+                  Example: `"250m"`
+                </ParamField>
+              </Expandable>
+            </ParamField>
+            
+            <ParamField body="limits" type="object">
+              Resource limits.
+              
+              <Expandable title="Limits Properties">
+                <ParamField body="memory" type="string">
+                  Memory limit.
+                  
+                  Example: `"2Gi"`
+                </ParamField>
+                
+                <ParamField body="cpu" type="string">
+                  CPU limit.
+                  
+                  Example: `"2"`
+                </ParamField>
+              </Expandable>
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="operator" type="object">
+      CostGraph operator configuration.
+      
+      <Expandable title="Operator Properties">
+        <ParamField body="image" type="string">
+          Operator Docker image.
+          
+          Example: `"ghcr.io/baselinehq/costgraph-operator"`
+        </ParamField>
+        
+        <ParamField body="tag" type="string">
+          Operator Docker image tag.
+          
+          Example: `"v0.1.4"`
+        </ParamField>
+        
+        <ParamField body="port" type="number">
+          Operator port.
+          
+          Example: `8090`
+        </ParamField>
+        
+        <ParamField body="env" type="array">
+          Environment variables for the operator.
+          
+          Example: `[]`
+        </ParamField>
+        
+        <ParamField body="resources" type="object">
+          Resource limits and requests for operator.
+          
+          <Expandable title="Resources Properties">
+            <ParamField body="requests" type="object">
+              Resource requests.
+              
+              <Expandable title="Requests Properties">
+                <ParamField body="memory" type="string">
+                  Memory request.
+                  
+                  Example: `"100Mi"`
+                </ParamField>
+                
+                <ParamField body="cpu" type="string">
+                  CPU request.
+                  
+                  Example: `"250m"`
+                </ParamField>
+              </Expandable>
+            </ParamField>
+            
+            <ParamField body="limits" type="object">
+              Resource limits.
+              
+              <Expandable title="Limits Properties">
+                <ParamField body="memory" type="string">
+                  Memory limit.
+                  
+                  Example: `"512Mi"`
+                </ParamField>
+                
+                <ParamField body="cpu" type="string">
+                  CPU limit.
+                  
+                  Example: `"1"`
+                </ParamField>
+              </Expandable>
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="config" type="object">
+      CostGraph application configuration settings.
+      
+      <Expandable title="Config Properties">
+        <ParamField body="prometheus_endpoint" type="string">
+          Prometheus server endpoint.
+          
+          Example: `"http://prometheus-server.prometheus-system"`
+        </ParamField>
+        
+        <ParamField body="worker_count" type="number">
+          Number of worker processes.
+          
+          Example: `10`
+        </ParamField>
+        
+        <ParamField body="expected_utilisation_percent" type="object">
+          Expected utilization percentages for recommendations.
+          
+          <Expandable title="Utilization Properties">
+            <ParamField body="cpu" type="number">
+              Expected CPU utilization percentage.
+              
+              Example: `80`
+            </ParamField>
+            
+            <ParamField body="memory" type="number">
+              Expected memory utilization percentage.
+              
+              Example: `80`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField body="superset_address" type="string">
+          Superset dashboard address.
+          
+          Example: `"http://superset"`
+        </ParamField>
+        
+        <ParamField body="costgraph_feature_flags" type="object">
+          Feature flags for CostGraph.
+          
+          <Expandable title="Feature Flags Properties">
+            <ParamField body="superset" type="boolean">
+              Enable Superset dashboard.
+              
+              Example: `true`
+            </ParamField>
+            
+            <ParamField body="graph" type="boolean">
+              Enable graph features.
+              
+              Example: `true`
+            </ParamField>
+            
+            <ParamField body="chat" type="boolean">
+              Enable chat features.
+              
+              Example: `false`
+            </ParamField>
+            
+            <ParamField body="prometheus" type="boolean">
+              Enable Prometheus metrics.
+              
+              Example: `true`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField body="costgraph_instance_name" type="string">
+          Name of the CostGraph instance.
+          
+          Example: `""`
+        </ParamField>
+        
+        <ParamField body="costgraph_instance_master_domains" type="array">
+          List of master domains for replication.
+          
+          Example: `[]`
+        </ParamField>
+        
+        <ParamField body="costgraph_instance_replication_provider" type="string">
+          Replication provider (e.g., s3).
+          
+          Example: `"s3"`
+        </ParamField>
+        
+        <ParamField body="fortknox_server_url" type="string">
+          FortKnox server URL.
+          
+          Example: `"https://fortknox.baselinehq.cloud"`
+        </ParamField>
+        
+        <ParamField body="api_key" type="string">
+          API key for CostGraph.
+          
+          Example: `""`
+        </ParamField>
+        
+        <ParamField body="openai_api_key" type="string">
+          OpenAI API key for chat features.
+          
+          Example: `""`
+        </ParamField>
+        
+        <ParamField body="prometheus_metrics_port" type="number">
+          Port for Prometheus metrics.
+          
+          Example: `9090`
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="superset" type="object">
+  Superset dashboard configuration.
+  
+  <Expandable title="Superset Properties">
+    <ParamField body="image" type="string">
+      Superset Docker image.
+      
+      Example: `"ghcr.io/baselinehq/costgraph-superset"`
+    </ParamField>
+    
+    <ParamField body="tag" type="string">
+      Superset Docker image tag.
+      
+      Example: `"v0.1.0"`
+    </ParamField>
+    
+    <ParamField body="port" type="number">
+      Superset port.
+      
+      Example: `8088`
+    </ParamField>
+    
+    <ParamField body="enabled" type="boolean">
+      Whether to enable Superset.
+      
+      Example: `true`
+    </ParamField>
+    
+    <ParamField body="ingress" type="object">
+      Ingress configuration for Superset.
+      
+      <Expandable title="Ingress Properties">
+        <ParamField body="annotations" type="object">
+          Ingress annotations.
+          
+          Example: `{}`
+        </ParamField>
+        
+        <ParamField body="tls" type="object">
+          TLS configuration.
+          
+          <Expandable title="TLS Properties">
+            <ParamField body="enabled" type="boolean">
+              Whether TLS is enabled.
+              
+              Example: `false`
+            </ParamField>
+            
+            <ParamField body="secret_name" type="string">
+              TLS secret name.
+              
+              Example: `""`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="resources" type="object">
+      Resource limits and requests for Superset.
+      
+      <Expandable title="Resources Properties">
+        <ParamField body="requests" type="object">
+          Resource requests.
+          
+          <Expandable title="Requests Properties">
+            <ParamField body="memory" type="string">
+              Memory request.
+              
+              Example: `"500Mi"`
+            </ParamField>
+            
+            <ParamField body="cpu" type="string">
+              CPU request.
+              
+              Example: `"1"`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField body="limits" type="object">
+          Resource limits.
+          
+          <Expandable title="Limits Properties">
+            <ParamField body="memory" type="string">
+              Memory limit.
+              
+              Example: `"1Gi"`
+            </ParamField>
+            
+            <ParamField body="cpu" type="string">
+              CPU limit.
+              
+              Example: `"2"`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField body="config" type="object">
+      Superset configuration settings.
+      
+      <Expandable title="Config Properties">
+        <ParamField body="superset_admin_username" type="string">
+          Admin username.
+          
+          Example: `"admin"`
+        </ParamField>
+        
+        <ParamField body="superset_admin_email" type="string">
+          Admin email.
+          
+          Example: `"admin@costgraph-superset.com"`
+        </ParamField>
+        
+        <ParamField body="superset_admin_password" type="string">
+          Admin password.
+          
+          Example: `"admin"`
+        </ParamField>
+        
+        <ParamField body="superset_secret_key" type="string">
+          Secret key for Superset.
+          
+          Example: `"test123"`
+        </ParamField>
+        
+        <ParamField body="superset_guest_username" type="string">
+          Guest username.
+          
+          Example: `"guest"`
+        </ParamField>
+        
+        <ParamField body="superset_guest_email" type="string">
+          Guest email.
+          
+          Example: `"guest@public.internal"`
+        </ParamField>
+        
+        <ParamField body="superset_guest_password" type="string">
+          Guest password.
+          
+          Example: `"public"`
+        </ParamField>
+        
+        <ParamField body="superset_guest_role" type="string">
+          Guest role.
+          
+          Example: `"Public"`
+        </ParamField>
+        
+        <ParamField body="server_worker_amount" type="string">
+          Number of server workers.
+          
+          Example: `"3"`
+        </ParamField>
+        
+        <ParamField body="superset_dashboard_zip" type="string">
+          Path to dashboard zip file.
+          
+          Example: `"/app/dashboard.zip"`
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+
+Full reference of the configuration options can be found in the [helm chart](https://github.com/baselinehq/costgraph-charts/blob/main/charts/costgraph/values.yaml)

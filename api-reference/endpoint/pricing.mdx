@@ -54,7 +54,7 @@ Get pricing information for cloud instances
 <ParamField body="availability_zone" type="string" required>
   The availability zone where the resource will be deployed.
   
-  Example: `us-east1-a`
+  Example: `us-east-1a, nyc1-b , nyc1-c`
 </ParamField>
 
 <ParamField body="instance_type" type="string" required>
@@ -72,25 +72,25 @@ Get pricing information for cloud instances
 <ParamField body="provider" type="string" required>
   The cloud provider.
   
-  Example: `gcp`
+  Example: `aws,gcp,azure,ovh,hetzner,digitalocean`
 </ParamField>
 
 <ParamField body="region" type="string" required>
   The region where the resource will be deployed.
   
-  Example: `us-east1`
+  Example: `us-east1,ncyc1,eu-central`
 </ParamField>
 
 <ParamField body="service" type="string" required>
   The cloud service name.
   
-  Example: `ComputeEngine`
+  Example: `ComputeEngine,AmazonEC2,Droplet,AzureCompute,HetznerCompute,OVHPublicCloud,BaseCompute`
 </ParamField>
 
 <ParamField body="usage_type" type="string" required>
   The type of usage.
   
-  Example: `ondemand`
+  Example: `SPOT_PREEMPTIBLE,ONDEMAND,RESERVED,ONDEMAND_CUSTOM,SPOT_PREEMPTIBLE_CUSTOM,RESERVED_CUSTOM,SOLE_TENANCY,CUSTOM,EXTENDED`
 </ParamField>
 
 <ParamField body="vm" type="object" required>

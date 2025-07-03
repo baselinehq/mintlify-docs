@@ -94,7 +94,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-```
+
+  ```
     </Accordion>
   </Step>
   <Step title="Create Systemd Service">
@@ -107,8 +108,6 @@ services:
     [Service]
     Type=simple
     ExecStart=/usr/local/bin/costgraph-agent -conf /etc/costgraph-agent/conf.yaml
-    User=$(whoami)
-    Group=$(id -gn)
     Restart=always
     [Install]
     WantedBy=multi-user.target

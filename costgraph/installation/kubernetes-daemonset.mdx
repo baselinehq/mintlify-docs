@@ -1,0 +1,102 @@
+---
+title: Kubernetes DaemonSet 
+---
+
+An alternative to running the CostGraph operator is to run the CostGraph agent as a DaemonSet. This is useful if you want to monitor all nodes in your Kubernetes cluster.
+
+## Prerequisites
+
+
+## Installation Steps
+
+<Steps>
+  <Step title="Create Configuration">
+    Create a ConfigMap with your configuration and [API key](/costgraph/installation/kubernetes#obtain-an-api-key).
+
+    ```bash
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: costgraph-agent-config
+      namespace: costgraph
+    data:
+      conf.yaml: |
+        api_key: "your costgraph api key"
+        prometheus:
+          enabled: true
+          url: "prometheus.example.com"
+          write_path: "/api/v1/write"
+          timeout: 10s
+          interval: 60s
+          tlsInsecure: false
+          labels:
+            env: "daemonset"
+        expected_utilisation:
+          cpu: 60
+          memory: 75
+    EOF
+    ```
+
+  </Step>
+  <Step title="Deploy DaemonSet">
+    Apply the DaemonSet manifest to your cluster.
+
+    ```bash
+    cat <<EOF | kubectl apply -f -
+    apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: costgraph-agent
+      namespace: costgraph
+    spec:
+      selector:
+        matchLabels:
+          app: costgraph-agent
+      template:
+        metadata:
+          labels:
+            app: costgraph-agent
+        spec:
+          hostPID: true
+          hostNetwork: true
+          containers:
+          - name: agent
+            image: ghcr.io/baselinehq/costgraph-agent:v0.0.7
+            command: ["costgraph-agent", "-conf", "/etc/costgraph-agent/conf.yaml"]
+            imagePullPolicy: Always
+            env:
+            - name: DEBUG
+              value: "true"
+            volumeMounts:
+            - name: state
+              mountPath: /var/lib/costgraph-agent
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: config
+              mountPath: /etc/costgraph-agent/conf.yaml
+              subPath: conf.yaml
+              readOnly: true
+          volumes:
+          - name: state
+            emptyDir: {}
+          - name: proc
+            hostPath:
+              path: /proc
+          - name: config
+            configMap:
+              name: costgraph-agent-config
+    EOF
+    ```
+  </Step>
+  <Step title="Verify Installation">
+    Check that the agent pods are running on all nodes.
+
+    ```bash
+    kubectl get pods -n costgraph
+    kubectl logs -n costgraph -l app=costgraph-agent
+    ```
+  </Step>
+</Steps>
+

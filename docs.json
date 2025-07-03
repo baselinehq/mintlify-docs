@@ -29,8 +29,10 @@
           {
             "group": "Installation",
             "pages": [
-              "costgraph/installation/kubernetes",
-              "costgraph/installation/agent"
+              "costgraph/installation/kubernetes-operator",
+              "costgraph/installation/kubernetes-daemonset",
+              "costgraph/installation/agent-systemd",
+              "costgraph/installation/agent-docker"
             ]
           },
           {

@@ -1,0 +1,181 @@
+---
+Title:  Agent Installation
+---
+
+# CostGraph Agent 
+
+CostGraph offers a lightweight agent that runs on your VM and collects VM Process Level observability agent, collects system metrics, computes process-level resource recommendations (CPU, memory), and exports results in Prometheus-compatible formats.
+
+
+
+## Prerequisites
+
+* **Linux System**: Ensure you have a Linux system with systemd support.
+* **API Key**: Obtain an API key from the [CostGraph dashboard](/costgraph/installation/kubernetes#obtain-an-api-key).
+* **Access**: Ensure you have root or sudo access to install the service.
+* **Prometheus**: Ensure you have a [Prometheus server](/costgraph/installation/agent-systemd#quick-prometheus-setup) running.
+
+## Installation Steps
+
+<Steps>
+  <Step title="Download Agent">
+    Download the CostGraph agent binary for your system architecture:
+    ```bash
+    curl -Lo costgraph-agent https://costgraph-agent-bin.s3.us-east-1.amazonaws.com/v0.0.7/costgraph-agent_0.0.7_linux_amd64.tar.gz
+    ```
+  </Step>
+  <Step title="Install Binary">
+    Install the binary to the system path:
+    ```bash
+    tar -xzf costgraph-agent && mv costgraph-agent /usr/local/bin/costgraph-agent
+    ```
+  </Step>
+  <Step title="Create Configuration Directory">
+    Create the configuration directory:
+    ```bash
+    sudo mkdir -p /etc/costgraph-agent
+    ```
+  </Step>
+  <Step title="Create Configuration File">
+
+    Create the configuration file with your settings:
+    ```bash
+    sudo tee /etc/costgraph-agent/conf.yaml <<'EOF'
+    api_key: "your-api-key-here"
+    prometheus:
+      enabled: true
+      url: "https://your-prometheus-endpoint"
+      write_path: "/api/v1/write"
+      timeout: 10s
+      interval: 60s
+      tlsInsecure: false
+      labels:
+        env: "production"
+    expected_utilisation:
+      cpu: 60
+      memory: 75
+    EOF
+    ```
+
+    <Accordion title="quick prometheus setup">
+```yaml
+version: '3.8'
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/var/lib/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+      - '--storage.tsdb.retention.time=1y'
+      - '--query.max-samples=1000000000'
+    expose:
+      - 9090
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+```
+    </Accordion>
+  </Step>
+  <Step title="Create Systemd Service">
+    Create the systemd service file:
+    ```bash
+    sudo tee /etc/systemd/system/costgraph-agent.service <<'EOF'
+    [Unit]
+    Description=CostGraph Agent
+    After=network-online.target
+    [Service]
+    Type=simple
+    ExecStart=/usr/local/bin/costgraph-agent -conf /etc/costgraph-agent/conf.yaml
+    User=$(whoami)
+    Group=$(id -gn)
+    Restart=always
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    ```
+    This will run the agent as the current user(modify as needed).
+  </Step>
+  <Step title="Enable and Start Service">
+    Enable and start the CostGraph agent service:
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now costgraph-agent
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+### Configuration File
+
+The agent configuration is stored in `/etc/costgraph-agent/conf.yaml`:
+
+```yaml
+prometheus:
+  api_key: "your-api-key-here"
+  enabled: true
+  url: "https://your-prometheus-endpoint"
+  write_path: "/api/v1/write"
+  timeout: 10s
+  interval: 60s
+  tlsInsecure: false
+  labels:
+    env: "production"
+expected_utilisation:
+  cpu: 60
+  memory: 75
+```
+
+### Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `api_key` | Your CostGraph API key | Required |
+| `prometheus.enabled` | Enable Prometheus metrics export | `true` |
+| `prometheus.url` | Prometheus server endpoint | Required |
+| `prometheus.write_path` | Prometheus write API path | `"/api/v1/write"` |
+| `prometheus.timeout` | Request timeout | `10s` |
+| `prometheus.interval` | Metrics collection interval | `60s` |
+| `prometheus.tlsInsecure` | Skip TLS verification | `false` |
+| `prometheus.labels` | Additional labels for metrics | `{}` |
+| `expected_utilisation.cpu` | Expected CPU utilization % | `60` |
+| `expected_utilisation.memory` | Expected memory utilization % | `75` |
+
+## Verification
+
+<Steps>
+  <Step title="Check Service Status">
+    Verify the service is running:
+    ```bash
+    sudo systemctl status costgraph-agent
+    ```
+  </Step>
+  <Step title="Check Logs">
+    View service logs:
+    ```bash
+    sudo journalctl -u costgraph-agent -f
+    ```
+  </Step>
+</Steps>
+

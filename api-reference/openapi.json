@@ -113,6 +113,11 @@
                   "type": "string",
                   "example": "us-east-1a"
               },
+              "include_metadata": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Include raw pricing metadata in the response"
+              },
               "instance_type": {
                   "type": "string",
                   "example": "t2.micro"

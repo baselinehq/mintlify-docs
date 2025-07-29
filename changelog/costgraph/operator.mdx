@@ -12,6 +12,37 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - We aim to provide releases on a regular basis for customer features and business priorities.
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies.
 
+
+<Update label="2025-07-29" description="v0.1.23">
+  ### Breaking Changes
+  - N/A
+
+  ### Updates
+  - Cost reporting improvements to correct errors in usage metrics
+  - Bugfix correcting misrepresented memory values with emptyDir configurations
+  - Addition of backoff and retries to our codebase
+  - Performance and memory improvements dropping memory usage requirements by 50%
+  - `metric_window_days` parameter allowing custom intervals to perform recommendations, see [here](/costgraph/configuration/kubernetes#param-metric-window-days) for configuration details
+</Update>
+
+<Update label="2025-06-20" description="v0.1.22">
+  ### Breaking Changes
+  - N/A
+
+  ### Updates
+  - Base memory usage improvements in the operator data aggregation pipeline
+</Update>
+
+<Update label="2025-06-13" description="v0.1.21">
+  ### Breaking Changes
+  - N/A
+
+  ### Updates
+  - Upgrade of database provider module to the latest version
+  - Addition of Computed usage metrics to the data model
+  - Performance improvements and logging updates
+</Update>
+
 <Update label="2025-06-03" description="v0.1.0">
   ### Breaking Changes
   - Due to the deployment of our new pricing infrastructure, customers using the raw pricing data will see schema changes. As much as we attempt to provide a standard schema, this change was unavoidable. This change is limited to customers developing with the data from our operator, no changes will be observed for dashboard and prometheus experiences.

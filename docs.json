@@ -27,6 +27,12 @@
             ]
           },
           {
+            "group": "Billing",
+            "pages": [
+                "costgraph/billing"
+            ]
+          },
+          {
             "group": "Installation",
             "pages": [
               "costgraph/installation/kubernetes-operator",

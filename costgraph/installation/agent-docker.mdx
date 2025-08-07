@@ -1,7 +1,3 @@
----
-title: Docker Agent Installation
----
-
 # Docker Agent Installation
 
 Install CostGraph agent using Docker or Docker Compose for easy deployment and management.
@@ -9,57 +5,20 @@ Install CostGraph agent using Docker or Docker Compose for easy deployment and m
 ## Prerequisites
 
 * **Docker**: Ensure Docker is installed and running on your system.
-
 * **API Key**: Obtain an API key from the [CostGraph dashboard](/costgraph/installation/kubernetes#obtain-an-api-key).
-
 * **Docker Compose (Optional)**: Install Docker Compose for multi-container deployments.
 
 ## Installation Methods
 
 <Tabs>
-  <Tab title="Docker Run">
-    ## Docker Run Installation
+<Tab title="Docker Compose">
 
-    ### Basic Docker Run Command
-    Assuming you have your configuration at /etc/costgraph-agent/conf.yaml
-
-    ```bash
-    docker run -d --name costgraph-agent \
-      --restart=always \
-      --pid=host \
-      --net=host \
-      -v /proc:/host/proc:ro \
-      -v $(pwd)/etc/costgraph-agent:/etc/costgraph-agent:ro \
-      -v $(pwd)/var/lib/costgraph-agent:/var/lib/costgraph-agent \
-      --workdir /var/lib/costgraph-agent \
-      ghcr.io/baselinehq/costgraph-agent:latest \
-      costgraph-agent -conf /etc/costgraph-agent/conf.yaml
-
-    ```
-
-  </Tab>
-  <Tab title="Docker Compose">
-    ## Docker Compose Installation
-
-    <Steps>
-      <Step title="Create Compose File">
-        Create a `docker-compose.yml` file with your configuration.
-      </Step>
-      <Step title="Start Services">
-        Use Docker Compose to start the agent and related services.
-      </Step>
-      <Step title="Verify Deployment">
-        Check that all services are running correctly.
-      </Step>
-    </Steps>
-
-    ### Docker Compose Configuration
-
-    Create `docker-compose.yml`:
+<Steps>
+  <Step title="Create Compose File">
+    Create a `docker-compose.yml` file with your configuration:
 
     ```yaml
     version: '3.8'
-    
     services:
       costgraph-agent:
         image: ghcr.io/baselinehq/costgraph-agent:latest
@@ -77,7 +36,7 @@ Install CostGraph agent using Docker or Docker Compose for easy deployment and m
           - ./config:/etc/costgraph
         networks:
           - costgraph-network
-
+      
       # Optional: Add Prometheus for local metrics collection
       prometheus:
         image: prom/prometheus:latest
@@ -94,8 +53,10 @@ Install CostGraph agent using Docker or Docker Compose for easy deployment and m
       costgraph-network:
         driver: bridge
     ```
+  </Step>
 
-    ### Start with Docker Compose
+  <Step title="Start Services">
+    Use Docker Compose to start the agent and related services:
 
     ```bash
     # Start all services
@@ -107,48 +68,84 @@ Install CostGraph agent using Docker or Docker Compose for easy deployment and m
     # View logs
     docker-compose logs -f costgraph-agent
     ```
-  </Tab>
-</Tabs>
+  </Step>
 
+  <Step title="Verify Deployment">
+    Check that all services are running correctly:
 
-## Configuration 
-
-```yaml
-api_key: "your-api-key-here"
-prometheus:
-  enabled: true
-  url: "https://your-prometheus-endpoint"
-  write_path: "/api/v1/write"
-  timeout: 10s
-  interval: 60s
-  tlsInsecure: false
-  labels:
-    env: "production"
-expected_utilisation:
-  cpu: 60
-  memory: 75
-```
-
-
-## Verification
-<Steps>
-  <Step title="Check Container Status">
-    Verify the container is running:
     ```bash
+    # Check container status
     docker ps | grep costgraph-agent
-    ```
-  </Step>
-  <Step title="Check Metrics">
-    Verify metrics are being collected:
-    ```bash
+
+    # Verify metrics endpoint
     curl http://localhost:9090/metrics
-    ```
-  </Step>
-  <Step title="Check Logs">
-    View container logs:
-    ```bash
+
+    # View logs for troubleshooting
     docker logs costgraph-agent
     ```
   </Step>
 </Steps>
 
+</Tab>
+<Tab title="Docker Run">
+
+<Steps>
+  <Step title="Prepare Configuration">
+    Create your configuration file at `/etc/costgraph-agent/conf.yaml`:
+
+    ```yaml
+    api_key: "your-api-key-here"
+    prometheus:
+      enabled: true
+      url: "https://your-prometheus-endpoint"
+      write_path: "/api/v1/write"
+      timeout: 10s
+      interval: 60s
+      tlsInsecure: false
+      labels:
+        env: "production"
+    expected_utilisation:
+      cpu: 60
+      memory: 75
+    ```
+  </Step>
+
+  <Step title="Run Container">
+    Execute the Docker run command with proper configuration:
+
+    ```bash
+    docker run -d --name costgraph-agent \
+      --restart=always \
+      --pid=host \
+      --net=host \
+      -v /proc:/host/proc:ro \
+      -v $(pwd)/etc/costgraph-agent:/etc/costgraph-agent:ro \
+      -v $(pwd)/var/lib/costgraph-agent:/var/lib/costgraph-agent \
+      --workdir /var/lib/costgraph-agent \
+      ghcr.io/baselinehq/costgraph-agent:latest \
+      costgraph-agent -conf /etc/costgraph-agent/conf.yaml
+    ```
+  </Step>
+
+  <Step title="Verify Deployment">
+    Check that the container is running correctly:
+
+    ```bash
+    # Check container status
+    docker ps | grep costgraph-agent
+
+    # Verify metrics are being collected
+    curl http://localhost:9090/metrics
+
+    # View container logs
+    docker logs costgraph-agent
+    ```
+  </Step>
+</Steps>
+
+</Tab>
+</Tabs>
+
+## Post Installation
+
+Once your Docker agent is running, head back to your [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/cluster-metrics) to view your metrics and cost data.

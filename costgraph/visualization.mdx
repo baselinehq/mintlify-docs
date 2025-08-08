@@ -1,0 +1,58 @@
+# Alternative Visualization Methods
+
+CostGraph supports other visualization methods such as Grafana and Superset.
+
+## Superset Access
+
+<Tip>Superset Credentials</Tip>
+
+Unless [modified](/costgraph/configuration/kubernetes#param-superset-1), the username and password for the superset instance is `admin` and `admin`
+
+### Access Methods
+
+<Tabs>
+  <Tab title="Port forward">
+   If you do not have ingress set up you can always access superset through a port forward
+    
+    ```bash
+    kubectl port-forward svc/superset  -n costgraph  8080:80
+    ```
+   
+  </Tab>
+  <Tab title="Ingress">
+    When you install costgraph via the Helm chart and ingress is configured as part of the installation
+
+    ```bash
+    open $(kubectl get ingress costgraph -n costgraph -o json | jq -r '"https://" + .spec.rules[0].host')
+    ```
+  </Tab>
+</Tabs>
+
+<img height="400" src="/images/showcase.gif" />
+
+## Prometheus Metrics
+
+<Note>Exposing Prometheus Metrics</Note>
+    
+You must have service auto-discovery enabled for kubernetes services to have the operator metrics scraped by the prometheus server.
+
+If you don't see `costgraph` targets, manually add this scrape configuration:
+
+```yaml
+- job_name: 'costgraph'
+  honor_labels: true
+  scrape_interval: 1m
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+    - targets: ['costgraph.costgraph:9090']
+```
+
+<img height="400" src="/images/prometheus.png" />
+
+## Grafana Dashboard
+
+Install the Grafana dashboard from the [costgraph-manifests](https://github.com/baselinehq/costgraph-manifests/tree/main/grafana) repository for a familiar Grafana feel.
+
+<img height="400" src="/images/grafana.gif" /> 

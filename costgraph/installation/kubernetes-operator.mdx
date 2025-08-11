@@ -63,66 +63,15 @@
     costgraph:
       config:
         costgraph_instance_name: <instance-name>
-        prometheus_endpoint: <prometheus-address>
+        prometheus_endpoint: # e.g http://prometheus-server.prometheus-system.svc.cluster.local
         api_key: <your-api-key>
-    ```
-
-    ### Optional Configurations
-
-    **Multiple Cost Centers:**
-    ```yaml
-    costgraph:
-      config:
-        costgraph_instance_master_domains:
-          - name: "<cluster-to-replicate-to>"
-    ```
-
-    **Expected Utilization Percentages:**
-    ```yaml
-    costgraph:
-      config:
-        expected_utilisation_percent:
-          cpu: 80
-          memory: 80
-    ```
-
-    **Superset Credentials:**
-    ```yaml
-    costgraph:
-      config:
-        superset_admin_username: admin
-        superset_admin_password: admin
-    ```
-
-    **External Postgres (Optional):**
-    <Warning>Postgres Configuration</Warning>
-    Only use this if you have an existing postgres instance or manage a Postgres instance outside Kubernetes.
-
-    ```yaml
-    postgres:
-      enabled: false
-      config:
-        postgres_db: postgres
-        postgres_user: username
-        postgres_password: password
-        pg_data_directory: /var/lib/postgresql/data
-        postgres_host: db_hostname
-        postgres_port: db_port
-    ```
-
-    **Postgres PVC (Optional):**
-    ```yaml
-    postgres:
-        pvc:
-          enabled: true
-          size: 10Gi
     ```
   </Step>
 
   <Step title="Deploy CostGraph">
     Deploy CostGraph using your configuration file:
     ```shell
-    helm install costgraph costgraph/costgraph -f values.yaml
+    helm install costgraph costgraph/costgraph -f values.yaml --namespace costgraph-system --create-namespace
     ```
   </Step>
 
@@ -140,12 +89,15 @@
 
 You can access your cluster metrics in the [cluster section](https://costgraph.baselinehq.cloud/dashboard/cluster-metrics) of the CostGraph dashboard.
 
-![Dashboard](https://github.com/baselinehq/mintlify-docs/blob/docs/sweep/images/dashboard.gif?raw=true)
+![Dashboard](https://github.com/baselinehq/mintlify-docs/blob/main/images/dashboard.gif?raw=true)
+
+## Advanced Configuration
+
+For the full list of values supported by the CostGraph Operator Helm chart (all `values.yaml` options), see the [Kubernetes configuration reference](/costgraph/configuration/kubernetes).
 
 ## Alternative Visualization Methods
 
 CostGraph supports other visualization methods such as Grafana and Superset. For more instructions on setting up and accessing these tools, see our [Alternative Visualization Methods](/costgraph/visualization) guide.
-
 
 
 

@@ -71,7 +71,7 @@
   <Step title="Deploy CostGraph">
     Deploy CostGraph using your configuration file:
     ```shell
-    helm install costgraph costgraph/costgraph -f values.yaml
+    helm install costgraph costgraph/costgraph -f values.yaml --namespace costgraph-system --create-namespace
     ```
   </Step>
 

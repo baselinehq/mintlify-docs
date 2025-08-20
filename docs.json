@@ -21,6 +21,12 @@
             ]
           },
           {
+            "group": "Chat",
+            "pages": [
+              "costgraph/chat/overview"
+            ]
+          },
+          {
             "group": "Core Concepts",
             "pages": [
               "concepts/how-it-works"
@@ -29,7 +35,7 @@
           {
             "group": "Billing",
             "pages": [
-                "costgraph/billing"
+              "costgraph/billing"
             ]
           },
           {

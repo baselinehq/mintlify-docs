@@ -1,353 +1,1283 @@
 {
-  "schemes": [],
-  "swagger": "2.0",
-  "info": {
-      "description": "This is the Pricing API for the Baseline platform.",
-      "title": "Pricing API",
-      "contact": {},
+    "openapi": "3.0.1",
+    "info": {
+      "title": "Costgraph Gateway API",
+      "description": "Provides API level access to the Costgraph Services.",
+      "termsOfService": "https://costgraph.baselinehq.cloud/terms",
+      "contact": {
+        "name": "Customer Support",
+        "url": "https://costgraph.baselinehq.cloud/support",
+        "email": "contact@baselinehq.cloud"
+      },
       "license": {
-          "name": "Apache 2.0",
-          "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        "name": "Apache 2.0",
+        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
       },
       "version": "1.0"
-  },
-  "servers": [
-        {
-          "url": "https://pricingapi.baselinehq.cloud"
-        }
-      ],
-  "host": "pricingapi.baselinehq.com",
-  "basePath": "/",
-  "paths": {
-      "/pricing": {
-          "post": {
-              "description": "Get pricing",
-              "consumes": [
-                  "application/json"
-              ],
-              "produces": [
-                  "application/json"
-              ],
-              "summary": "Get  pricing for an instance",
-              "parameters": [
-                  {
-                      "description": "Instance",
-                      "name": "instance",
-                      "in": "body",
-                      "required": true,
-                      "schema": {
-                          "$ref": "#/definitions/types.Instance"
-                      }
-                  }
-              ],
-              "responses": {
-                  "200": {
-                      "description": "Pricing for a given instance",
-                      "schema": {
-                          "$ref": "#/definitions/types.InstancePricing"
-                      }
-                  }
-              }
-          }
-      },
-      "/recommendations": {
-          "post": {
-              "description": "Get recommendations\nRecommendations, InstancePricing, VM, and Savings",
-              "summary": "Get recommendations",
-              "parameters": [
-                  {
-                      "description": "Instance",
-                      "name": "instance",
-                      "in": "body",
-                      "required": true,
-                      "schema": {
-                          "$ref": "#/definitions/recommendations.Request"
-                      }
-                  }
-              ],
-              "responses": {}
-          }
+    },
+    "servers": [
+      {
+        "url": "https://gateway.costgraph.baselinehq.cloud"
       }
-  },
-  "definitions": {
-      "recommendations.Predicates": {
-          "description": "Predicates for filtering recommendations Regions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers Regions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers",
+    ],
+    "paths": {
+      "/healthz": {
+        "get": {
+          "tags": [
+            "Health"
+          ],
+          "summary": "Health Check",
+          "description": "Check the health of the API service",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/api.Health"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/checkpoint": {
+        "get": {
+          "tags": [
+            "Checkpoint"
+          ],
+          "summary": "Checkpoint",
+          "description": "Get the latest checkpoint data\nThis endpoint retrieves the latest checkpoint data from the specified table.\nIf no table is specified, it defaults to \"k8s_namespace_recommendations\".\nThe checkpoint data includes the creation time and other relevant fields.",
+          "parameters": [
+            {
+              "name": "table",
+              "in": "query",
+              "description": "Table name (default: k8s_namespace_recommendations)",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.Checkpoint"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+      "/v1/compute/pricing": {
+        "post": {
+          "tags": [
+            "Compute"
+          ],
+          "summary": "Compute Pricing",
+          "description": "Compute pricing for a given instance",
+          "requestBody": {
+            "description": "Instance details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.InstancePricing"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ],
+          "x-codegen-request-body-name": "instance"
+        }
+      },
+      "/v1/compute/recommendations": {
+        "get": {
+          "tags": [
+            "Compute"
+          ],
+          "summary": "Compute Recommendations",
+          "description": "Get all node recommendations for K8s backed nodes\nThis endpoint computes recommendations for K8s instances based on the data available in the database.\nIt retrieves the recommendations from the K8sInstanceRecommendations table and returns them as a JSON array.\nThe recommendations include details such as instance type, resource usage, and suggested changes.",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/types.K8sInstanceRecommendation"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+      "/v1/namespace_recommendations": {
+        "get": {
+          "tags": [
+            "Kubernetes"
+          ],
+          "summary": "Namespace Recommendations",
+          "description": "Get recommendations for Kubernetes namespaces\nThis endpoint retrieves recommendations for Kubernetes namespaces based on the provided time range.\nIt fetches data from the K8sNamespaceRecommendations table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe recommendations include details such as CPU usage, memory usage, and resource allocation\nfor each namespace.",
+          "parameters": [
+            {
+              "name": "cluster",
+              "in": "query",
+              "description": "Cluster name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "namespace",
+              "in": "query",
+              "description": "Namespace",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "start_date",
+              "in": "query",
+              "description": "Start date in RFC3339 format (e.g., 2023-10-01T00:00:00Z)",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "end_date",
+              "in": "query",
+              "description": "End date in RFC3339 format (e.g :, 2023-10-31T23:59:59Z)",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/types.NamespaceRecommendation"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+      "/v1/vm_metadata": {
+        "get": {
+          "tags": [
+            "VM"
+          ],
+          "summary": "VM Metadata",
+          "description": "Get metadata for VMs\nThis endpoint retrieves metadata for VMs based on the provided time range.\nIt fetches data from the VMInfo table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).",
+          "parameters": [
+            {
+              "name": "Name",
+              "in": "query",
+              "description": "Name of the VM (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "Hostname",
+              "in": "query",
+              "description": "Hostname of the VM (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "Provider",
+              "in": "query",
+              "description": "Cloud provider (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "Region",
+              "in": "query",
+              "description": "Region (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "AvailabilityZone",
+              "in": "query",
+              "description": "Availability zone (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "InstanceType",
+              "in": "query",
+              "description": "Instance type (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "Architecture",
+              "in": "query",
+              "description": "CPU architecture (optional)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "OperatingSystem",
+              "in": "query",
+              "description": "Operating system (optional)",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/types.VMInfo"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+      "/v1/vm_recommendations": {
+        "get": {
+          "tags": [
+            "VM"
+          ],
+          "summary": "VM Recommendations",
+          "description": "Get recommendations for VMs\nThis endpoint retrieves recommendations for VMs based on the provided time range.\nIt fetches data from the VMUsageRecommendations table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe recommendations include details such as CPU usage, memory usage, and disk I/O\nfor each VM.",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/types.ProcessRecommendations"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+      "/v1/vm_summaries": {
+        "get": {
+          "tags": [
+            "VM"
+          ],
+          "summary": "VM Summaries",
+          "description": "Get summaries for VMs\nThis endpoint retrieves summaries for VMs based on the provided time range.\nIt fetches data from the VMSummaries table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe summaries include details such as CPU usage, memory usage, and disk I/O\nfor each VM.",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/types.VMSummary"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/types.ErrorResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "ApiKeyAuth": []
+            },
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "api.Health": {
           "type": "object",
           "properties": {
-              "availability_zones": {
-                  "type": "array",
-                  "items": {
-                      "type": "string"
-                  }
-              },
-              "instance_types": {
-                  "type": "array",
-                  "items": {
-                      "type": "string"
-                  }
-              },
-              "providers": {
-                  "type": "array",
-                  "items": {
-                      "type": "string"
-                  }
-              },
-              "regions": {
-                  "type": "array",
-                  "items": {
-                      "type": "string"
-                  }
-              },
-              "usage_types": {
-                  "type": "array",
-                  "items": {
-                      "type": "string"
-                  }
-              }
+            "status": {
+              "type": "string"
+            }
           }
-      },
-      "recommendations.Request": {
+        },
+        "github_com_baselinehq_golang-shared_types.Instance": {
           "type": "object",
           "properties": {
-              "availability_zone": {
-                  "type": "string",
-                  "example": "us-east-1a"
-              },
-              "include_metadata": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Include raw pricing metadata in the response"
-              },
-              "instance_type": {
-                  "type": "string",
-                  "example": "t2.micro"
-              },
-              "operating_system": {
-                  "type": "string",
-                  "example": "linux"
-              },
-              "predicates": {
-                  "description": "@description\tPredicates for filtering recommendations\n\t@description\tRegions, UsageTypes, InstanceTypes, AvailabilityZones, and Providers\n\t@param\t\t\tpredicates\tbody\trecommendations.Predicates\ttrue\t\"Predicates\"\n\t@return\t\t\tpredicates recommendations.Predicates \"Predicates\"\n\t@router\t\t\t/recommendations [post]",
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/recommendations.Predicates"
-                      }
-                  ]
-              },
-              "provider": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.Provider"
-                      }
-                  ],
-                  "example": "aws"
-              },
-              "region": {
-                  "type": "string",
-                  "example": "us-east-1"
-              },
-              "service": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.Service"
-                      }
-                  ],
-                  "example": "AmazonEC2"
-              },
-              "usage": {
-                  "description": "@summary\t\tUsage for a recommendation\n\t@description\tUsage for a recommendation\n\t@description\tCPUCores and RAMGB\n\t@param\t\t\tusage\tbody\ttypes.VM\ttrue\t\"Usage\"\n\t@return\t\t\tusage types.VM \"Usage\"\n\t@router\t\t\t/recommendations [post]",
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.VM"
-                      }
-                  ]
-              },
-              "usage_type": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.UsageType"
-                      }
-                  ],
-                  "example": "ondemand"
-              },
-              "vm": {
-                  "$ref": "#/definitions/types.VM"
-              }
+            "availability_zone": {
+              "type": "string"
+            },
+            "instance_type": {
+              "type": "string"
+            },
+            "operating_system": {
+              "type": "string"
+            },
+            "provider": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+            },
+            "region": {
+              "type": "string"
+            },
+            "service": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
+            },
+            "usage_type": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+            },
+            "vm": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+            }
           }
-      },
-      "types.Instance": {
+        },
+        "github_com_baselinehq_golang-shared_types.InstancePricing": {
           "type": "object",
           "properties": {
-              "availability_zone": {
-                  "type": "string",
-                  "example": "us-east-1a"
-              },
-              "instance_type": {
-                  "type": "string",
-                  "example": "t2.micro"
-              },
-              "operating_system": {
-                  "type": "string",
-                  "example": "linux"
-              },
-              "provider": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.Provider"
-                      }
-                  ],
-                  "example": "aws"
-              },
-              "region": {
-                  "type": "string",
-                  "example": "us-east-1"
-              },
-              "service": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.Service"
-                      }
-                  ],
-                  "example": "AmazonEC2"
-              },
-              "usage_type": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.UsageType"
-                      }
-                  ],
-                  "example": "ondemand"
-              },
-              "vm": {
-                  "$ref": "#/definitions/types.VM"
-              }
+            "availability_zone": {
+              "type": "string"
+            },
+            "cost_per_hour": {
+              "type": "number"
+            },
+            "cpu_cores": {
+              "type": "number"
+            },
+            "cpu_cores_cost_per_hour": {
+              "type": "number"
+            },
+            "instance_type": {
+              "type": "string"
+            },
+            "operating_system": {
+              "type": "string"
+            },
+            "provider": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+            },
+            "ram_gb": {
+              "type": "number"
+            },
+            "ram_gb_cost_per_hour": {
+              "type": "number"
+            },
+            "raw_pricing_data": {
+              "$ref": "#/components/schemas/types.Column"
+            },
+            "region": {
+              "type": "string"
+            },
+            "service": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
+            },
+            "usage_type": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+            }
           }
-      },
-      "types.InstancePricing": {
-          "type": "object",
-          "properties": {
-              "availability_zone": {
-                  "type": "string",
-                  "example": "us-east-1a"
-              },
-              "cost_per_hour": {
-                  "type": "number"
-              },
-              "cpu_cores_cost_per_hour": {
-                  "type": "number"
-              },
-              "instance_type": {
-                  "type": "string",
-                  "example": "t2.micro"
-              },
-              "operating_system": {
-                  "type": "string"
-              },
-              "provider": {
-                  "$ref": "#/definitions/types.Provider"
-              },
-              "ram_gb_cost_per_hour": {
-                  "type": "number"
-              },
-              "raw_pricing_data": {
-                  "type": "object",
-                  "additionalProperties": {}
-              },
-              "region": {
-                  "type": "string",
-                  "example": "us-east-1"
-              },
-              "service": {
-                  "$ref": "#/definitions/types.Service"
-              },
-              "usage_type": {
-                  "allOf": [
-                      {
-                          "$ref": "#/definitions/types.UsageType"
-                      }
-                  ],
-                  "example": "ONDEMAND"
-              }
-          }
-      },
-      "types.Provider": {
+        },
+        "github_com_baselinehq_golang-shared_types.Provider": {
           "type": "string",
           "enum": [
-              "GCP",
-              "AWS",
-              "DigitalOcean",
-              "Azure",
-              "Hetzner",
-              "Base"
+            "GCP",
+            "AWS",
+            "DigitalOcean",
+            "Azure",
+            "Hetzner",
+            "OVHCloud",
+            "Base"
           ],
           "x-enum-comments": {
-              "Base": "Base provider for default pricing, no specific cloud provider"
+            "Base": "Base provider for default pricing, no specific cloud provider"
           },
-          "x-enum-varnames": [
-              "GCP",
-              "AWS",
-              "DigitalOcean",
-              "Azure",
-              "Hetzner",
-              "Base"
-          ]
-      },
-      "types.Service": {
-          "type": "string",
-          "enum": [
-              "ComputeEngine",
-              "AmazonEC2",
-              "Droplet",
-              "AzureCompute",
-              "HetznerCompute",
-              "BaseCompute"
+          "x-enum-descriptions": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Base provider for default pricing, no specific cloud provider"
           ],
           "x-enum-varnames": [
-              "ComputeEngine",
-              "AmazonEC2",
-              "Droplet",
-              "AzureCompute",
-              "HetznerCompute",
-              "BaseCompute"
+            "GCP",
+            "AWS",
+            "DigitalOcean",
+            "Azure",
+            "Hetzner",
+            "OVHCloud",
+            "Base"
           ]
-      },
-      "types.UsageType": {
+        },
+        "github_com_baselinehq_golang-shared_types.Service": {
           "type": "string",
           "enum": [
-              "SPOT_PREEMPTIBLE",
-              "ONDEMAND",
-              "RESERVED",
-              "ONDEMAND_CUSTOM",
-              "SPOT_PREEMPTIBLE_CUSTOM",
-              "RESERVED_CUSTOM",
-              "SOLE_TENANCY",
-              "CUSTOM",
-              "EXTENDED"
+            "ComputeEngine",
+            "AmazonEC2",
+            "Droplet",
+            "AzureCompute",
+            "HetznerCompute",
+            "OVHPublicCloud",
+            "BaseCompute"
           ],
           "x-enum-varnames": [
-              "SPOT_PREEMPTIBLE",
-              "ONDEMAND",
-              "RESERVED",
-              "ONDEMAND_CUSTOM",
-              "SPOT_PREEMPTIBLE_CUSTOM",
-              "RESERVED_CUSTOM",
-              "SOLE_TENANCY",
-              "CUSTOM",
-              "EXTENDED"
+            "ComputeEngine",
+            "AmazonEC2",
+            "Droplet",
+            "AzureCompute",
+            "HetznerCompute",
+            "OVHPublicCloud",
+            "BaseCompute"
           ]
-      },
-      "types.VM": {
+        },
+        "github_com_baselinehq_golang-shared_types.UsageType": {
+          "type": "string",
+          "enum": [
+            "SPOT_PREEMPTIBLE",
+            "ONDEMAND",
+            "RESERVED",
+            "ONDEMAND_CUSTOM",
+            "SPOT_PREEMPTIBLE_CUSTOM",
+            "RESERVED_CUSTOM",
+            "SOLE_TENANCY",
+            "CUSTOM",
+            "EXTENDED"
+          ],
+          "x-enum-varnames": [
+            "SPOT_PREEMPTIBLE",
+            "ONDEMAND",
+            "RESERVED",
+            "ONDEMAND_CUSTOM",
+            "SPOT_PREEMPTIBLE_CUSTOM",
+            "RESERVED_CUSTOM",
+            "SOLE_TENANCY",
+            "CUSTOM",
+            "EXTENDED"
+          ]
+        },
+        "github_com_baselinehq_golang-shared_types.VM": {
           "type": "object",
           "properties": {
-              "cpu_cores": {
-                  "type": "number",
-                  "example": 1
-              },
-              "ram_gb": {
-                  "type": "number",
-                  "example": 10
-              }
+            "cpu_cores": {
+              "type": "number"
+            },
+            "ram_gb": {
+              "type": "number"
+            }
           }
+        },
+        "types.Checkpoint": {
+          "type": "object",
+          "properties": {
+            "creationTime": {
+              "type": "string"
+            }
+          }
+        },
+        "types.Column": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "types.ContainerRecommendation": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/components/schemas/types.Recommendation"
+          }
+        },
+        "types.DBInstancePricing": {
+          "type": "object",
+          "properties": {
+            "availabilityZone": {
+              "type": "string"
+            },
+            "costPerHour": {
+              "type": "number",
+              "format": "float64"
+            },
+            "cpucores": {
+              "type": "number",
+              "format": "float64"
+            },
+            "cpucoresCostPerHour": {
+              "type": "number",
+              "format": "float64"
+            },
+            "instanceType": {
+              "type": "string"
+            },
+            "operatingSystem": {
+              "type": "string"
+            },
+            "provider": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+            },
+            "ramgb": {
+              "type": "number",
+              "format": "float64"
+            },
+            "ramgbcostPerHour": {
+              "type": "number",
+              "format": "float64"
+            },
+            "rawPricingData": {
+              "$ref": "#/components/schemas/types.Column"
+            },
+            "region": {
+              "type": "string"
+            },
+            "service": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
+            },
+            "usageType": {
+              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+            }
+          }
+        },
+        "types.DBVM": {
+          "type": "object",
+          "properties": {
+            "cpucores": {
+              "type": "number",
+              "format": "float64"
+            },
+            "ramgb": {
+              "type": "number",
+              "format": "float64"
+            }
+          }
+        },
+        "types.ErrorResponse": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string"
+            }
+          }
+        },
+        "types.ExpectedUtilisationPercent": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "number"
+            },
+            "memory": {
+              "type": "number"
+            }
+          }
+        },
+        "types.K8sInstanceRecommendation": {
+          "type": "object",
+          "properties": {
+            "cluster": {
+              "type": "string"
+            },
+            "creationTime": {
+              "type": "string"
+            },
+            "node": {
+              "type": "string"
+            },
+            "recommendations": {
+              "$ref": "#/components/schemas/types.Results"
+            }
+          }
+        },
+        "types.NamespaceRecommendation": {
+          "type": "object",
+          "properties": {
+            "APIVersion": {
+              "type": "string"
+            },
+            "Cluster": {
+              "type": "string"
+            },
+            "ContainerRecommendations": {
+              "$ref": "#/components/schemas/types.ContainerRecommendation"
+            },
+            "CreationTime": {
+              "type": "string"
+            },
+            "CurrentSpend": {
+              "type": "number"
+            },
+            "ExpectedUtilisationPercent": {
+              "$ref": "#/components/schemas/types.ExpectedUtilisationPercent"
+            },
+            "Namespace": {
+              "type": "string"
+            },
+            "NewSpend": {
+              "type": "number"
+            },
+            "ResourceQuotaRecommendations": {
+              "$ref": "#/components/schemas/types.ResourceQuotaRecommendations"
+            },
+            "TotalCPULimits": {
+              "type": "number"
+            },
+            "TotalCPULimitsSavings": {
+              "type": "number"
+            },
+            "TotalCPURequests": {
+              "type": "number"
+            },
+            "TotalCPURequestsSavings": {
+              "type": "number"
+            },
+            "TotalMemoryLimits": {
+              "type": "number"
+            },
+            "TotalMemoryLimitsSavings": {
+              "type": "number"
+            },
+            "TotalMemoryRequests": {
+              "type": "number"
+            },
+            "TotalMemoryRequestsSavings": {
+              "type": "number"
+            },
+            "TotalResourceSavingsAmount": {
+              "type": "number"
+            }
+          }
+        },
+        "types.ProcessGroup": {
+          "type": "string",
+          "enum": [
+            "kubernetes",
+            "docker",
+            "system",
+            "user",
+            "unknown"
+          ],
+          "x-enum-varnames": [
+            "Kubernetes",
+            "Docker",
+            "System",
+            "User",
+            "Unknown"
+          ]
+        },
+        "types.ProcessRecommendations": {
+          "type": "object",
+          "properties": {
+            "cgroup": {
+              "type": "string"
+            },
+            "costDriver": {
+              "type": "string"
+            },
+            "cpu": {
+              "$ref": "#/components/schemas/types.VMResourceRecommendation"
+            },
+            "creationTime": {
+              "type": "string"
+            },
+            "currentSpend": {
+              "type": "number",
+              "format": "float64"
+            },
+            "memory": {
+              "$ref": "#/components/schemas/types.VMResourceRecommendation"
+            },
+            "process": {
+              "type": "string"
+            },
+            "processGroup": {
+              "$ref": "#/components/schemas/types.ProcessGroup"
+            },
+            "vm": {
+              "type": "string"
+            }
+          }
+        },
+        "types.Recommendation": {
+          "type": "object",
+          "properties": {
+            "Annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "CPU": {
+              "$ref": "#/components/schemas/types.ResourceRecommendation"
+            },
+            "Container": {
+              "type": "string"
+            },
+            "CostDriver": {
+              "type": "string"
+            },
+            "CurrentSpend": {
+              "type": "number"
+            },
+            "Kind": {
+              "type": "string"
+            },
+            "Labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "Memory": {
+              "$ref": "#/components/schemas/types.ResourceRecommendation"
+            },
+            "Name": {
+              "type": "string"
+            },
+            "Node": {
+              "type": "string"
+            },
+            "RecommendedSpend": {
+              "type": "number"
+            },
+            "Replicas": {
+              "type": "integer"
+            },
+            "SavingsInDollars": {
+              "type": "number"
+            }
+          }
+        },
+        "types.ResourceQuotaRecommendation": {
+          "type": "object",
+          "properties": {
+            "Current": {
+              "type": "integer"
+            },
+            "Recommended": {
+              "type": "integer"
+            }
+          }
+        },
+        "types.ResourceQuotaRecommendations": {
+          "type": "object",
+          "properties": {
+            "CPU": {
+              "$ref": "#/components/schemas/types.ResourceQuotaRecommendation"
+            },
+            "Memory": {
+              "$ref": "#/components/schemas/types.ResourceQuotaRecommendation"
+            }
+          }
+        },
+        "types.ResourceRecommendation": {
+          "type": "object",
+          "properties": {
+            "Computed": {
+              "$ref": "#/components/schemas/types.ResourceValue"
+            },
+            "Current": {
+              "$ref": "#/components/schemas/types.ResourceValue"
+            },
+            "Instant": {
+              "$ref": "#/components/schemas/types.ResourceValue"
+            },
+            "Recommended": {
+              "$ref": "#/components/schemas/types.ResourceValue"
+            },
+            "Savings": {
+              "$ref": "#/components/schemas/types.ResourceValue"
+            }
+          }
+        },
+        "types.ResourceValue": {
+          "type": "object",
+          "properties": {
+            "CostInDollars": {
+              "type": "number"
+            },
+            "Limit": {
+              "type": "number"
+            },
+            "Request": {
+              "type": "number"
+            },
+            "TotalCostInDollars": {
+              "type": "number"
+            },
+            "TotalLimit": {
+              "type": "number"
+            },
+            "TotalRequest": {
+              "type": "number"
+            }
+          }
+        },
+        "types.Results": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "instancePricing": {
+                  "$ref": "#/components/schemas/types.DBInstancePricing"
+                },
+                "savings": {
+                  "$ref": "#/components/schemas/types.Savings"
+                },
+                "vm": {
+                  "$ref": "#/components/schemas/types.DBVM"
+                }
+              }
+            }
+          }
+        },
+        "types.Savings": {
+          "type": "object",
+          "properties": {
+            "amountPerHour": {
+              "type": "number",
+              "format": "float64"
+            },
+            "amountPerMonth": {
+              "type": "number",
+              "format": "float64"
+            },
+            "amountPerYear": {
+              "type": "number",
+              "format": "float64"
+            },
+            "percentage": {
+              "type": "number",
+              "format": "float64"
+            }
+          }
+        },
+        "types.VMInfo": {
+          "type": "object",
+          "properties": {
+            "architecture": {
+              "type": "string"
+            },
+            "availabilityZone": {
+              "type": "string"
+            },
+            "costPerHour": {
+              "type": "number",
+              "format": "float64"
+            },
+            "cpucores": {
+              "type": "number",
+              "format": "float64"
+            },
+            "creationTime": {
+              "type": "string"
+            },
+            "hostname": {
+              "type": "string"
+            },
+            "instanceType": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "operatingSystem": {
+              "type": "string"
+            },
+            "provider": {
+              "type": "string"
+            },
+            "ramgiB": {
+              "type": "number",
+              "format": "float64"
+            },
+            "region": {
+              "type": "string"
+            }
+          }
+        },
+        "types.VMResourceRecommendation": {
+          "type": "object",
+          "properties": {
+            "baseline": {
+              "type": "object",
+              "description": "Historical baseline (mean/p99), what recommendations are based on",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/types.VMResourceValue"
+                }
+              ]
+            },
+            "current": {
+              "type": "object",
+              "description": "Real time current usage atleast since reconcile time",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/types.VMResourceValue"
+                }
+              ]
+            },
+            "recommended": {
+              "$ref": "#/components/schemas/types.VMResourceValue"
+            }
+          }
+        },
+        "types.VMResourceValue": {
+          "type": "object",
+          "properties": {
+            "costInDollars": {
+              "type": "number",
+              "format": "float64"
+            },
+            "value": {
+              "type": "number",
+              "format": "float64"
+            }
+          }
+        },
+        "types.VMSummary": {
+          "type": "object",
+          "properties": {
+            "creationTime": {
+              "type": "string"
+            },
+            "expectedUtilisationCPU": {
+              "type": "number",
+              "format": "float64"
+            },
+            "expectedUtilisationRAM": {
+              "type": "number",
+              "format": "float64"
+            },
+            "totalCurrentCPU": {
+              "type": "number",
+              "format": "float64"
+            },
+            "totalCurrentRAM": {
+              "type": "number",
+              "format": "float64"
+            },
+            "totalRecommendedCPU": {
+              "type": "number",
+              "format": "float64"
+            },
+            "totalRecommendedRAM": {
+              "type": "number",
+              "format": "float64"
+            },
+            "vm": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "ApiKeyAuth": {
+          "type": "apiKey",
+          "description": "Bearer token for authentication",
+          "name": "Authorization",
+          "in": "header"
+        }
       }
+    },
+    "x-original-swagger-version": "2.0"
   }
-}

@@ -1,0 +1,107 @@
+---
+title: 'VM Metadata'
+openapi: 'GET /v1/vm_metadata'
+---
+
+
+## Query Parameters
+
+<SchemaField name="Name" type="string">
+  Name of the VM to filter by.
+  
+  Example: `web-server-01`
+</SchemaField>
+
+<SchemaField name="Hostname" type="string">
+  Hostname of the VM to filter by.
+  
+  Example: `web-server-01.internal`
+</SchemaField>
+
+<SchemaField name="Provider" type="string">
+  Cloud provider to filter by.
+  
+  Example: `GCP`
+</SchemaField>
+
+<SchemaField name="Region" type="string">
+  Region to filter by.
+  
+  Example: `us-east1`
+</SchemaField>
+
+<SchemaField name="AvailabilityZone" type="string">
+  Availability zone to filter by.
+  
+  Example: `us-east1-a`
+</SchemaField>
+
+<SchemaField name="InstanceType" type="string">
+  Instance type to filter by.
+  
+  Example: `n2-standard-4`
+</SchemaField>
+
+<SchemaField name="Architecture" type="string">
+  CPU architecture to filter by.
+  
+  Example: `x86_64`
+</SchemaField>
+
+<SchemaField name="OperatingSystem" type="string">
+  Operating system to filter by.
+  
+  Example: `linux`
+</SchemaField>
+
+## Response
+
+<ResponseField name="name" type="string">
+  The name of the virtual machine.
+</ResponseField>
+
+<ResponseField name="hostname" type="string">
+  The hostname of the virtual machine.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  The cloud provider hosting the VM.
+</ResponseField>
+
+<ResponseField name="region" type="string">
+  The region where the VM is located.
+</ResponseField>
+
+<ResponseField name="availabilityZone" type="string">
+  The availability zone of the VM.
+</ResponseField>
+
+<ResponseField name="instanceType" type="string">
+  The instance type of the VM.
+</ResponseField>
+
+<ResponseField name="architecture" type="string">
+  The CPU architecture of the VM.
+</ResponseField>
+
+<ResponseField name="operatingSystem" type="string">
+  The operating system running on the VM.
+</ResponseField>
+
+<ResponseField name="cpucores" type="number">
+  Number of CPU cores allocated to the VM.
+</ResponseField>
+
+<ResponseField name="ramgiB" type="number">
+  Amount of RAM allocated to the VM in GiB.
+</ResponseField>
+
+<ResponseField name="costPerHour" type="number">
+  The cost per hour for the VM.
+</ResponseField>
+
+<ResponseField name="creationTime" type="string">
+  The creation time of the VM metadata record.
+  
+  Example: `"2023-10-01T00:00:00Z"`
+</ResponseField>

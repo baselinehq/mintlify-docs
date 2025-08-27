@@ -96,6 +96,49 @@
             ]
           }
         ]
+      },
+      {
+        "tab":"Gateway API",
+        "groups" : [
+          {
+            "group": "Overview",
+            "pages": [
+              "gateway/overview"
+            ]
+          },
+          {
+            "group": "Health & Monitoring",
+            "icon": "heart-pulse",
+            "pages": [
+              "api-reference/endpoint/health",
+              "api-reference/endpoint/checkpoint"
+            ]
+          },
+          {
+            "group": "Compute Resources",
+            "icon": "server",
+            "pages": [
+              "api-reference/endpoint/pricing",
+              "api-reference/endpoint/compute-recommendations"
+            ]
+          },
+          {
+            "group": "Kubernetes",
+            "icon": "layer-group",
+            "pages": [
+              "api-reference/endpoint/namespace-recommendations"
+            ]
+          },
+          {
+            "group": "Virtual Machines",
+            "icon": "computer",
+            "pages": [
+              "api-reference/endpoint/vm-metadata",
+              "api-reference/endpoint/vm-recommendations",
+              "api-reference/endpoint/vm-summaries"
+            ]
+          }
+        ]
       }
     ],
     "global": {

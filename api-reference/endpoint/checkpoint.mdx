@@ -1,0 +1,24 @@
+---
+title: 'Checkpoint'
+openapi: 'GET /v1/checkpoint'
+---
+
+Get the latest checkpoint data from the specified table. If no table is specified, it defaults to "k8s_namespace_recommendations".
+
+## Query Parameters
+
+<SchemaField name="table" type="string">
+  Table name to get checkpoint data from.
+  
+  Default: `k8s_namespace_recommendations`
+  
+  Example: `k8s_namespace_recommendations`
+</SchemaField>
+
+## Response
+
+<ResponseField name="creationTime" type="string">
+  The creation time of the latest checkpoint data.
+  
+  Example: `"2023-10-01T00:00:00Z"`
+</ResponseField>

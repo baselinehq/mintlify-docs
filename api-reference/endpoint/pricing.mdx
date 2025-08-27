@@ -1,117 +1,71 @@
 ---
 title: 'Pricing'
-api: "POST https://pricing.baselinehq.cloud/pricing"
-authMethod: 'key'
-
+openapi: 'POST /v1/compute/pricing'
 ---
 
-<RequestExample>
-```bash
-curl -X 'POST' \
-  'https://pricing.baselinehq.cloud/pricing' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "availability_zone": "us-east-1a",
-  "instance_type": "t2.micro",
-  "operating_system": "linux",
-  "provider": "aws",
-  "region": "us-east-1",
-  "service": "AmazonEC2",
-  "usage_type": "ondemand",
-  "vm": {
-    "cpu_cores": 1,
-    "ram_gb": 10
-  }
-}'
-```
-</RequestExample>
-
-<ResponseExample>
-```json
-{
-  "availability_zone": "us-east-1a",
-  "cost_per_hour": 0,
-  "cpu_cores_cost_per_hour": 0,
-  "instance_type": "t2.micro",
-  "operating_system": "string",
-  "provider": "GCP",
-  "ram_gb_cost_per_hour": 0,
-  "raw_pricing_data": {
-    "additionalProp1": "string",
-    "additionalProp2": "string",
-    "additionalProp3": "string"
-  },
-  "region": "us-east-1",
-  "service": "ComputeEngine",
-  "usage_type": "ONDEMAND"
-}
-```
-</ResponseExample>
-
-Get pricing information for cloud instances
+Get pricing information for cloud resources based on specified parameters.
 
 ## Request Body
 
-<ParamField body="availability_zone" type="string" required>
+<SchemaField name="availability_zone" type="string" required>
   The availability zone where the resource will be deployed.
   
-  Example: `us-east-1a, nyc1-b , nyc1-c`
-</ParamField>
+  Example: `us-east1-a`
+</SchemaField>
 
-<ParamField body="instance_type" type="string" required>
+<SchemaField name="instance_type" type="string" required>
   The type of instance to get pricing for.
   
   Example: `n2-custom-1-1024-ext`
-</ParamField>
+</SchemaField>
 
-<ParamField body="operating_system" type="string" required>
+<SchemaField name="operating_system" type="string" required>
   The operating system of the instance.
   
   Example: `linux`
-</ParamField>
+</SchemaField>
 
-<ParamField body="provider" type="string" required>
+<SchemaField name="provider" type="string" required>
   The cloud provider.
   
-  Example: `aws,gcp,azure,ovh,hetzner,digitalocean`
-</ParamField>
+  Example: `gcp`
+</SchemaField>
 
-<ParamField body="region" type="string" required>
+<SchemaField name="region" type="string" required>
   The region where the resource will be deployed.
   
-  Example: `us-east1,ncyc1,eu-central`
-</ParamField>
+  Example: `us-east1`
+</SchemaField>
 
-<ParamField body="service" type="string" required>
+<SchemaField name="service" type="string" required>
   The cloud service name.
   
-  Example: `ComputeEngine,AmazonEC2,Droplet,AzureCompute,HetznerCompute,OVHPublicCloud,BaseCompute`
-</ParamField>
+  Example: `ComputeEngine`
+</SchemaField>
 
-<ParamField body="usage_type" type="string" required>
+<SchemaField name="usage_type" type="string" required>
   The type of usage.
   
-  Example: `spot_preemptible,ondemand,reserved,ondemand_custom,spot_preemptible_custom,reserved_custom,sole_tenancy,custom,extended`
-</ParamField>
+  Example: `ondemand`
+</SchemaField>
 
-<ParamField body="vm" type="object" required>
+<SchemaField name="vm" type="object" required>
   Virtual machine specifications.
   
   <Expandable title="VM Properties">
-    <ParamField body="cpu_cores" type="number" required>
+    <SchemaField name="cpu_cores" type="number" required>
       Number of CPU cores.
       
       Example: `1`
-    </ParamField>
+    </SchemaField>
     
-    <ParamField body="ram_gb" type="number" required>
+    <SchemaField name="ram_gb" type="number" required>
       Amount of RAM in gigabytes.
       
       Example: `10`
-    </ParamField>
+    </SchemaField>
   </Expandable>
-</ParamField>
+</SchemaField>
 
 ## Response
 
@@ -161,22 +115,4 @@ Get pricing information for cloud instances
       Contains service-specific pricing details including resource family, resource group, service display name, and usage type.
     </ResponseField>
   </Expandable>
-</ResponseField>
-
-<ResponseField name="region" type="string">
-  The region where the resource is deployed.
-  
-  Example: `us-east-1`
-</ResponseField>
-
-<ResponseField name="service" type="string">
-  The cloud service name.
-  
-  Example: `ComputeEngine`
-</ResponseField>
-
-<ResponseField name="usage_type" type="string">
-  The type of usage.
-  
-  Example: `ONDEMAND`
 </ResponseField>

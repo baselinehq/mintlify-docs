@@ -1,0 +1,40 @@
+---
+title: 'Compute Recommendations'
+openapi: 'GET /v1/compute/recommendations'
+---
+
+Get all node recommendations for K8s backed nodes. This endpoint computes recommendations for K8s instances based on the data available in the database.
+
+## Response
+
+<ResponseField name="cluster" type="string">
+  The name of the Kubernetes cluster.
+</ResponseField>
+
+<ResponseField name="creationTime" type="string">
+  The creation time of the recommendation.
+  
+  Example: `"2023-10-01T00:00:00Z"`
+</ResponseField>
+
+<ResponseField name="node" type="string">
+  The name of the Kubernetes node.
+</ResponseField>
+
+<ResponseField name="recommendations" type="object">
+  Detailed recommendations for the node including instance pricing, savings, and VM specifications.
+  
+  <Expandable title="Recommendations Structure">
+    <ResponseField name="instancePricing" type="object">
+      Pricing information for recommended instances.
+    </ResponseField>
+    
+    <ResponseField name="savings" type="object">
+      Cost savings information including amounts per hour, month, year, and percentage.
+    </ResponseField>
+    
+    <ResponseField name="vm" type="object">
+      Virtual machine specifications including CPU cores and RAM.
+    </ResponseField>
+  </Expandable>
+</ResponseField>

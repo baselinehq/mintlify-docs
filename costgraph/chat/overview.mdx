@@ -1,0 +1,21 @@
+---
+title: CostGraph Chat
+---
+
+CostGraph Chat lets you interact with your workloads using natural language, dynamically generating visualizations and insights about resource usage. Instead of writing queries or navigating dashboards, you can simply ask questions like *“What is my current CPU usage in the dev namespace?”* and get an immediate breakdown.  
+
+
+
+## How does it work ? 
+Under the hood, CostGraph Chat is powered by a two-chain AI architecture built on [LangChain](https://www.langchain.com/) and [LangGraph](https://www.langchain.com/langgraph). LangChain connects user queries to CostGraph’s data sources, while LangGraph orchestrates how responses are generated, combining natural language understanding with SQL query generation and visualization. This setup allows the chat to handle both conversational context and precise data retrieval, giving you answers that are both accurate and easy to interpret.  
+
+
+![costgraph-chat](/images/costgraph-chat.png)
+
+
+
+## Getting started 
+You can access CostGraph chat as part of your existing subscription by clicking on the **chat** icon on the left-hand side of your [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/chat). 
+
+![query](/images/chat-example-1.png)
+

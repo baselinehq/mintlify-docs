@@ -13,6 +13,18 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies.
 
 
+<Update label="2025-08-12" description="v0.1.24">
+  ### Breaking Changes
+  - N/A
+
+  ### Updates
+  - Retry logic improvements for the prometheus base to ease large cluster throttling failures
+  - Consume labels and annotations as part of improvements to topology for cluster resources
+  - Instant usage metric is now available to view data about container resource dynamics
+  - Deploy resource filter to disambiguate emptyDir vs memory usage data
+  - Bugfixes and cleanup logic improvements
+</Update>
+
 <Update label="2025-07-29" description="v0.1.23">
   ### Breaking Changes
   - N/A

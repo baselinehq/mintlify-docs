@@ -42,12 +42,6 @@ postgres:
   Example: `"linux"`
 </ParamField>
 
-<ParamField body="metric_window_days" type="number">
-  Override the number of days to aggregate usage metrics for recommendations. Default is `45` days
-
-  Example: `30`
-</ParamField>
-
 <ParamField body="arch" type="string">
   The architecture for the deployment.
   
@@ -415,7 +409,21 @@ postgres:
           
           Example: `10`
         </ParamField>
-        
+
+          <ParamField body="metric_window_days" type="number">
+              Override the number of days to aggregate usage metrics for recommendations. Default is `45` days
+
+              Example: `30`
+          </ParamField>
+
+          <ParamField body="debug" type="boolean">
+              Enable debug mode. Default is `false`
+          </ParamField>
+
+          <ParamField body="reconcile_time" type="string">
+              Duration style string for how often to reconcile recommendations. Default is `5m`
+          </ParamField>
+
         <ParamField body="expected_utilisation_percent" type="object">
           Expected utilization percentages for recommendations.
           
@@ -467,6 +475,10 @@ postgres:
               
               Example: `true`
             </ParamField>
+
+              <ParamField body="disable_iqr" type="boolean">
+                  Disable IQR filtering. Default is `false`
+              </ParamField>
           </Expandable>
         </ParamField>
         

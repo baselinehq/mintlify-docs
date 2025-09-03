@@ -15,7 +15,9 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2025-09-03" description="v0.1.25">
     ### Breaking Changes
-    - N/A
+    - We will be removing the automatic deployment of superset and postgres in this release and for the future. With our now updated dashboard providing support for visuals, customers who want superset can now enable them on installation.
+    If you have superset enabled, the instance will keep running. However, you will need to manually enable postgres and configure the operator to push data entries to continue having support for these instances.
+    In the future, we will be removing the superset and postgres dependencies from the operator and they will be only supported by customer installations outside our helm charts.
 
     ### Updates
     - Support for GCP managed prometheus added to our environment, Workload Identity Federation is required for this feature. See [here](https://cloud.google.com/stackdriver/docs/managed-prometheus/setup-otel#gmp-prereqs) for more information

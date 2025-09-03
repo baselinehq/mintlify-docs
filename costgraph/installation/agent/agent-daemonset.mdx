@@ -1,5 +1,5 @@
 ---
-title: Kubernetes DaemonSet 
+title: Agent Installation via Kubernetes DaemonSets
 ---
 
 An alternative to running the CostGraph operator is to run the CostGraph agent as a DaemonSet. This is useful if you want to monitor all nodes in your Kubernetes cluster.
@@ -19,7 +19,7 @@ An alternative to running the CostGraph operator is to run the CostGraph agent a
     kind: ConfigMap
     metadata:
       name: costgraph-agent-config
-      namespace: costgraph
+      namespace: costgraph-system
     data:
       conf.yaml: |
         api_key: "your costgraph api key"
@@ -48,7 +48,7 @@ An alternative to running the CostGraph operator is to run the CostGraph agent a
     kind: DaemonSet
     metadata:
       name: costgraph-agent
-      namespace: costgraph
+      namespace: costgraph-system
     spec:
       selector:
         matchLabels:

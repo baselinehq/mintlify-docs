@@ -13,6 +13,19 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies.
 
 
+<Update label="2025-09-03" description="v0.1.25">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Support for GCP managed prometheus added to our environment, Workload Identity Federation is required for this feature. See [here](https://cloud.google.com/stackdriver/docs/managed-prometheus/setup-otel#gmp-prereqs) for more information
+    - Automated rightsizings are now available and can be enabled on a workload-by-workload basis, see the features tab on [rightsizing](/costgraph/features/operator/rightsizing)
+    - Idle usage is now part of the recommendation data, usage can be audited from the dashboard
+    - Performance improvements to the owner resource grouping process
+    - Cluster provider specific metadata is now included in the exported data
+    - Reconcile time period is now configurable, see [here](/costgraph/configuration/kubernetes#param-reconcile-period-minutes) for configuration details
+</Update>
+
 <Update label="2025-08-12" description="v0.1.24">
   ### Breaking Changes
   - N/A

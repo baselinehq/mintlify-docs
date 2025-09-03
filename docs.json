@@ -41,10 +41,16 @@
           {
             "group": "Installation",
             "pages": [
-              "costgraph/installation/kubernetes-operator",
-              "costgraph/installation/kubernetes-daemonset",
-              "costgraph/installation/agent-systemd",
-              "costgraph/installation/agent-docker"
+              "costgraph/installation/operator/kubernetes-operator",
+              "costgraph/installation/agent/agent-daemonset",
+              "costgraph/installation/agent/agent-systemd",
+              "costgraph/installation/agent/agent-docker"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "costgraph/features/operator/rightsizing"
             ]
           },
           {

@@ -1,0 +1,126 @@
+---
+title: 'Marketplace Providers'
+api: "POST https://pricing.baselinehq.cloud/marketplace/providers"
+description: 'Add custom pricing entries for a cloud provider'
+authMethod: 'key'
+responseType: 'json'
+---
+
+
+Marketplace allows you to create custom pricing entries for cloud providers not natively supported. Or if you have signifcant pricing advantages. 
+
+## Create Provider 
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  Name of the provider to add entries for (defaults to your organization).  
+  Example: `gophercorp`
+  </ParamField>
+
+<ParamField body="entries" type="array" required>
+  Array of pricing entries to add for this provider.
+  
+  <Expandable title="Entry Properties">
+    <ParamField body="cost_per_hour" type="number" required>
+      Total hourly cost for the entry.
+      
+      Example: `0.0204`
+    </ParamField>
+    
+    <ParamField body="cpu_cores" type="number" required>
+      Number of CPU cores for the instance.
+      
+      Example: `2`
+    </ParamField>
+
+    <ParamField body="ram_gb" type="number" required>
+      RAM size in gigabytes.
+      
+      Example: `2`
+    </ParamField>
+
+    <ParamField body="usage_type" type="string" required>
+      Usage model for the entry.
+      
+      Example: `ONDEMAND`
+    </ParamField>
+
+    <ParamField body="instance_type" type="string" required>
+      Instance type identifier.
+      
+      Example: `t3.small`
+    </ParamField>
+
+    <ParamField body="region" type="string" required>
+      Cloud region.
+      
+      Example: `us-east-1`
+    </ParamField>
+
+    <ParamField body="availability_zone" type="string">
+      Availability zone (if applicable).
+      
+      Example: `us-east-1a`
+    </ParamField>
+
+    <ParamField body="operating_system" type="string" required>
+      Operating system for the instance.
+      
+      Example: `linux`
+    </ParamField>
+
+    <ParamField body="provider" type="string" required>
+      Cloud provider label for the entry.
+      
+      Example: `gophercorp`
+    </ParamField>
+
+    <ParamField body="service" type="string" required>
+      Cloud service name for the entry.
+      
+      Example: `ec2`, `ComputeEngine`
+    </ParamField>
+
+    <ParamField body="raw_pricing_data" type="object">
+      Optional provider-native raw pricing payload.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<RequestExample>
+
+```bash
+curl -X POST http://localhost:8080/marketplace/providers \
+  -H "Authorization: 3fd8b6a4-137b-4b0b-8aa9-6d5726e88cbe" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "gophercorp",
+    "entries": [
+      {
+        "cost_per_hour": 0.0204,
+        "cpu_cores": 2,
+        "ram_gb": 2,
+        "usage_type": "ONDEMAND",
+        "instance_type": "t3.small",
+        "region": "us-east-1",
+        "raw_pricing_data": {},
+        "provider": "gophercorp",
+        "service": "ec2",
+        "operating_system": "linux",
+        "availability_zone": "us-east-1a"
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+
+<ResponseExample>
+```json
+{
+  "Status": "Registered",
+  "Entries": 1
+}
+```
+</ResponseExample>

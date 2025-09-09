@@ -86,6 +86,13 @@
             ]
           },
           {
+            "group": "Marketplace",
+            "pages": [
+              "api-reference/marketplace/create-marketplace",
+              "api-reference/marketplace/get-marketplace"
+            ]
+          },
+          {
             "group": "API Reference",
             "pages": [
               "api-reference/endpoint/pricing",

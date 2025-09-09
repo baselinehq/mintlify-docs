@@ -1,0 +1,31 @@
+---
+title: 'Get Marketplace Providers'
+api: "GET https://pricing.baselinehq.cloud/marketplace/providers"
+authMethod: 'key'
+responseType: 'json'
+---
+
+<RequestExample>
+```bash
+curl -X 'GET' \
+  'https://pricing.baselinehq.cloud/marketplace/providers' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <your-api-key>'
+```
+
+</RequestExample>
+
+
+<ResponseExample>
+```json
+{
+  "providers": [
+    {
+      "provider": "gophercorp",
+      "service": "ec2"
+    }
+  ],
+  "count": 1
+} 
+```
+</ResponseExample>

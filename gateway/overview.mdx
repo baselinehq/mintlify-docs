@@ -1,0 +1,86 @@
+---
+title: Gateway API
+---
+
+The Gateway API aggregates all data across your CostGraph account and provides you with a single interface to obtain cost information as well as recommendations for your compute resources.
+
+## API Resources
+
+### Health & Monitoring
+
+<CardGroup cols={2}>
+  <Card
+    title="Health Check"
+    icon="heart-pulse"
+    href="/api-reference/endpoint/health"
+  >
+    Check the health status of the API service to ensure it's running properly.
+  </Card>
+  
+  <Card
+    title="Checkpoint"
+    icon="clock"
+    href="/api-reference/endpoint/checkpoint"
+  >
+    Get the latest checkpoint data from specified tables to track data freshness.
+  </Card>
+</CardGroup>
+
+### Compute Resources
+
+<CardGroup cols={2}>
+  <Card
+    title="Compute Pricing"
+    icon="calculator"
+    href="/api-reference/endpoint/pricing"
+  >
+    Get real-time pricing information for cloud compute instances across different providers.
+  </Card>
+  
+  <Card
+    title="Compute Recommendations"
+    icon="lightbulb"
+    href="/api-reference/endpoint/compute-recommendations"
+  >
+    Retrieve optimization recommendations for Kubernetes nodes and compute instances.
+  </Card>
+</CardGroup>
+
+### Kubernetes
+
+<Card
+  title="Namespace Recommendations"
+  icon="layer-group"
+  href="/api-reference/endpoint/namespace-recommendations"
+>
+  Get detailed recommendations for Kubernetes namespaces including resource optimization and cost savings.
+</Card>
+
+### Virtual Machines
+
+<CardGroup cols={3}>
+  <Card
+    title="VM Metadata"
+    icon="server"
+    href="/api-reference/endpoint/vm-metadata"
+  >
+    Retrieve comprehensive metadata for virtual machines including specifications and configurations.
+  </Card>
+  
+  <Card
+    title="VM Recommendations"
+    icon="chart-line"
+    href="/api-reference/endpoint/vm-recommendations"
+  >
+    Get optimization recommendations for VMs based on usage patterns and resource utilization.
+  </Card>
+  
+  <Card
+    title="VM Summaries"
+    icon="chart-bar"
+    href="/api-reference/endpoint/vm-summaries"
+  >
+    Access summarized VM data including usage statistics and performance metrics.
+  </Card>
+</CardGroup>
+

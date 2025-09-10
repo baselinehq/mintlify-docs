@@ -67,10 +67,12 @@
             ]
           },
           {
-            "group": "Changelog",
+            "group": "Changelogs",
+            "icon": "clock-rotate-left",
             "pages": [
               "changelog/costgraph/operator",
-              "changelog/costgraph/agent"
+              "changelog/costgraph/agent",
+              "changelog/pricing/api"
             ]
           }
         ]

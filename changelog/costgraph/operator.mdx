@@ -12,6 +12,16 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - We aim to provide releases on a regular basis for customer features and business priorities.
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies.
 
+<Update label="2025-10-05" description="v0.1.26">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Disk and Network metrics are now available via the Gateway APIs, dashboards updates to support this feature are coming soon.
+    - Ignore rightsizings if the resource does not have valid ApiVersions for resources
+    - Prometheus library updated to have improved performance and stability
+    - Bugfixes and cleanup logic improvements
+</Update>
 
 <Update label="2025-09-03" description="v0.1.25">
     ### Breaking Changes

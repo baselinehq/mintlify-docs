@@ -7,17 +7,39 @@ title: CostGraph Operator
 Releases for the CostGraph operator will have helm tags associated that are not tied to the release version. Across helm versions within a major or minor release, patch updates will be made for hotfixes, bugs and business focused updates. Helm release notes are available on our [chart repository](https://github.com/BaselineHQ/costgraph-charts), view the helm [index.yaml](https://baselinehq.github.io/costgraph-charts/index.yaml) to find information about the latest releases.
 
 ## SLA
-- We will provide changelogs for major and minor releases of the operator.
-- Customers will be made aware of any breaking changes in any release cycle.
-- We aim to provide releases on a regular basis for customer features and business priorities.
-- All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies.
+- We will provide changelogs for major and minor releases of the operator
+- Customers will be made aware of any breaking changes in any release cycle
+- We aim to provide releases on a regular basis for customer features and business priorities
+- All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies
 
+<Update label="2025-10-05" description="v0.1.27">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Disk and Network metrics are now available via the Gateway APIs, dashboards updates to support this feature are coming soon
+    - We now ignore right-sizings if the resource does not have valid settings to apply the recommendations.
+    - Prometheus library updated to have improved performance and stability
+    - Bugfixes and cleanup logic improvements
+</Update>
+
+<Update label="2025-09-17" description="v0.1.26">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Prometheus interval bug causing CPU usage to be reported incorrectly is fixed, this is now autodiscovered from the prometheus configuration
+    - Inactive resources are now included in historical data to support rightsizing recommendations
+    - Provider metadata is now included in the exported metrics
+    - Annotations and labels are now included in the exported metrics
+    - Bugfixes and cleanup logic improvements
+</Update>
 
 <Update label="2025-09-03" description="v0.1.25">
     ### Breaking Changes
-    - We will be removing the automatic deployment of superset and postgres in this release and for the future. With our now updated dashboard providing support for visuals, customers who want superset can now enable them on installation.
-    If you have superset enabled, the instance will keep running. However, you will need to manually enable postgres and configure the operator to push data entries to continue having support for these instances.
-    In the future, we will be removing the superset and postgres dependencies from the operator and they will be only supported by customer installations outside our helm charts.
+    - We will be removing the automatic deployment of superset and postgres in this release and for the future. With our now updated dashboard providing support for visuals, customers who want superset can now enable them on installation
+    If you have superset enabled, the instance will keep running. However, you will need to manually enable postgres and configure the operator to push data entries to continue having support for these instances
+    In the future, we will be removing the superset and postgres dependencies from the operator and they will be only supported by customer installations outside our helm charts
 
     ### Updates
     - Support for GCP managed prometheus added to our environment, Workload Identity Federation is required for this feature. See [here](https://cloud.google.com/stackdriver/docs/managed-prometheus/setup-otel#gmp-prereqs) for more information

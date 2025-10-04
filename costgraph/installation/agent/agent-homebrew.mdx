@@ -1,0 +1,33 @@
+---
+title: Agent Installation via Homebrew
+---
+
+# Homebrew Agent Installation
+
+The Costgraph agent can be installed via Homebrew, if you are on a Mac this is the easiest way to install the agent.
+
+## Prerequisites
+
+* **Homebrew**: Ensure Homebrew is installed and running on your system.
+* **API Key**: Obtain an API key from the [CostGraph dashboard](/costgraph/installation/kubernetes#obtain-an-api-key).
+
+## Installation Steps
+
+<Steps>
+  <Step title="Add the Homebrew tap">
+    ```bash
+    brew tap baselinehq/costgraph
+    ```
+  </Step>
+  <Step title="Install the agent">
+    ```bash
+    brew install costgraph-agent
+    ```
+  </Step>
+
+  <Step title="Verify installation">
+    ```bash
+    costgraph-agent
+    ```
+  </Step>
+</Steps>

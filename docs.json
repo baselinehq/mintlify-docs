@@ -44,7 +44,8 @@
               "costgraph/installation/operator/kubernetes-operator",
               "costgraph/installation/agent/agent-daemonset",
               "costgraph/installation/agent/agent-systemd",
-              "costgraph/installation/agent/agent-docker"
+              "costgraph/installation/agent/agent-docker", 
+              "costgraph/installation/agent/agent-homebrew"
             ]
           },
           {

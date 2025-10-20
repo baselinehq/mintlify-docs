@@ -4,15 +4,16 @@ title: Agent Installation via Kubernetes DaemonSets
 
 An alternative to running the CostGraph operator is to run the CostGraph agent as a DaemonSet. This is useful if you want to monitor all nodes in your Kubernetes cluster.
 
-## Prerequisites
+
+## Prerequisites 
+* **API Key**: Obtain an API key from the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/api-keys).
 
 
 ## Installation Steps
 
 <Steps>
   <Step title="Create Configuration">
-    Create a ConfigMap with your configuration and [API key](https://costgraph.baselinehq.cloud/dashboard/api-keys).
-
+   Using ConfigMap, store the configuration for the CostGraph agent
     ```bash
     cat <<EOF | kubectl apply -f -
     apiVersion: v1

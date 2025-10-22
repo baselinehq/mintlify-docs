@@ -14,10 +14,16 @@
         "tab": "CostGraph",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Kubernetes Operator",
             "pages": [
               "costgraph/overview",
               "costgraph/architecture"
+            ]
+          },
+          {
+            "group": "VM Agent",
+            "pages": [
+              "costgraph/agent"
             ]
           },
           {

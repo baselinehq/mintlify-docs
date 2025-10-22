@@ -1,0 +1,123 @@
+# Costgraph Agent
+
+## Overview
+
+The Costgraph Agent monitors process-level resource usage on your hosts and generates cost optimization recommendations. It collects CPU and memory metrics, analyzes usage patterns, and identifies opportunities to rightsize workloads.
+
+## How It Works
+
+The agent runs on each host and:
+1. Collects per-process CPU and memory metrics
+2. Stores metrics in Prometheus
+3. Analyzes historical usage patterns (default: 15 days)
+4. Generates rightsizing recommendations
+5. Exports recommendations as Prometheus metrics
+
+## Features
+
+### Process Monitoring
+
+Collects CPU and memory usage for each process using. Metrics are exposed via Prometheus endpoint and stored for historical analysis.
+
+### Rightsizing Recommendations
+
+Analyzes historical usage to determine optimal resource allocations:
+- Calculates P99 percentile and mean usage
+- Applies configurable buffer based on target utilization
+- Identifies cost driver (CPU or Memory)
+- Provides per-process and VM-level recommendations
+
+## Configuration
+
+### Basic Configuration
+
+```yaml
+prometheus:
+  url: "http://prometheus:9090"
+  metrics_port: 9101
+
+expected_utilisation:
+  cpu: 70
+  memory: 80
+
+api_key: "your-api-key"
+```
+
+### Prometheus Settings
+
+```yaml
+prometheus:
+  url: "http://prometheus:9090"
+  metrics_port: 9101
+  timeout: 1m
+  bearerToken: "token"
+  labels:
+    environment: "production"
+```
+
+### Utilization Targets
+
+```yaml
+expected_utilisation:
+  cpu: 70        # Target CPU utilization (1-100)
+  memory: 80     # Target memory utilization (1-100)
+```
+
+Lower values create more conservative recommendations with larger safety margins.
+
+**Guidelines:**
+- Predictable workloads: 70-80%
+- Variable workloads: 60-70%
+- Burst-heavy workloads: 50-60%
+
+### Metrics-Only Mode (Process Exporter Only)
+
+Collect and expose metrics without generating recommendations:
+
+```yaml
+metrics_only: true
+
+prometheus:
+  metrics_port: 9101
+```
+
+This mode is available on both Linux and macOS. Full recommendation features require Linux.
+
+Note this mode is defaulted on macOS
+## Deployment
+
+### Requirements
+
+- Linux or macOS host
+- Prometheus instance (for recommendations)
+
+### Installation
+
+```bash
+./costgraph-agent -conf conf.yaml
+```
+
+## Metrics
+
+Process metrics exposed at `http://localhost:9101/metrics`
+
+The agent collects per-process CPU and memory usage metrics. Metric names and labels vary by platform:
+
+**Linux:**
+- `namedprocess_namegroup_cpu_seconds_total`: CPU usage by process
+- `namedprocess_namegroup_memory_bytes`: Memory usage by process
+- Labels: `groupname` (process and cgroup), `instance` (host identifier)
+
+**macOS:**
+- `cpu_usage_percent` — instantaneous CPU%, computed from deltas between scrapes.
+- `memory_rss_bytes`, `memory_vms_bytes`
+- `open_fds`
+- `threads` — per group emitted twice with state="total" and state="running".
+- `priority`
+- `phys_footprint_bytes`
+- `start_time_seconds` — earliest start time among members of the group (if any).
+- `cpu_seconds_total{mode="user"|"system"}` — accumulated CPU seconds split by mode.
+- Disk I/O: `diskio_bytes_read_total`, `diskio_bytes_write_total`
+- Scheduler/syscalls/messages: `context_switches_total`, `syscalls_mach_total`, `syscalls_unix_total`, `messages_sent_total`, `messages_received_total`
+- Network: `net_receive_bytes_total`, `net_transmit_bytes_total`, `net_receive_packets_total`, `net_transmit_packets_total`
+- Memory faults: `cow_faults_total`, `faults_total`, `pageins_total`

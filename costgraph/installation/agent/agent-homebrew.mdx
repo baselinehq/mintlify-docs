@@ -25,6 +25,30 @@ The Costgraph agent can be installed via Homebrew, if you are on a Mac this is t
     ```
   </Step>
 
+  <Step title="Create a configuration file">
+    Create a `conf.yaml` file with your settings:
+  ```yaml
+  prometheus:
+    enabled: true
+    metrics_port: 9101
+    url: "http://localhost:9090"
+    timeout: 10s
+    interval: 15s
+    tenantHeader: ""
+    tenantValue: ""
+    bearerToken: ""
+    tlsInsecure: false
+    labels:
+      job: costgraph-agent
+  
+  expected_utilisation:
+    cpu: 80
+    memory: 80
+  
+  api_key: ""
+  metrics_only: true
+  ```
+  </Step>
   <Step title="Verify installation">
     ```bash
     costgraph-agent

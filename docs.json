@@ -95,6 +95,19 @@
             ]
           },
           {
+"group": "SDKs",
+"pages": [
+  "pricing-api/SDKs/introduction",
+  {
+    "group": "Go",
+    "pages": [
+       "pricing-api/SDKs/Go/quickstart"
+    ]
+  }
+
+] 
+          },
+          {
             "group": "Marketplace",
             "pages": [
               "api-reference/marketplace/create-marketplace",

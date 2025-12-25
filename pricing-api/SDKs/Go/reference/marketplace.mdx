@@ -3,3 +3,106 @@ title: "Marketplace"
 icon: "shopping-cart"
 ---
 
+
+The Pricing API **Marketplace** enables you to register as a provider so **users can access your compute pricing and receive recommendations** when their requests match your offering. The Go SDK exposes several marketplace methods to manage custom provider pricing and listings.
+
+
+
+### Examples
+
+
+Get marketplace providers
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+
+    resp, r, err := apiClient.DefaultAPI.
+        MarketplaceProvidersComputeGet(context.Background()).
+        Execute()
+
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.MarketplaceProvidersComputeGet`: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+        return
+    }
+
+    // response from `MarketplaceProvidersComputeGet`: TypesMarketplaceProvidersResponse
+    fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.MarketplaceProvidersComputeGet`: %v\n", resp)
+}
+```
+
+
+Create or update a custom provider instance
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+    instance := *openapiclient.NewTypesCustomPriceRequest([]openapiclient.SchemaComputePricingsRow{*openapiclient.NewSchemaComputePricingsRow()}) // TypesCustomPriceRequest
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.DefaultAPI.
+        MarketplaceProvidersComputePost(context.Background()).
+        Instance(instance).
+        Execute()
+
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.MarketplaceProvidersComputePost`: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+        return
+    }
+
+    // response from `MarketplaceProvidersComputePost`: TypesCustomPricingResponse
+    fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.MarketplaceProvidersComputePost`: %v\n", resp)
+}
+```
+
+Delete a custom provider instance 
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+    id := "id_example" // string | Instance ID
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.DefaultAPI.
+        MarketplaceProvidersComputeDelete(context.Background()).
+        Id(id).
+        Execute()
+
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.MarketplaceProvidersComputeDelete`: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+        return
+    }
+
+    // response from `MarketplaceProvidersComputeDelete`: TypesCustomPricingResponse
+    fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.MarketplaceProvidersComputeDelete`: %v\n", resp)
+}
+```

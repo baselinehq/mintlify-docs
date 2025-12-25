@@ -3,11 +3,39 @@ title: "Compute"
 icon: "calculator"
 ---
 
-Short overview of compute-related methods in the Go SDK.
 
-## Typical methods
+#### Get Compute Pricing
+You can obtain compute pricing information by using the `PricingComputePost` method provided by the Go SDK. 
 
-- Compute pricing for instances
-- Helpers for instance types and regions
 
-> Add code samples and method docs here (e.g., pricing compute calls).
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+	instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance() 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.DefaultAPI.PricingComputePost(context.Background()).Instance(instance).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.PricingComputePost``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `PricingComputePost`: SchemaComputePricingsRow
+	fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.PricingComputePost`: %v\n", resp)
+}
+```
+
+`instance` refers to the type [GithubComBaselinehqGolangSharedTypesInstance](https://github.com/baselinehq/pricingapi-client-golang/blob/main/docs/GithubComBaselinehqGolangSharedTypesInstance.md), which represents the instance details for which you want to compute pricing.
+<ResponseSchema type="GithubComBaselinehqGolangSharedTypesSchemaComputePricingsRow" />
+
+
+
+### 

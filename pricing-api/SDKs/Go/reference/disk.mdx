@@ -3,6 +3,41 @@ title: "Disk"
 icon: "server"
 ---
 
-Overview of disk/storage related helpers exposed by the Go SDK.
+#### Get Disk Pricing
+You can obtain disk pricing information by using the `PricingDisksPost` method provided by the Go SDK.
 
-> Add example usage and method references here.
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+    // Create a disk instance payload
+    disk := *openapiclient.NewTypesDisk() // TypesDisk | Disks
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+
+    resp, r, err := apiClient.DefaultAPI.
+        PricingDisksPost(context.Background()).
+        Instance(disk).
+        Execute()
+
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.PricingDisksPost`: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+        return
+    }
+
+    // response from `PricingDisksPost`: SchemaDiskPricingsRow
+    fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.PricingDisksPost`: %v\n", resp)
+}
+```
+
+Disk refers to the type [TypesDisk](https://github.com/baselinehq/pricingapi-client-golang/blob/main/docs/TypesDisk.md).
+

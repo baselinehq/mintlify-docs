@@ -50,7 +50,7 @@
               "costgraph/installation/operator/kubernetes-operator",
               "costgraph/installation/agent/agent-daemonset",
               "costgraph/installation/agent/agent-systemd",
-              "costgraph/installation/agent/agent-docker", 
+              "costgraph/installation/agent/agent-docker",
               "costgraph/installation/agent/agent-homebrew"
             ]
           },
@@ -95,17 +95,21 @@
             ]
           },
           {
-"group": "SDKs",
-"pages": [
-  "pricing-api/SDKs/introduction",
-  {
-    "group": "Go",
-    "pages": [
-       "pricing-api/SDKs/Go/quickstart"
-    ]
-  }
-
-] 
+            "group": "Go",
+            "icon": "golang",
+            "pages": [
+              "pricing-api/SDKs/go/quickstart",
+              {
+                "group": "Reference",
+                "pages": [
+                  "pricing-api/SDKs/go/reference/compute",
+                  "pricing-api/SDKs/go/reference/disk",
+                  "pricing-api/SDKs/go/reference/savings",
+                  "pricing-api/SDKs/go/reference/marketplace",
+                  "pricing-api/SDKs/go/reference/providers"
+                ]
+              }
+            ]
           },
           {
             "group": "Marketplace",
@@ -133,8 +137,8 @@
         ]
       },
       {
-        "tab":"Gateway API",
-        "groups" : [
+        "tab": "Gateway API",
+        "groups": [
           {
             "group": "Overview",
             "pages": [

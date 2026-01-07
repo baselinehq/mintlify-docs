@@ -1,0 +1,91 @@
+---
+title: "Quickstart"
+---
+
+The Go SDK is the quickest way to programmatically interact with the Pricing API.  
+Before you begin, make sure you have an API key.
+
+## Prerequisites
+
+- [API Key](/api-reference/authentication)
+- Go 1.20+
+
+## Install the SDK
+
+<Steps>
+  <Step title="Install required dependencies">
+    Install the required Go modules:
+
+    ```bash
+    go get github.com/stretchr/testify/assert
+    go get golang.org/x/net/context
+    ```
+  </Step>
+
+  <Step title="Add the Pricing API client to your project">
+    Add the Go SDK to your project:
+
+    ```bash
+    go get github.com/baselinehq/pricingapi-client-golang
+    ```
+
+    Then import it in your code:
+
+    ```go
+    import pricing_api_client "github.com/baselinehq/pricingapi-client-golang"
+    ```
+  </Step>
+
+  <Step title="Initialize the API client">
+    Create a configuration and API client instance:
+
+    ```go
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    ```
+  </Step>
+
+  <Step title="Call the Pricing API">
+    Use the client to compute pricing for an instance and handle the response.
+  </Step>
+</Steps>
+
+## Example: Compute Pricing
+
+The following example demonstrates how to compute pricing using the Go SDK.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+func main() {
+	// Create an instance payload
+	instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance()
+
+	// Initialize the client
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+
+	// Call the Pricing API
+	resp, r, err := apiClient.DefaultAPI.
+		PricingComputePost(context.Background()).
+		Instance(instance).
+		Execute()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.PricingComputePost`: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		return
+	}
+
+	// Successful response
+	fmt.Fprintf(os.Stdout, "Response from DefaultAPI.PricingComputePost: %v\n", resp)
+}
+```

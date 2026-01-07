@@ -50,7 +50,7 @@
               "costgraph/installation/operator/kubernetes-operator",
               "costgraph/installation/agent/agent-daemonset",
               "costgraph/installation/agent/agent-systemd",
-              "costgraph/installation/agent/agent-docker", 
+              "costgraph/installation/agent/agent-docker",
               "costgraph/installation/agent/agent-homebrew"
             ]
           },
@@ -95,6 +95,23 @@
             ]
           },
           {
+            "group": "Go",
+            "icon": "golang",
+            "pages": [
+              "pricing-api/SDKs/go/quickstart",
+              {
+                "group": "Reference",
+                "pages": [
+                  "pricing-api/SDKs/go/reference/compute",
+                  "pricing-api/SDKs/go/reference/disk",
+                  "pricing-api/SDKs/go/reference/savings",
+                  "pricing-api/SDKs/go/reference/marketplace",
+                  "pricing-api/SDKs/go/reference/providers"
+                ]
+              }
+            ]
+          },
+          {
             "group": "Marketplace",
             "pages": [
               "api-reference/marketplace/create-marketplace",
@@ -120,8 +137,8 @@
         ]
       },
       {
-        "tab":"Gateway API",
-        "groups" : [
+        "tab": "Gateway API",
+        "groups": [
           {
             "group": "Overview",
             "pages": [
@@ -206,5 +223,17 @@
       "github": "https://github.com/baselinehq",
       "linkedin": "https://linkedin.com/company/baselinehq"
     }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   }
 }

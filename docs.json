@@ -223,5 +223,17 @@
       "github": "https://github.com/baselinehq",
       "linkedin": "https://linkedin.com/company/baselinehq"
     }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   }
 }

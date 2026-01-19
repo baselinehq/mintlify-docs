@@ -11,7 +11,7 @@ authMethod: 'key'
 curl -X 'POST' \
   'https://pricing.baselinehq.cloud/recommendations' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your-api-key>' \
+  -H 'X-API-KEY: <your-api-key>' \
   -H 'Content-Type: application/json' \
   -d '{
   "availability_zone": "us-east-1a",

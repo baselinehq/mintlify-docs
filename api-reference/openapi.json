@@ -1273,8 +1273,8 @@
       "securitySchemes": {
         "ApiKeyAuth": {
           "type": "apiKey",
-          "description": "Bearer token for authentication",
-          "name": "Authorization",
+          "description": "Api key for authentication",
+          "name": "X-API-KEY",
           "in": "header"
         }
       }

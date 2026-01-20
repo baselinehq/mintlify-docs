@@ -92,7 +92,7 @@ Marketplace allows you to create custom pricing entries for cloud providers not 
 
 ```bash
 curl -X POST http://localhost:8080/marketplace/providers \
-  -H "Authorization: 3fd8b6a4-137b-4b0b-8aa9-6d5726e88cbe" \
+  -H "  X-API-KEY: 3fd8b6a4-137b-4b0b-8aa9-6d5726e88cbe" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "gophercorp",

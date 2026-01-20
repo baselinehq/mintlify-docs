@@ -42,7 +42,7 @@ Some endpoints such as the [recommendations endpoint](/api-reference/endpoint/re
     Use curl to make the request to the recommendations endpoint:
 
     ```bash
-    curl -H 'Authorization: Bearer YOUR_API_KEY' \
+    curl -H 'X-API-KEY: YOUR_API_KEY' \
          -XPOST https://pricing.baselinehq.cloud/recommendations \
          -d@rec.json
     ```
@@ -51,10 +51,10 @@ Some endpoints such as the [recommendations endpoint](/api-reference/endpoint/re
 
 ## Using the API Key
 
-Include your API key in the `Authorization` header of your requests:
+Include your API key in the `X-API-KEY` header of your requests:
 
 ```bash
-Authorization: Bearer YOUR_API_KEY
+X-API-KEY: YOUR_API_KEY
 ```
 
 Replace `YOUR_API_KEY` with the API key you obtained from the dashboard.
@@ -69,7 +69,7 @@ Here's a complete example using curl:
 export COSTGRAPH_API_KEY="your-api-key"
 
 # Make an authenticated request
-curl -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+curl -H "X-API-KEY $COSTGRAPH_API_KEY" \
      -H "Content-Type: application/json" \
      -XPOST https://pricing.baselinehq.cloud/recommendations \
      -d@rec.json

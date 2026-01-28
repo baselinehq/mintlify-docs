@@ -4,5 +4,18 @@ title: CostGraph Agent
 ---
 
 # Changelogs
-coming soon to a VM near you
+Agent releases are tagged with a major.minor version number.
+
+## SLA
+- We will provide changelogs for major and minor releases of the agent
+- Customers will be made aware of any breaking changes in any release cycle
+- We aim to provide releases regularly for customer features and business priorities
+
+<Update label="2026-01-25" description="v0.1.38">
+    ### Breaking Changes
+    - We have renamed all existing metrics to have the `costgraph_` prefix. Previous metric definitions confused customers whilst limiting our brand. We thank all our customers for their understanding with this change and look forward to it bringing clarity with no impacting changes in the future. All existing customers will need to update their metric definitions to append the `costgraph_` prefix.
+
+    ### Updates
+    - Bugfix on the agent causing accumulated metrics to accrue metric values inaccurately over time, this now resets on every scrape.
+</Update>
 

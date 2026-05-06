@@ -3,8 +3,8 @@
   "theme": "maple",
   "name": "BaselineHQ Documentation",
   "colors": {
-    "primary": "#0a3171",
-    "light": "#07C983",
+    "primary": "#2563EB",
+    "light": "#60A5FA",
     "dark": "#0a3171"
   },
   "favicon": "/favicon.svg",
@@ -39,29 +39,16 @@
             ]
           },
           {
-            "group": "Billing",
-            "pages": [
-              "costgraph/billing"
-            ]
-          },
-          {
             "group": "Installation",
             "pages": [
               "costgraph/installation/operator/kubernetes-operator",
-              "costgraph/installation/agent/agent-daemonset",
               "costgraph/installation/agent/agent-systemd",
               "costgraph/installation/agent/agent-docker",
               "costgraph/installation/agent/agent-homebrew"
             ]
           },
           {
-            "group": "Features",
-            "pages": [
-              "costgraph/features/operator/rightsizing"
-            ]
-          },
-          {
-            "group": "Configuration",
+            "group": "Reference",
             "pages": [
               "costgraph/configuration/kubernetes",
               "costgraph/configuration/agent"
@@ -132,49 +119,6 @@
               "api-reference/examples/getting-started",
               "api-reference/examples/recommendations",
               "api-reference/examples/filtering"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Gateway API",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "gateway/overview"
-            ]
-          },
-          {
-            "group": "Health & Monitoring",
-            "icon": "heart-pulse",
-            "pages": [
-              "api-reference/endpoint/health",
-              "api-reference/endpoint/checkpoint"
-            ]
-          },
-          {
-            "group": "Compute Resources",
-            "icon": "server",
-            "pages": [
-              "api-reference/endpoint/pricing",
-              "api-reference/endpoint/compute-recommendations"
-            ]
-          },
-          {
-            "group": "Kubernetes",
-            "icon": "layer-group",
-            "pages": [
-              "api-reference/endpoint/namespace-recommendations"
-            ]
-          },
-          {
-            "group": "Virtual Machines",
-            "icon": "computer",
-            "pages": [
-              "api-reference/endpoint/vm-metadata",
-              "api-reference/endpoint/vm-recommendations",
-              "api-reference/endpoint/vm-summaries"
             ]
           }
         ]

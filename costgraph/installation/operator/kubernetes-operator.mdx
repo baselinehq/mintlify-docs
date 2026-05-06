@@ -1,114 +1,234 @@
-# CostGraph Operator Installation Guide
 
+The CostGraph Operator deploys and manages cost monitoring for your Kubernetes cluster. It collects resource usage metrics, analyzes spending patterns, and generates rightsizing recommendations — all visible from the [CostGraph dashboard](https://costgraph.baselinehq.cloud).
 
-## Prerequisites 
-* **API Key**: Obtain an API key from the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/api-keys).
-* **[Helm](https://helm.sh/docs/intro/install/)**
+## Prerequisites
+
+- A running Kubernetes cluster
+- [Helm 3+](https://helm.sh/docs/intro/install/)
+- An API key from the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/api-keys)
+
+## Quick Start
 
 <Steps>
 
-  <Step title="Set up Prometheus">
-    <Accordion title="Existing Prometheus installations">
-    If you already have Prometheus running in your cluster, you can skip these installation steps and proceed directly to the next step.
-
-    In your Helm `values.yaml`, set the `prometheus_endpoint` to your existing Prometheus URL.
-
-    For example, if you're using the **kube-prometheus-stack**, the endpoint is typically:
-    ```yaml
-    prometheus_endpoint: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc:9090
-    ```
-    </Accordion>
-
-    Add the Prometheus chart repository:
-    ```shell
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    ```
-
-    Install Prometheus to begin collecting metrics:
-    ```shell
-    helm install prometheus prometheus-community/prometheus --namespace prometheus-system --create-namespace
-    kubectl wait --for=condition=available --timeout=10m -n prometheus-system deploy/prometheus-server
-    ```
-  </Step>
-
-  <Step title="Obtain API Key">
-    Create an account on [costgraph.baselinehq.cloud](https://costgraph.baselinehq.cloud/) and obtain an [API key](https://costgraph.baselinehq.cloud/dashboard/api-keys).
-
-    <img height="400" src="/images/api-key.png" />
-  </Step>
-
-  <Step title="Set up Billing Plan">
-    <Warning>
-    Setting up a plan
-
-    You must have a plan setup for your organization to use the operator. Not doing so will cause the operator to fail on startup.
-    </Warning>
-
-    Once you have your API key, set up a billing plan to enable the API key.
-
-    <img height="400" src="/images/billing.png" />
-  </Step>
-
-  <Step title="Add CostGraph Helm Repository">
-    Add the CostGraph charts repository:
+  <Step title="Add the Helm repository">
     ```shell
     helm repo add costgraph https://baselinehq.github.io/costgraph-charts/
     helm repo update
     ```
   </Step>
 
-  <Step title="Configure CostGraph">
-    Create a configuration file (`values.yaml`) with your specific settings:
-
-    ```yaml
-    domain: <your-company-subdomain>
-    costgraph:
-      config:
-        costgraph_instance_name: <instance-name>
-        prometheus_endpoint: # e.g http://prometheus-server.prometheus-system.svc.cluster.local
-        api_key: <your-api-key>
-    ```
-  </Step>
-
-  <Step title="Deploy CostGraph">
-    Deploy CostGraph using your configuration file:
+  <Step title="Install the operator">
     ```shell
-    helm install costgraph costgraph/costgraph -f values.yaml --namespace costgraph-system --create-namespace
+    helm install costgraph-operator costgraph/costgraph-operator \
+      --namespace costgraph \
+      --create-namespace \
+      --set global.clusterName=<your-cluster-name> \
+      --set global.apiKey=<your-api-key>
     ```
   </Step>
 
-  <Step title="Verify Installation">
-    Wait for all pods to be ready and verify the installation:
+  <Step title="Verify the installation">
     ```shell
     kubectl get pods -n costgraph
     ```
 
-    All pods should show a `Running` status before proceeding to access the dashboard.
+    All pods should show `Running` status. Once ready, view your cluster metrics in the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/cluster-metrics).
   </Step>
+
 </Steps>
 
-## Accessing the Dashboard
+## Customizing the Installation
 
-You can access your cluster metrics in the [cluster section](https://costgraph.baselinehq.cloud/dashboard/cluster-metrics) of the CostGraph dashboard.
+For production deployments, create a `values.yaml` file instead of passing values inline.
 
-![Dashboard](https://github.com/baselinehq/mintlify-docs/blob/main/images/dashboard.gif?raw=true)
+```yaml values.yaml
+global:
+  clusterName: "production-cluster"
+  apiKey: "<your-api-key>"
+```
 
-## Advanced Configuration
+```shell
+helm install costgraph-operator costgraph/costgraph-operator \
+  --namespace costgraph \
+  --create-namespace \
+  -f values.yaml
+```
 
-For the full list of values supported by the CostGraph Operator Helm chart (all `values.yaml` options), see the [Kubernetes configuration reference](/costgraph/configuration/kubernetes).
+### Authentication
 
-## Alternative Visualization Methods
+You can pass your API key directly via `global.apiKey`, but for production we recommend using a pre-existing Kubernetes Secret.
 
-CostGraph supports other visualization methods such as Grafana and Superset. For more instructions on setting up and accessing these tools, see our [Alternative Visualization Methods](/costgraph/visualization) guide.
+```yaml values.yaml
+global:
+  clusterName: "production-cluster"
+  existingSecret: "costgraph-api-key"
+  existingSecretKey: "apiKey"   # key within the Secret, defaults to "apiKey"
+```
 
+Create the Secret beforehand:
 
+```shell
+kubectl create secret generic costgraph-api-key \
+  --namespace costgraph \
+  --from-literal=apiKey=<your-api-key>
+```
 
+### GPU Monitoring (DCGM Exporter)
 
+<Note>
+  The DCGM exporter is only needed if you want GPU metrics from NVIDIA GPU nodes. Most users can skip this section.
+</Note>
 
+Enable the NVIDIA DCGM exporter to collect GPU metrics:
 
+```yaml values.yaml
+dcgm-exporter:
+  enabled: true
+  nodeSelector:
+    accelerator: nvidia
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+```
 
+### Chart Dependencies
 
+The CostGraph Operator bundles several subcharts. If you already run any of these in your cluster, disable them to avoid conflicts.
 
+| Dependency | Default | Purpose |
+|------------|---------|---------|
+| `kube-state-metrics` | Enabled | Kubernetes object-level metrics (pods, deployments, nodes) |
+| `cadvisor` | Enabled | Container-level resource usage (CPU, memory, network) |
+| `dcgm-exporter` | Disabled | NVIDIA GPU metrics |
 
+To disable a bundled subchart:
 
+```yaml values.yaml
+kube-state-metrics:
+  enabled: false
 
+cadvisor:
+  enabled: false
+```
+
+### Operator Components
+
+The chart deploys two core components:
+
+**Operator Kubernetes** (`operatorKubernetes`) — watches your cluster, collects Kubernetes metadata, and coordinates with the CostGraph backend.
+
+**Operator Prometheus** (`operatorPrometheus`) — scrapes metrics from kube-state-metrics, cAdvisor, and DCGM exporter, then forwards them to the CostGraph TSDB via remote write.
+
+Both run as single-replica deployments by default. You can customize resources, node selectors, tolerations, and environment variables for each. See the [Kubernetes configuration reference](/costgraph/configuration/kubernetes) for details.
+
+## Full Values Reference
+
+<Accordion title="Complete values.yaml">
+```yaml
+# Default values for costgraph-operator.
+
+# Global configuration shared across all operator components.
+global:
+  clusterName: ""
+  # apiKey is used to create a Secret when existingSecret is not set.
+  # Do not commit a real key here; prefer existingSecret in production.
+  apiKey: ""
+  # existingSecret: name of a pre-existing Secret that contains the API key.
+  # When set, no Secret is created by this chart and apiKey is ignored.
+  existingSecret: ""
+  # existingSecretKey: key within existingSecret that holds the API key value.
+  # Defaults to "apiKey" when not specified.
+  existingSecretKey: ""
+  # backendURL is the base URL of the Costgraph API. Leave empty to omit the
+  # BACKEND_URL env var and rely on the service's built-in default.
+  backendURL: "https://api.costgraph.ai"
+  namespace: "costgraph"
+  security:
+    allowInsecureImages: true
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# kube-state-metrics (subchart from prometheus-community)
+kube-state-metrics:
+  enabled: true
+
+# cadvisor (subchart)
+cadvisor:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: baselinehq/cadvisor
+    tag: "0.56.3-baseline"
+
+# dcgm-exporter (subchart from NVIDIA)
+# Enable when GPU nodes are present in the cluster.
+dcgm-exporter:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+  nodeSelector:
+    accelerator: nvidia
+  tolerations: []
+  resources: {}
+  podAnnotations: {}
+  podLabels: {}
+
+# costgraph-operator-kubernetes deployment
+operatorKubernetes:
+  enabled: true
+  image:
+    repository: ghcr.io/baselinehq/costgraph-operator-kubernetes
+    tag: "sha-128782e"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  config:
+    operatorVersion: "1.0.0"
+  resources: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+  env: []
+
+# costgraph-operator-prometheus deployment
+operatorPrometheus:
+  enabled: true
+  image:
+    repository: ghcr.io/baselinehq/costgraph-operator-prometheus
+    tag: "sha-e46282c"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  config:
+    remoteWriteURL: "https://tsdb.costgraph.ai"
+    remoteWritePath: "/api/v1/write"
+    prometheusAPIProvider: "prometheus"
+    prometheusAPIVersion: "kube-state-metrics"
+    httpTimeout: "30s"
+    cAdvisorNamespace: ""
+    cAdvisorLabelSelector: ""
+    ksmNamespace: ""
+    ksmLabelSelector: ""
+    dcgmNamespace: ""
+    dcgmLabelSelector: ""
+  resources: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
+  env: []
+```
+</Accordion>

@@ -1,19 +1,43 @@
-# Costgraph Agent
+# CostGraph Agent
 
-The Costgraph Agent monitors process-level resource usage on your hosts. It collects CPU and memory metrics per process and exposes them via a Prometheus endpoint.
+The CostGraph Agent monitors process-level resource usage on your hosts. It collects CPU and memory metrics per process and ships them to the CostGraph backend.
 
-## How It Works
-
-The agent runs on each host and collects per-process CPU and memory metrics, which are exposed at `http://localhost:9101/metrics`.
-
-## Requirements
+## Prerequisites
 
 - Linux or macOS host
+- An API key from the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/api-keys)
 
-## Installation
+## Quick Start
 
-See the installation guides for your platform:
+<Steps>
 
-- [Systemd](/costgraph/installation/agent/agent-systemd)
-- [Docker](/costgraph/installation/agent/agent-docker)
-- [Homebrew](/costgraph/installation/agent/agent-homebrew)
+  <Step title="Download the agent">
+    See the installation guides for your platform:
+
+    - [Systemd](/costgraph/installation/agent/agent-systemd)
+    - [Docker](/costgraph/installation/agent/agent-docker)
+    - [Homebrew](/costgraph/installation/agent/agent-homebrew)
+  </Step>
+
+  <Step title="Run the agent">
+    Pass your API key as a flag or environment variable:
+
+    ```shell
+    costgraph-agent --api-key <your-api-key>
+    ```
+
+    Or via environment variable:
+
+    ```shell
+    export COSTGRAPH_API_KEY=<your-api-key>
+    costgraph-agent
+    ```
+  </Step>
+
+  <Step title="Verify">
+    The agent exposes metrics at `http://localhost:9101/metrics`. Once running, your host will appear in the [CostGraph dashboard](https://costgraph.baselinehq.cloud).
+  </Step>
+
+</Steps>
+
+Sensible defaults are set out of the box. If you need finer control over remote write, sync intervals, or utilization targets, see the [Agent configuration reference](/costgraph/configuration/agent).

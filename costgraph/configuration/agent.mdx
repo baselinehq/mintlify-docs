@@ -1,142 +1,158 @@
 ---
-Title: Agent configuration 
---- 
+title: Agent Configuration
+---
 
+All agent configuration can be set via a `conf.yaml` file. Sensible defaults are provided.
 
-
-##  Configure CostGraph agent 
-
-Similar to the CostGraph operator, the CostGraph agent supports additional configuration options for the agent deployment via `conf.yaml`.
-
-
-## Quickstart
-
-```yaml
-prometheus:
-  enabled:       true
-  metrics_port:  9101
-  url:           "http://localhost:9090"
-  timeout:       10s 
-  interval:      15s
-  tenantHeader:  ""
-  tenantValue:   ""
-  bearerToken:   ""
-  tlsInsecure:   false
-  labels:
-    job: costgraph-agent
-expected_utilisation:
-  cpu: 80
-  memory: 80
-api_key: ""
-metrics_only: false
+```shell
+costgraph-agent --api-key <your-api-key>
+# or
+costgraph-agent -conf conf.yaml
 ```
 
-Assuming you have prometheus running within the same instance as the agent, you can use the configuration above. 
+## Config Reference
 
-## Config reference 
-
-
-
-<ParamField body="prometheus" type="object" required >
-  Prometheus client configuration for the agent.
-  
-  <Expandable title="Prometheus Properties">
-    <ParamField body="enabled" type="boolean">
-      Whether the Prometheus client endpoint is exposed by the agent.
-      
-      Example: <CodeBlock>true</CodeBlock>
-    </ParamField>
-
-    <ParamField body="metrics_port" type="number">
-      Port on which the agent exposes Prometheus metrics.
-      
-      Example: <CodeBlock>9101</CodeBlock>
-    </ParamField>
-
-    <ParamField body="url" type="string">
-      Base URL of your Prometheus server that the agent queries for metrics.
-      
-      Example: <CodeBlock>"http://localhost:9090"</CodeBlock>
-    </ParamField>
-
-    <ParamField body="timeout" type="string">
-      Request timeout when querying Prometheus, in duration format.
-      
-      Example: <CodeBlock>"10s"</CodeBlock>
-    </ParamField>
-
-    <ParamField body="interval" type="string">
-      How often the agent queries Prometheus, in duration format.
-      
-      Example: <CodeBlock>"15s"</CodeBlock>
-    </ParamField>
-
-    <ParamField body="tenantHeader" type="string">
-      Optional HTTP header name used for multi-tenant Prometheus setups (e.g., Cortex/Mimir). Leave empty if not required.
-      
-      Example: <CodeBlock>"X-Scope-OrgID"</CodeBlock>
-    </ParamField>
-
-    <ParamField body="tenantValue" type="string">
-      Optional value for the configured tenant header. Leave empty if not required.
-      
-      Example: <CodeBlock>"acme"</CodeBlock>
-    </ParamField>
-
-    <ParamField body="bearerToken" type="string">
-      Optional HTTP Bearer token used to authenticate to Prometheus.
-      
-      Example: <CodeBlock>""</CodeBlock>
-    </ParamField>
-
-    <ParamField body="tlsInsecure" type="boolean">
-      Skip TLS certificate verification when connecting to Prometheus. 
-      Example: <CodeBlock>false</CodeBlock>
-    </ParamField>
-
-    <ParamField body="labels" type="object">
-      Arbitrary key/value labels attached to the agent's exported metrics and identity. Helpful for identifying instances when running a fleet of agents (e.g., per cluster, region, or host).
-      
-      <Expandable title="Labels Example">
-        <CodeGroup>
-          ```yaml
-          labels:
-            job: costgraph-agent
-            cluster: prod-eu-1
-            node: ip-10-0-1-23
-          ```
-        </CodeGroup>
-      </Expandable>
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-<ParamField body="expected_utilisation" type="object">
-  Expected utilisation targets used to guide right-sizing recommendations.
-  
-  <Expandable title="Expected Utilisation Properties">
-    <ParamField body="cpu" type="number">
-      Target CPU utilisation percentage.
-      
-      Example: <CodeBlock>80</CodeBlock>
-    </ParamField>
-    
-    <ParamField body="memory" type="number">
-      Target memory utilisation percentage.
-      
-      Example: <CodeBlock>80</CodeBlock>
-    </ParamField>
-  </Expandable>
-</ParamField>
-
-<ParamField body="api_key" type="string" required>
-  API key used by the agent to authenticate
-  
-  Example: <CodeBlock>"s34ko4k4-ksksokr3kgl-ok3krt4"</CodeBlock>
+<ParamField body="metrics_port" type="number">
+  Port the agent exposes its own Prometheus metrics on. Defaults to `9101`.
 </ParamField>
 
 <ParamField body="metrics_only" type="boolean">
-  When enabled, the agent exports metrics only and skips recommendation. Useful if you only need observability or are running the agent in a metrics-forwarding mode.
-  
-  Example: <CodeBlock>false</CodeBlock>
+  When `true`, skips all backend syncs (registration, heartbeat, metadata, containers) and only collects and remote-writes metrics. Defaults to `false`.
 </ParamField>
+
+<ParamField body="expected_utilisation" type="object">
+  Target utilization percentages used to guide rightsizing recommendations.
+
+  <Expandable title="Properties">
+    <ParamField body="cpu" type="number">
+      Target CPU utilization percentage. Defaults to `80`.
+    </ParamField>
+
+    <ParamField body="memory" type="number">
+      Target memory utilization percentage. Defaults to `80`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Remote Write
+
+Controls shipping collected metrics to the CostGraph TSDB.
+
+<ParamField body="remote_write.enabled" type="boolean">
+  Activates Prometheus remote write. If `false`, metrics are collected but not sent. Defaults to `true`.
+</ParamField>
+
+<ParamField body="remote_write.timeout" type="string">
+  HTTP timeout per individual remote-write request. Defaults to `"10s"`.
+</ParamField>
+
+<ParamField body="remote_write.interval" type="string">
+  How often the queue is flushed and sent upstream. Defaults to `"15s"`.
+</ParamField>
+
+<ParamField body="remote_write.max_in_memory_blocks" type="number">
+  Cap on WAL blocks held in RAM before spilling to the disk queue. Defaults to `128`.
+</ParamField>
+
+<ParamField body="remote_write.max_pending_bytes" type="number">
+  Max disk queue size in bytes before backpressure kicks in. Defaults to `5368709120` (5 GiB).
+</ParamField>
+
+<ParamField body="remote_write.send_concurrency" type="number">
+  Number of parallel HTTP senders. `1` means serialized, no concurrent sends. Defaults to `1`.
+</ParamField>
+
+<ParamField body="remote_write.labels" type="object">
+  Static labels attached to every metric series sent upstream. Useful for identifying the source.
+
+  ```yaml
+  remote_write:
+    labels:
+      job: costgraph-agent
+  ```
+</ParamField>
+
+### Sync
+
+Controls the agent's communication loop with the CostGraph control plane.
+
+<ParamField body="sync.tenant_timeout" type="string">
+  Timeout for fetching tenant identity/config from the backend. Defaults to `"10s"`.
+</ParamField>
+
+<ParamField body="sync.registration_interval" type="string">
+  How often the agent re-registers itself with the backend. Defaults to `"30s"`.
+</ParamField>
+
+<ParamField body="sync.registration_timeout" type="string">
+  Timeout for a single registration call. Defaults to `"10s"`.
+</ParamField>
+
+<ParamField body="sync.heartbeat_interval" type="string">
+  How often the agent sends a liveness ping to the backend. Defaults to `"60s"`.
+</ParamField>
+
+<ParamField body="sync.heartbeat_timeout" type="string">
+  Timeout for a single heartbeat call. Defaults to `"5s"`.
+</ParamField>
+
+<ParamField body="sync.metadata_interval" type="string">
+  How often host/node metadata is pushed to the backend. Defaults to `"5m"`.
+</ParamField>
+
+<ParamField body="sync.metadata_timeout" type="string">
+  Timeout for a single metadata push. Defaults to `"10s"`.
+</ParamField>
+
+<ParamField body="sync.metadata_refresh_interval" type="string">
+  How often the full metadata payload is rebuilt from scratch (vs. incremental). Defaults to `"6h"`.
+</ParamField>
+
+<ParamField body="sync.container_interval" type="string">
+  How often the running container list is synced to the backend. Defaults to `"1m"`.
+</ParamField>
+
+<ParamField body="sync.container_timeout" type="string">
+  Timeout for a single container sync call. Defaults to `"15s"`.
+</ParamField>
+
+<ParamField body="sync.container_refresh_interval" type="string">
+  How often the full container inventory is re-enumerated from the runtime (vs. delta). Defaults to `"30m"`.
+</ParamField>
+
+## Full Config Reference
+
+<Accordion title="Complete conf.yaml with defaults">
+```yaml
+metrics_port: 9101
+
+remote_write:
+  enabled: true
+  timeout: 10s
+  interval: 15s
+  max_in_memory_blocks: 128
+  max_pending_bytes: 5368709120
+  send_concurrency: 1
+  labels:
+    job: costgraph-agent
+
+sync:
+  tenant_timeout: 10s
+  registration_interval: 30s
+  registration_timeout: 10s
+  heartbeat_interval: 60s
+  heartbeat_timeout: 5s
+  metadata_interval: 5m
+  metadata_timeout: 10s
+  metadata_refresh_interval: 6h
+  container_interval: 1m
+  container_timeout: 15s
+  container_refresh_interval: 30m
+
+metrics_only: false
+
+expected_utilisation:
+  cpu: 80
+  memory: 80
+```
+</Accordion>

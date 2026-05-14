@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.1",
     "info": {
-      "title": "Costgraph Gateway API",
+      "title": "CostGraph Pricing API",
       "description": "Provides API level access to the Costgraph Services.",
       "termsOfService": "https://costgraph.baselinehq.cloud/terms",
       "contact": {
@@ -17,7 +17,7 @@
     },
     "servers": [
       {
-        "url": "https://gateway.costgraph.baselinehq.cloud"
+        "url": "https://pricing.baselinehq.cloud"
       }
     ],
     "paths": {

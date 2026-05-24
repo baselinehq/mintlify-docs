@@ -1,0 +1,131 @@
+---
+title: Go
+icon: golang
+description: 'Go SDK examples for the CostGraph Pricing API'
+---
+
+## Client Setup
+
+```go
+import (
+    "context"
+    "fmt"
+    "os"
+
+    openapiclient "github.com/baselinehq/pricingapi-client-golang"
+)
+
+token := os.Getenv("COSTGRAPH_API_KEY")
+
+configuration := openapiclient.NewConfiguration()
+configuration.DefaultHeader["Authorization"] = fmt.Sprintf("Bearer %s", token)
+
+client := openapiclient.NewAPIClient(configuration)
+```
+
+## Compute Pricing
+
+```go
+instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance()
+instance.SetInstanceType("s-2vcpu-2gb")
+instance.SetUsageType("ONDEMAND")
+instance.SetProvider("DigitalOcean")
+instance.SetOperatingSystem("linux")
+instance.SetService("Droplet")
+instance.SetRegion("nyc1")
+
+cpuCores := float32(2)
+ramGb := float32(2)
+instance.SetVm(openapiclient.GithubComBaselinehqGolangSharedTypesVM{
+    CpuCores: &cpuCores,
+    RamGb:    &ramGb,
+})
+
+resp, _, err := client.DefaultAPI.
+    PricingComputePost(context.Background()).
+    Instance(instance).
+    Execute()
+
+if err != nil {
+    fmt.Fprintf(os.Stderr, "error: %v\n", err)
+    return
+}
+
+fmt.Printf("Cost per hour: %v\n", resp)
+```
+
+## Recommendations
+
+```go
+instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance()
+instance.SetInstanceType("s-4vcpu-16gb-amd")
+instance.SetUsageType("ondemand")
+instance.SetProvider("digitalocean")
+instance.SetOperatingSystem("linux")
+instance.SetService("Droplet")
+instance.SetRegion("nyc1")
+
+cpuCores := float32(4)
+ramGb := float32(16)
+instance.SetVm(openapiclient.GithubComBaselinehqGolangSharedTypesVM{
+    CpuCores: &cpuCores,
+    RamGb:    &ramGb,
+})
+
+resp, _, err := client.DefaultAPI.
+    RecommendationsComputePost(context.Background()).
+    Instance(instance).
+    Execute()
+
+if err != nil {
+    fmt.Fprintf(os.Stderr, "error: %v\n", err)
+    return
+}
+
+fmt.Printf("Recommendations: %v\n", resp)
+```
+
+## Providers
+
+```go
+resp, _, err := client.DefaultAPI.
+    ProvidersGet(context.Background()).
+    Execute()
+
+if err != nil {
+    fmt.Fprintf(os.Stderr, "error: %v\n", err)
+    return
+}
+
+fmt.Printf("Providers: %v\n", resp)
+```
+
+## Disk Pricing
+
+```go
+resp, _, err := client.DefaultAPI.
+    PricingDisksPost(context.Background()).
+    Execute()
+
+if err != nil {
+    fmt.Fprintf(os.Stderr, "error: %v\n", err)
+    return
+}
+
+fmt.Printf("Disk pricing: %v\n", resp)
+```
+
+## Disk Recommendations
+
+```go
+resp, _, err := client.DefaultAPI.
+    RecommendationsDisksPost(context.Background()).
+    Execute()
+
+if err != nil {
+    fmt.Fprintf(os.Stderr, "error: %v\n", err)
+    return
+}
+
+fmt.Printf("Disk recommendations: %v\n", resp)
+```

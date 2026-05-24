@@ -2,88 +2,55 @@
 title: Authentication
 ---
 
-# Authentication
+## Get an API Key
 
-Some endpoints such as the [recommendations endpoint](/api-reference/endpoint/recommendations) require authentication. Follow these steps to get started:
+Create an account on [costgraph.baselinehq.cloud](https://costgraph.baselinehq.cloud/) to obtain your API key.
 
-<Steps>
-  <Step title="Obtain an API Key">
-    To use the API, you'll need an API key. Create an account on [costgraph.baselinehq.cloud](https://costgraph.baselinehq.cloud/) to obtain your API key.
+<img height="400" src="/images/api-key.png" />
 
-    <img height="400" src="/images/api-key.png" />
-  </Step>
-  <Step title="Create Request File">
-    Create a file named `rec.json` with the following content:
+## Authenticate with the SDK
 
-    ```json
-    {
-      "region": "nyc1",
-      "provider": "digitalocean",
-      "instance_type": "s-4vcpu-16gb-amd",
-      "operating_system": "linux",
-      "service": "Droplet",
-      "usage_type": "ondemand",
-      "availability_zone": "",
-      "predicates": {
-        "usage_types": ["ondemand"]
-      },
-      "vm": {
-        "cpu_cores": 4,
-        "ram_gb": 16
-      },
-      "usage": {
-        "cpu_cores": 3,
-        "ram_gb": 5
-      }
-    }
+<Tabs>
+  <Tab title="Go">
+    ```go
+    import (
+        "fmt"
+        "os"
+
+        openapiclient "github.com/baselinehq/pricingapi-client-golang"
+    )
+
+    token := os.Getenv("COSTGRAPH_API_KEY")
+
+    configuration := openapiclient.NewConfiguration()
+    configuration.DefaultHeader["Authorization"] = fmt.Sprintf("Bearer %s", token)
+
+    client := openapiclient.NewAPIClient(configuration)
     ```
-  </Step>
-  <Step title="Make the Request">
-    Use curl to make the request to the recommendations endpoint:
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript
+    import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
 
-    ```bash
-    curl -H 'X-API-KEY: YOUR_API_KEY' \
-         -XPOST https://pricing.baselinehq.cloud/recommendations \
-         -d@rec.json
+    const token = process.env.COSTGRAPH_API_KEY;
+
+    const config = new Configuration({
+      basePath: 'https://pricing.baselinehq.cloud',
+      apiKey: (name: string) => (name === 'X-API-Key' ? token : undefined),
+    });
+
+    const client = new DefaultApi(config);
     ```
-  </Step>
-</Steps>
+  </Tab>
+</Tabs>
 
-## Using the API Key
+## Raw HTTP
 
-Include your API key in the `X-API-KEY` header of your requests:
+Include your API key in the `X-API-KEY` header:
 
 ```bash
-X-API-KEY: YOUR_API_KEY
-```
-
-Replace `YOUR_API_KEY` with the API key you obtained from the dashboard.
-
-
-## Example Usage
-
-Here's a complete example using curl:
-
-```bash
-# Store your API key in an environment variable
-export COSTGRAPH_API_KEY="your-api-key"
-
-# Make an authenticated request
-curl -H "X-API-KEY $COSTGRAPH_API_KEY" \
+curl -H "X-API-KEY: $COSTGRAPH_API_KEY" \
      -H "Content-Type: application/json" \
-     -XPOST https://pricing.baselinehq.cloud/recommendations \
-     -d@rec.json
+     -X POST https://pricing.baselinehq.cloud/v1/compute/pricing \
+     -d '{"instance_type": "s-2vcpu-2gb", "provider": "digitalocean", "region": "nyc1", "service": "Droplet", "usage_type": "ondemand", "operating_system": "linux", "vm": {"cpu_cores": 2, "ram_gb": 2}}'
 ```
-
-## Errors
-
-If authentication fails, you'll receive a 401 Unauthorized response:
-
-```json
-{
-  "error": "Unauthorized",
-}
-```
-
-
-

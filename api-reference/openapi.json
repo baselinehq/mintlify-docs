@@ -1,1283 +1,1487 @@
 {
-    "openapi": "3.0.1",
-    "info": {
-      "title": "CostGraph Pricing API",
-      "description": "Provides API level access to the Costgraph Services.",
-      "termsOfService": "https://costgraph.baselinehq.cloud/terms",
-      "contact": {
-        "name": "Customer Support",
-        "url": "https://costgraph.baselinehq.cloud/support",
-        "email": "contact@baselinehq.cloud"
-      },
-      "license": {
-        "name": "Apache 2.0",
-        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-      },
-      "version": "1.0"
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CostGraph Pricing API",
+    "description": "Provides API level access to the CostGraph Pricing Services.",
+    "termsOfService": "https://costgraph.baselinehq.cloud/terms-of-use",
+    "contact": {
+      "name": "Customer Support",
+      "url": "https://costgraph.baselinehq.cloud/support",
+      "email": "contact@baselinehq.cloud"
     },
-    "servers": [
-      {
-        "url": "https://pricing.baselinehq.cloud"
-      }
-    ],
-    "paths": {
-      "/healthz": {
-        "get": {
-          "tags": [
-            "Health"
-          ],
-          "summary": "Health Check",
-          "description": "Check the health of the API service",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/api.Health"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/v1/checkpoint": {
-        "get": {
-          "tags": [
-            "Checkpoint"
-          ],
-          "summary": "Checkpoint",
-          "description": "Get the latest checkpoint data\nThis endpoint retrieves the latest checkpoint data from the specified table.\nIf no table is specified, it defaults to \"k8s_namespace_recommendations\".\nThe checkpoint data includes the creation time and other relevant fields.",
-          "parameters": [
-            {
-              "name": "table",
-              "in": "query",
-              "description": "Table name (default: k8s_namespace_recommendations)",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.Checkpoint"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
-            }
-          ]
-        }
-      },
-      "/v1/compute/pricing": {
-        "post": {
-          "tags": [
-            "Compute"
-          ],
-          "summary": "Compute Pricing",
-          "description": "Compute pricing for a given instance",
-          "requestBody": {
-            "description": "Instance details",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://pricing.baselinehq.cloud/"
+    }
+  ],
+  "paths": {
+    "/marketplace/providers/compute": {
+      "get": {
+        "summary": "Get your custom pricing entries",
+        "description": "Get your custom pricing entries",
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom pricing",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.InstancePricing"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+                  "$ref": "#/components/schemas/types.MarketplaceProvidersResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
-          ],
-          "x-codegen-request-body-name": "instance"
-        }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
       },
-      "/v1/compute/recommendations": {
-        "get": {
-          "tags": [
-            "Compute"
-          ],
-          "summary": "Compute Recommendations",
-          "description": "Get all node recommendations for K8s backed nodes\nThis endpoint computes recommendations for K8s instances based on the data available in the database.\nIt retrieves the recommendations from the K8sInstanceRecommendations table and returns them as a JSON array.\nThe recommendations include details such as instance type, resource usage, and suggested changes.",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/types.K8sInstanceRecommendation"
-                    }
-                  }
-                }
+      "post": {
+        "summary": "Register a custom provider",
+        "description": "Register a custom provider",
+        "requestBody": {
+          "description": "Custom pricing request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.CustomPriceRequest"
               }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing response for a custom provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomPricingResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
-          ]
-        }
+          },
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
       },
-      "/v1/namespace_recommendations": {
-        "get": {
-          "tags": [
-            "Kubernetes"
-          ],
-          "summary": "Namespace Recommendations",
-          "description": "Get recommendations for Kubernetes namespaces\nThis endpoint retrieves recommendations for Kubernetes namespaces based on the provided time range.\nIt fetches data from the K8sNamespaceRecommendations table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe recommendations include details such as CPU usage, memory usage, and resource allocation\nfor each namespace.",
-          "parameters": [
-            {
-              "name": "cluster",
-              "in": "query",
-              "description": "Cluster name",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "namespace",
-              "in": "query",
-              "description": "Namespace",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "start_date",
-              "in": "query",
-              "description": "Start date in RFC3339 format (e.g., 2023-10-01T00:00:00Z)",
-              "required": true,
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "end_date",
-              "in": "query",
-              "description": "End date in RFC3339 format (e.g :, 2023-10-31T23:59:59Z)",
-              "required": true,
-              "schema": {
-                "type": "string"
-              }
+      "delete": {
+        "summary": "Delete a custom provider instance",
+        "description": "Delete a custom provider instance",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Instance ID",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/types.NamespaceRecommendation"
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for a custom provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomPricingResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
-            }
-          ]
-        }
-      },
-      "/v1/vm_metadata": {
-        "get": {
-          "tags": [
-            "VM"
-          ],
-          "summary": "VM Metadata",
-          "description": "Get metadata for VMs\nThis endpoint retrieves metadata for VMs based on the provided time range.\nIt fetches data from the VMInfo table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).",
-          "parameters": [
-            {
-              "name": "Name",
-              "in": "query",
-              "description": "Name of the VM (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "Hostname",
-              "in": "query",
-              "description": "Hostname of the VM (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "Provider",
-              "in": "query",
-              "description": "Cloud provider (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "Region",
-              "in": "query",
-              "description": "Region (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "AvailabilityZone",
-              "in": "query",
-              "description": "Availability zone (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "InstanceType",
-              "in": "query",
-              "description": "Instance type (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "Architecture",
-              "in": "query",
-              "description": "CPU architecture (optional)",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "OperatingSystem",
-              "in": "query",
-              "description": "Operating system (optional)",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/types.VMInfo"
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+          "400": {
+            "description": "Invalid id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
-            }
-          ]
-        }
-      },
-      "/v1/vm_recommendations": {
-        "get": {
-          "tags": [
-            "VM"
-          ],
-          "summary": "VM Recommendations",
-          "description": "Get recommendations for VMs\nThis endpoint retrieves recommendations for VMs based on the provided time range.\nIt fetches data from the VMUsageRecommendations table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe recommendations include details such as CPU usage, memory usage, and disk I/O\nfor each VM.",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/types.ProcessRecommendations"
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
-            }
-          ]
-        }
-      },
-      "/v1/vm_summaries": {
-        "get": {
-          "tags": [
-            "VM"
-          ],
-          "summary": "VM Summaries",
-          "description": "Get summaries for VMs\nThis endpoint retrieves summaries for VMs based on the provided time range.\nIt fetches data from the VMSummaries table and returns it as a JSON array.\nThe time range is specified by the start_date and end_date query parameters in RFC\n3339 format (e.g., 2023-10-01T00:00:00Z).\nThe summaries include details such as CPU usage, memory usage, and disk I/O\nfor each VM.",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/types.VMSummary"
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/types.ErrorResponse"
-                  }
+          "404": {
+            "description": "Instance not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
                 }
               }
             }
           },
-          "security": [
-            {
-              "ApiKeyAuth": []
-            },
-            {
-              "BearerAuth": []
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
-          ]
-        }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
-    "components": {
-      "schemas": {
-        "api.Health": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "type": "string"
+    "/marketplace/providers/disks": {
+      "get": {
+        "summary": "Get your custom disk pricing entries",
+        "description": "Get your custom disk pricing entries",
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom disk pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.MarketplaceDiskProvidersResponse"
+                }
+              }
             }
-          }
-        },
-        "github_com_baselinehq_golang-shared_types.Instance": {
-          "type": "object",
-          "properties": {
-            "availability_zone": {
-              "type": "string"
-            },
-            "instance_type": {
-              "type": "string"
-            },
-            "operating_system": {
-              "type": "string"
-            },
-            "provider": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
-            },
-            "region": {
-              "type": "string"
-            },
-            "service": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
-            },
-            "usage_type": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
-            },
-            "vm": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
-            }
-          }
-        },
-        "github_com_baselinehq_golang-shared_types.InstancePricing": {
-          "type": "object",
-          "properties": {
-            "availability_zone": {
-              "type": "string"
-            },
-            "cost_per_hour": {
-              "type": "number"
-            },
-            "cpu_cores": {
-              "type": "number"
-            },
-            "cpu_cores_cost_per_hour": {
-              "type": "number"
-            },
-            "instance_type": {
-              "type": "string"
-            },
-            "operating_system": {
-              "type": "string"
-            },
-            "provider": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
-            },
-            "ram_gb": {
-              "type": "number"
-            },
-            "ram_gb_cost_per_hour": {
-              "type": "number"
-            },
-            "raw_pricing_data": {
-              "$ref": "#/components/schemas/types.Column"
-            },
-            "region": {
-              "type": "string"
-            },
-            "service": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
-            },
-            "usage_type": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
-            }
-          }
-        },
-        "github_com_baselinehq_golang-shared_types.Provider": {
-          "type": "string",
-          "enum": [
-            "GCP",
-            "AWS",
-            "DigitalOcean",
-            "Azure",
-            "Hetzner",
-            "OVHCloud",
-            "Base"
-          ],
-          "x-enum-comments": {
-            "Base": "Base provider for default pricing, no specific cloud provider"
           },
-          "x-enum-descriptions": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "Base provider for default pricing, no specific cloud provider"
-          ],
-          "x-enum-varnames": [
-            "GCP",
-            "AWS",
-            "DigitalOcean",
-            "Azure",
-            "Hetzner",
-            "OVHCloud",
-            "Base"
-          ]
-        },
-        "github_com_baselinehq_golang-shared_types.Service": {
-          "type": "string",
-          "enum": [
-            "ComputeEngine",
-            "AmazonEC2",
-            "Droplet",
-            "AzureCompute",
-            "HetznerCompute",
-            "OVHPublicCloud",
-            "BaseCompute"
-          ],
-          "x-enum-varnames": [
-            "ComputeEngine",
-            "AmazonEC2",
-            "Droplet",
-            "AzureCompute",
-            "HetznerCompute",
-            "OVHPublicCloud",
-            "BaseCompute"
-          ]
-        },
-        "github_com_baselinehq_golang-shared_types.UsageType": {
-          "type": "string",
-          "enum": [
-            "SPOT_PREEMPTIBLE",
-            "ONDEMAND",
-            "RESERVED",
-            "ONDEMAND_CUSTOM",
-            "SPOT_PREEMPTIBLE_CUSTOM",
-            "RESERVED_CUSTOM",
-            "SOLE_TENANCY",
-            "CUSTOM",
-            "EXTENDED"
-          ],
-          "x-enum-varnames": [
-            "SPOT_PREEMPTIBLE",
-            "ONDEMAND",
-            "RESERVED",
-            "ONDEMAND_CUSTOM",
-            "SPOT_PREEMPTIBLE_CUSTOM",
-            "RESERVED_CUSTOM",
-            "SOLE_TENANCY",
-            "CUSTOM",
-            "EXTENDED"
-          ]
-        },
-        "github_com_baselinehq_golang-shared_types.VM": {
-          "type": "object",
-          "properties": {
-            "cpu_cores": {
-              "type": "number"
-            },
-            "ram_gb": {
-              "type": "number"
-            }
-          }
-        },
-        "types.Checkpoint": {
-          "type": "object",
-          "properties": {
-            "creationTime": {
-              "type": "string"
-            }
-          }
-        },
-        "types.Column": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object"
-          }
-        },
-        "types.ContainerRecommendation": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/components/schemas/types.Recommendation"
-          }
-        },
-        "types.DBInstancePricing": {
-          "type": "object",
-          "properties": {
-            "availabilityZone": {
-              "type": "string"
-            },
-            "costPerHour": {
-              "type": "number",
-              "format": "float64"
-            },
-            "cpucores": {
-              "type": "number",
-              "format": "float64"
-            },
-            "cpucoresCostPerHour": {
-              "type": "number",
-              "format": "float64"
-            },
-            "instanceType": {
-              "type": "string"
-            },
-            "operatingSystem": {
-              "type": "string"
-            },
-            "provider": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
-            },
-            "ramgb": {
-              "type": "number",
-              "format": "float64"
-            },
-            "ramgbcostPerHour": {
-              "type": "number",
-              "format": "float64"
-            },
-            "rawPricingData": {
-              "$ref": "#/components/schemas/types.Column"
-            },
-            "region": {
-              "type": "string"
-            },
-            "service": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
-            },
-            "usageType": {
-              "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
-            }
-          }
-        },
-        "types.DBVM": {
-          "type": "object",
-          "properties": {
-            "cpucores": {
-              "type": "number",
-              "format": "float64"
-            },
-            "ramgb": {
-              "type": "number",
-              "format": "float64"
-            }
-          }
-        },
-        "types.ErrorResponse": {
-          "type": "object",
-          "properties": {
-            "error": {
-              "type": "string"
-            }
-          }
-        },
-        "types.ExpectedUtilisationPercent": {
-          "type": "object",
-          "properties": {
-            "cpu": {
-              "type": "number"
-            },
-            "memory": {
-              "type": "number"
-            }
-          }
-        },
-        "types.K8sInstanceRecommendation": {
-          "type": "object",
-          "properties": {
-            "cluster": {
-              "type": "string"
-            },
-            "creationTime": {
-              "type": "string"
-            },
-            "node": {
-              "type": "string"
-            },
-            "recommendations": {
-              "$ref": "#/components/schemas/types.Results"
-            }
-          }
-        },
-        "types.NamespaceRecommendation": {
-          "type": "object",
-          "properties": {
-            "APIVersion": {
-              "type": "string"
-            },
-            "Cluster": {
-              "type": "string"
-            },
-            "ContainerRecommendations": {
-              "$ref": "#/components/schemas/types.ContainerRecommendation"
-            },
-            "CreationTime": {
-              "type": "string"
-            },
-            "CurrentSpend": {
-              "type": "number"
-            },
-            "ExpectedUtilisationPercent": {
-              "$ref": "#/components/schemas/types.ExpectedUtilisationPercent"
-            },
-            "Namespace": {
-              "type": "string"
-            },
-            "NewSpend": {
-              "type": "number"
-            },
-            "ResourceQuotaRecommendations": {
-              "$ref": "#/components/schemas/types.ResourceQuotaRecommendations"
-            },
-            "TotalCPULimits": {
-              "type": "number"
-            },
-            "TotalCPULimitsSavings": {
-              "type": "number"
-            },
-            "TotalCPURequests": {
-              "type": "number"
-            },
-            "TotalCPURequestsSavings": {
-              "type": "number"
-            },
-            "TotalMemoryLimits": {
-              "type": "number"
-            },
-            "TotalMemoryLimitsSavings": {
-              "type": "number"
-            },
-            "TotalMemoryRequests": {
-              "type": "number"
-            },
-            "TotalMemoryRequestsSavings": {
-              "type": "number"
-            },
-            "TotalResourceSavingsAmount": {
-              "type": "number"
-            }
-          }
-        },
-        "types.ProcessGroup": {
-          "type": "string",
-          "enum": [
-            "kubernetes",
-            "docker",
-            "system",
-            "user",
-            "unknown"
-          ],
-          "x-enum-varnames": [
-            "Kubernetes",
-            "Docker",
-            "System",
-            "User",
-            "Unknown"
-          ]
-        },
-        "types.ProcessRecommendations": {
-          "type": "object",
-          "properties": {
-            "cgroup": {
-              "type": "string"
-            },
-            "costDriver": {
-              "type": "string"
-            },
-            "cpu": {
-              "$ref": "#/components/schemas/types.VMResourceRecommendation"
-            },
-            "creationTime": {
-              "type": "string"
-            },
-            "currentSpend": {
-              "type": "number",
-              "format": "float64"
-            },
-            "memory": {
-              "$ref": "#/components/schemas/types.VMResourceRecommendation"
-            },
-            "process": {
-              "type": "string"
-            },
-            "processGroup": {
-              "$ref": "#/components/schemas/types.ProcessGroup"
-            },
-            "vm": {
-              "type": "string"
-            }
-          }
-        },
-        "types.Recommendation": {
-          "type": "object",
-          "properties": {
-            "Annotations": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
               }
-            },
-            "CPU": {
-              "$ref": "#/components/schemas/types.ResourceRecommendation"
-            },
-            "Container": {
-              "type": "string"
-            },
-            "CostDriver": {
-              "type": "string"
-            },
-            "CurrentSpend": {
-              "type": "number"
-            },
-            "Kind": {
-              "type": "string"
-            },
-            "Labels": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
               }
-            },
-            "Memory": {
-              "$ref": "#/components/schemas/types.ResourceRecommendation"
-            },
-            "Name": {
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Register a custom disk provider",
+        "description": "Register a custom disk provider",
+        "requestBody": {
+          "description": "Custom disk pricing request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.CustomDiskPriceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing response for a custom disk provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomDiskPricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      },
+      "delete": {
+        "summary": "Delete a custom disk provider entry",
+        "description": "Delete a custom disk provider entry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Disk pricing ID",
+            "required": true,
+            "schema": {
               "type": "string"
-            },
-            "Node": {
-              "type": "string"
-            },
-            "RecommendedSpend": {
-              "type": "number"
-            },
-            "Replicas": {
-              "type": "integer"
-            },
-            "SavingsInDollars": {
-              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for a custom disk provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomDiskPricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Disk pricing entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
           }
         },
-        "types.ResourceQuotaRecommendation": {
-          "type": "object",
-          "properties": {
-            "Current": {
-              "type": "integer"
-            },
-            "Recommended": {
-              "type": "integer"
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/pricing": {
+      "post": {
+        "summary": "Get pricing for an instance",
+        "description": "Get pricing for compute instances",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing for a given instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/schema.ComputePricingsRow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pricing not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
           }
         },
-        "types.ResourceQuotaRecommendations": {
-          "type": "object",
-          "properties": {
-            "CPU": {
-              "$ref": "#/components/schemas/types.ResourceQuotaRecommendation"
-            },
-            "Memory": {
-              "$ref": "#/components/schemas/types.ResourceQuotaRecommendation"
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/pricing/compute": {
+      "post": {
+        "summary": "Get pricing for an instance",
+        "description": "Get pricing for compute instances",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing for a given instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/schema.ComputePricingsRow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pricing not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
           }
         },
-        "types.ResourceRecommendation": {
-          "type": "object",
-          "properties": {
-            "Computed": {
-              "$ref": "#/components/schemas/types.ResourceValue"
-            },
-            "Current": {
-              "$ref": "#/components/schemas/types.ResourceValue"
-            },
-            "Instant": {
-              "$ref": "#/components/schemas/types.ResourceValue"
-            },
-            "Recommended": {
-              "$ref": "#/components/schemas/types.ResourceValue"
-            },
-            "Savings": {
-              "$ref": "#/components/schemas/types.ResourceValue"
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/pricing/disks": {
+      "post": {
+        "summary": "Get pricing for a disk",
+        "description": "Get pricing for a disk",
+        "requestBody": {
+          "description": "Disk",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.Disk"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing for a given disk",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/schema.DiskPricingsRow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pricing not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
           }
         },
-        "types.ResourceValue": {
-          "type": "object",
-          "properties": {
-            "CostInDollars": {
-              "type": "number"
-            },
-            "Limit": {
-              "type": "number"
-            },
-            "Request": {
-              "type": "number"
-            },
-            "TotalCostInDollars": {
-              "type": "number"
-            },
-            "TotalLimit": {
-              "type": "number"
-            },
-            "TotalRequest": {
-              "type": "number"
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/providers": {
+      "get": {
+        "summary": "Get details for the providers",
+        "description": "Get details for the providers",
+        "responses": {
+          "200": {
+            "description": "List of providers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/provider.Configs"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
             }
           }
         },
-        "types.Results": {
-          "type": "object",
-          "additionalProperties": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/recommendations": {
+      "post": {
+        "summary": "Get recommendations for compute instances",
+        "description": "Get recommendations for compute instances (Recommendations, InstancePricing, VM, Savings)",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.ComputeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.ComputeResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/recommendations/compute": {
+      "post": {
+        "summary": "Get recommendations for compute instances",
+        "description": "Get recommendations for compute instances (Recommendations, InstancePricing, VM, Savings)",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.ComputeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.ComputeResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/recommendations/disks": {
+      "post": {
+        "summary": "Get recommendations for disks",
+        "description": "Get recommendations for disks used in the server (Recommendations, DiskPricing, Savings)",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.DiskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.DiskResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "github_com_baselinehq_golang-shared_types.Instance": {
+        "type": "object",
+        "properties": {
+          "availability_zone": {
+            "type": "string"
+          },
+          "fallback_to_base_pricing": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instance_type": {
+            "type": "string"
+          },
+          "operating_system": {
+            "type": "string"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/types.Service"
+          },
+          "usage_type": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+          },
+          "vm": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+          }
+        }
+      },
+      "github_com_baselinehq_golang-shared_types.Provider": {
+        "type": "string",
+        "enum": [
+          "GCP",
+          "AWS",
+          "DigitalOcean",
+          "Azure",
+          "Hetzner",
+          "OVHCloud",
+          "Base"
+        ],
+        "x-enum-comments": {
+          "Base": "Base provider for default pricing, no specific cloud provider"
+        },
+        "x-enum-descriptions": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Base provider for default pricing, no specific cloud provider"
+        ],
+        "x-enum-varnames": [
+          "GCP",
+          "AWS",
+          "DigitalOcean",
+          "Azure",
+          "Hetzner",
+          "OVHCloud",
+          "Base"
+        ]
+      },
+      "github_com_baselinehq_golang-shared_types.UsageType": {
+        "type": "string",
+        "enum": [
+          "SPOT_PREEMPTIBLE",
+          "ONDEMAND",
+          "RESERVED",
+          "ONDEMAND_CUSTOM",
+          "SPOT_PREEMPTIBLE_CUSTOM",
+          "RESERVED_CUSTOM",
+          "SOLE_TENANCY",
+          "CUSTOM",
+          "EXTENDED"
+        ],
+        "x-enum-varnames": [
+          "SPOT_PREEMPTIBLE",
+          "ONDEMAND",
+          "RESERVED",
+          "ONDEMAND_CUSTOM",
+          "SPOT_PREEMPTIBLE_CUSTOM",
+          "RESERVED_CUSTOM",
+          "SOLE_TENANCY",
+          "CUSTOM",
+          "EXTENDED"
+        ]
+      },
+      "github_com_baselinehq_golang-shared_types.VM": {
+        "type": "object",
+        "properties": {
+          "cpu_cores": {
+            "type": "number"
+          },
+          "ram_gb": {
+            "type": "number"
+          }
+        }
+      },
+      "github_com_baselinehq_pricingapi_pkg_types.Status": {
+        "type": "string",
+        "enum": [
+          "Registered",
+          "Deleted"
+        ],
+        "x-enum-varnames": [
+          "Registered",
+          "Deleted"
+        ]
+      },
+      "handler.ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "provider.Config": {
+        "type": "object",
+        "properties": {
+          "predicates": {
+            "$ref": "#/components/schemas/types.Predicates"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          }
+        }
+      },
+      "provider.Configs": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/provider.Config"
+        }
+      },
+      "schema.ComputePricingsRow": {
+        "type": "object",
+        "properties": {
+          "architecture": {
+            "type": "string"
+          },
+          "availability_zone": {
+            "type": "string"
+          },
+          "cost_per_hour": {
+            "type": "number"
+          },
+          "cpu_cores": {
+            "type": "number"
+          },
+          "cpu_cores_cost_per_hour": {
+            "type": "number"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instance_type": {
+            "type": "string"
+          },
+          "operating_system": {
+            "type": "string"
+          },
+          "period_billing_hours": {
+            "type": "number"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "ram_gb": {
+            "type": "number"
+          },
+          "ram_gb_cost_per_hour": {
+            "type": "number"
+          },
+          "raw_pricing_data": {
+            "type": "object",
+            "properties": {}
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {}
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "usage_type": {
+            "type": "string"
+          }
+        }
+      },
+      "schema.DiskPricingsRow": {
+        "type": "object",
+        "properties": {
+          "availability_zone": {
+            "type": "string"
+          },
+          "cost_per_gb_hour": {
+            "type": "number"
+          },
+          "cost_per_iops_hour": {
+            "type": "number"
+          },
+          "cost_per_throughput_mbps_hour": {
+            "type": "number"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "max_capacity_gb": {
+            "type": "number"
+          },
+          "max_iops": {
+            "type": "number"
+          },
+          "max_throughput_mbps": {
+            "type": "number"
+          },
+          "min_capacity_gb": {
+            "type": "number"
+          },
+          "min_iops": {
+            "type": "number"
+          },
+          "min_throughput_mbps": {
+            "type": "number"
+          },
+          "period_billing_hours": {
+            "type": "number"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "raw_pricing_data": {
+            "type": "object",
+            "properties": {}
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {}
+          },
+          "type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "usage_type": {
+            "type": "string"
+          }
+        }
+      },
+      "types.ComputeRequest": {
+        "type": "object",
+        "properties": {
+          "include_metadata": {
+            "type": "boolean"
+          },
+          "instance": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+          },
+          "predicates": {
+            "$ref": "#/components/schemas/types.Predicates"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+          }
+        }
+      },
+      "types.ComputeResults": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "instance_pricing": {
+                "$ref": "#/components/schemas/schema.ComputePricingsRow"
+              },
+              "savings": {
+                "$ref": "#/components/schemas/types.Savings"
+              },
+              "vm": {
+                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+              }
+            }
+          }
+        }
+      },
+      "types.CustomDiskPriceRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "instancePricing": {
-                  "$ref": "#/components/schemas/types.DBInstancePricing"
-                },
-                "savings": {
-                  "$ref": "#/components/schemas/types.Savings"
-                },
-                "vm": {
-                  "$ref": "#/components/schemas/types.DBVM"
-                }
+              "$ref": "#/components/schemas/schema.DiskPricingsRow"
+            }
+          }
+        }
+      },
+      "types.CustomDiskPricingResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.DiskPricingsRow"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+          }
+        }
+      },
+      "types.CustomPriceRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.ComputePricingsRow"
+            }
+          }
+        }
+      },
+      "types.CustomPricingResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.ComputePricingsRow"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+          }
+        }
+      },
+      "types.Disk": {
+        "type": "object",
+        "properties": {
+          "availability_zone": {
+            "type": "string"
+          },
+          "capacity_gb": {
+            "type": "number"
+          },
+          "fallback_to_base_pricing": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "iops": {
+            "type": "number"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/types.Service"
+          },
+          "throughput_mbps": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "usage_type": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+          }
+        }
+      },
+      "types.DiskRequest": {
+        "type": "object",
+        "properties": {
+          "include_metadata": {
+            "type": "boolean"
+          },
+          "instance": {
+            "$ref": "#/components/schemas/types.Disk"
+          },
+          "predicates": {
+            "$ref": "#/components/schemas/types.Predicates"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/types.Disk"
+          }
+        }
+      },
+      "types.DiskResults": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "disk": {
+                "$ref": "#/components/schemas/schema.DiskPricingsRow"
+              },
+              "disk_pricing": {
+                "$ref": "#/components/schemas/schema.DiskPricingsRow"
+              },
+              "savings": {
+                "$ref": "#/components/schemas/types.Savings"
               }
             }
           }
-        },
-        "types.Savings": {
-          "type": "object",
-          "properties": {
-            "amountPerHour": {
-              "type": "number",
-              "format": "float64"
-            },
-            "amountPerMonth": {
-              "type": "number",
-              "format": "float64"
-            },
-            "amountPerYear": {
-              "type": "number",
-              "format": "float64"
-            },
-            "percentage": {
-              "type": "number",
-              "format": "float64"
+        }
+      },
+      "types.MarketplaceDiskProvidersResponse": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.DiskPricingsRow"
             }
           }
-        },
-        "types.VMInfo": {
-          "type": "object",
-          "properties": {
-            "architecture": {
-              "type": "string"
-            },
-            "availabilityZone": {
-              "type": "string"
-            },
-            "costPerHour": {
-              "type": "number",
-              "format": "float64"
-            },
-            "cpucores": {
-              "type": "number",
-              "format": "float64"
-            },
-            "creationTime": {
-              "type": "string"
-            },
-            "hostname": {
-              "type": "string"
-            },
-            "instanceType": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "operatingSystem": {
-              "type": "string"
-            },
-            "provider": {
-              "type": "string"
-            },
-            "ramgiB": {
-              "type": "number",
-              "format": "float64"
-            },
-            "region": {
-              "type": "string"
+        }
+      },
+      "types.MarketplaceProvidersResponse": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.ComputePricingsRow"
             }
           }
-        },
-        "types.VMResourceRecommendation": {
-          "type": "object",
-          "properties": {
-            "baseline": {
-              "type": "object",
-              "description": "Historical baseline (mean/p99), what recommendations are based on",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/types.VMResourceValue"
-                }
-              ]
-            },
-            "current": {
-              "type": "object",
-              "description": "Real time current usage atleast since reconcile time",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/types.VMResourceValue"
-                }
-              ]
-            },
-            "recommended": {
-              "$ref": "#/components/schemas/types.VMResourceValue"
-            }
-          }
-        },
-        "types.VMResourceValue": {
-          "type": "object",
-          "properties": {
-            "costInDollars": {
-              "type": "number",
-              "format": "float64"
-            },
-            "value": {
-              "type": "number",
-              "format": "float64"
-            }
-          }
-        },
-        "types.VMSummary": {
-          "type": "object",
-          "properties": {
-            "creationTime": {
+        }
+      },
+      "types.Predicates": {
+        "type": "object",
+        "properties": {
+          "availability_zones": {
+            "type": "array",
+            "items": {
               "type": "string"
-            },
-            "expectedUtilisationCPU": {
-              "type": "number",
-              "format": "float64"
-            },
-            "expectedUtilisationRAM": {
-              "type": "number",
-              "format": "float64"
-            },
-            "totalCurrentCPU": {
-              "type": "number",
-              "format": "float64"
-            },
-            "totalCurrentRAM": {
-              "type": "number",
-              "format": "float64"
-            },
-            "totalRecommendedCPU": {
-              "type": "number",
-              "format": "float64"
-            },
-            "totalRecommendedRAM": {
-              "type": "number",
-              "format": "float64"
-            },
-            "vm": {
+            }
+          },
+          "disk_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instance_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operating_systems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "usage_types": {
+            "type": "array",
+            "items": {
               "type": "string"
             }
           }
         }
       },
-      "securitySchemes": {
-        "ApiKeyAuth": {
-          "type": "apiKey",
-          "description": "Api key for authentication",
-          "name": "X-API-KEY",
-          "in": "header"
+      "types.Savings": {
+        "type": "object",
+        "properties": {
+          "amount_per_hour": {
+            "type": "number"
+          },
+          "amount_per_month": {
+            "type": "number"
+          },
+          "amount_per_year": {
+            "type": "number"
+          },
+          "percentage": {
+            "type": "number"
+          }
         }
+      },
+      "types.Service": {
+        "type": "string",
+        "enum": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "ComputeEnginePersistentDisk"
+        ],
+        "x-enum-varnames": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "ComputeEnginePersistentDisk"
+        ]
       }
     },
-    "x-original-swagger-version": "2.0"
-  }
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "description": "API key with \"bl_\" prefix (e.g. \"bl_<api_key>\")",
+        "name": "X-API-Key",
+        "in": "header"
+      },
+      "BearerAuth": {
+        "type": "apiKey",
+        "description": "Bearer token for authentication (e.g. \"Bearer <token>\")",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "x-original-swagger-version": "2.0"
+}

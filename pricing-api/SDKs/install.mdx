@@ -1,0 +1,47 @@
+---
+title: Installation
+description: 'Install the CostGraph Pricing API SDK'
+---
+
+## Prerequisites
+
+- [API Key](/api-reference/authentication)
+- Go 1.23+ or Node.js 16+
+
+## Install
+
+<Tabs>
+  <Tab title="Go">
+    ```bash
+    go get github.com/baselinehq/pricingapi-client-golang
+    ```
+
+    Import in your code:
+
+    ```go
+    import openapiclient "github.com/baselinehq/pricingapi-client-golang"
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```bash
+    npm install @baselinehq/pricingapi-client-typescript
+    ```
+
+    Import in your code:
+
+    ```typescript
+    import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Go" icon="golang" href="/pricing-api/SDKs/go">
+    Usage examples and API reference for the Go client.
+  </Card>
+  <Card title="TypeScript" icon="js" href="/pricing-api/SDKs/typescript">
+    Usage examples and API reference for the TypeScript client.
+  </Card>
+</CardGroup>

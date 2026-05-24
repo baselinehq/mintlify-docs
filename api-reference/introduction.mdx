@@ -1,9 +1,9 @@
 ---
 title: 'Introduction'
-description: 'BaselineHQ Pricing API'
+description: 'CostGraph Pricing API'
 ---
 
-The BaselineHQ Pricing API provides real-time access to cloud instance pricing and cost optimization recommendations across multiple cloud providers. 
+The CostGraph Pricing API provides real-time cloud instance pricing and cost optimization recommendations across multiple providers.
 
 ## Supported Cloud Providers
 
@@ -15,24 +15,17 @@ The BaselineHQ Pricing API provides real-time access to cloud instance pricing a
 | DigitalOcean | Droplets | All regions | Standard, Premium |
 | Hetzner | Cloud instances | All regions | Standard |
 | OVH | Instances | All regions | On-demand, Reserved |
-    
 
-## API Endpoints
+## Get Started
 
-### Pricing 
-The pricing endpoint (`/pricing`) provides detailed cost information for specific cloud instances. You can query pricing for any supported instance type, region, and provider combination. The endpoint returns:
-- Hourly costs for CPU and RAM
-- Total cost per hour
-- Raw pricing data from the provider
-- Instance specifications
-
-### Recommendations
-The recommendations endpoint (`/recommendations`) analyzes your current instance configuration and suggests cost-effective alternatives across all supported providers. The endpoint provides:
-- Cost comparison with current setup
-- Potential savings (hourly, monthly, yearly)
-- Alternative instance types
-- Cross-provider recommendations
-
-
-### Providers
-The providers endpoint (`/providers`) returns a list of all supported cloud providers, regions, services, and usage types (e.g.: spot_preemptible, ondemand, reserved). All values are now case-insensitive and returned in lower case.
+<CardGroup cols={3}>
+  <Card title="SDKs" icon="code" href="/pricing-api/SDKs/install">
+    Install the Go or TypeScript client and start querying pricing data.
+  </Card>
+  <Card title="Authentication" icon="key" href="/api-reference/authentication">
+    Get your API key and authenticate requests.
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/endpoint/pricing">
+    Browse the raw API endpoints.
+  </Card>
+</CardGroup>

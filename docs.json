@@ -73,6 +73,7 @@
       },
       {
         "tab": "Pricing API",
+        "openapi": "https://raw.githubusercontent.com/baselinehq/mintlify-docs/refs/heads/main/api-reference/openapi.json",
         "groups": [
           {
             "group": "Getting Started",
@@ -82,43 +83,33 @@
             ]
           },
           {
-            "group": "Go",
-            "icon": "golang",
+            "group": "SDKs",
             "pages": [
-              "pricing-api/SDKs/go/quickstart",
-              {
-                "group": "Reference",
-                "pages": [
-                  "pricing-api/SDKs/go/reference/compute",
-                  "pricing-api/SDKs/go/reference/disk",
-                  "pricing-api/SDKs/go/reference/savings",
-                  "pricing-api/SDKs/go/reference/marketplace",
-                  "pricing-api/SDKs/go/reference/providers"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Marketplace",
-            "pages": [
-              "api-reference/marketplace/create-marketplace",
-              "api-reference/marketplace/get-marketplace"
+              "pricing-api/SDKs/install",
+              "pricing-api/SDKs/go",
+              "pricing-api/SDKs/typescript"
             ]
           },
           {
             "group": "API Reference",
             "pages": [
-              "api-reference/endpoint/pricing",
-              "api-reference/endpoint/recommendations",
-              "api-reference/endpoint/providers"
+              "POST /pricing/compute",
+              "POST /pricing/disks",
+              "POST /recommendations",
+              "POST /recommendations/compute",
+              "POST /recommendations/disks",
+              "GET /providers"
             ]
           },
           {
-            "group": "Examples",
+            "group": "Marketplace",
             "pages": [
-              "api-reference/examples/getting-started",
-              "api-reference/examples/recommendations",
-              "api-reference/examples/filtering"
+              "GET /marketplace/providers/compute",
+              "POST /marketplace/providers/compute",
+              "DELETE /marketplace/providers/compute",
+              "GET /marketplace/providers/disks",
+              "POST /marketplace/providers/disks",
+              "DELETE /marketplace/providers/disks"
             ]
           }
         ]
@@ -128,7 +119,7 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://docs.baselinehq.cloud",
+          "href": "https://docs.costgraph.ai",
           "icon": "book-open-cover"
         },
         {
@@ -138,7 +129,7 @@
         },
         {
           "anchor": "Blog",
-          "href": "https://costgraph.baselinehq.cloud/blog",
+          "href": "https://blog.costgraph.ai",
           "icon": "newspaper"
         }
       ]

@@ -1,0 +1,110 @@
+---
+title: TypeScript
+icon: js
+description: 'TypeScript SDK examples for the CostGraph Pricing API'
+---
+
+## Client Setup
+
+```typescript
+import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
+import type {
+  GithubComBaselinehqGolangSharedTypesInstance,
+  GithubComBaselinehqGolangSharedTypesVM,
+  TypesDisk,
+} from '@baselinehq/pricingapi-client-typescript';
+
+const token = process.env.COSTGRAPH_API_KEY;
+
+const config = new Configuration({
+  basePath: 'https://pricing.baselinehq.cloud',
+  apiKey: (name: string) => (name === 'X-API-Key' ? token : undefined),
+});
+
+const client = new DefaultApi(config);
+```
+
+## Compute Pricing
+
+```typescript
+const vm: GithubComBaselinehqGolangSharedTypesVM = {
+  cpu_cores: 2,
+  ram_gb: 2,
+};
+
+const instance: GithubComBaselinehqGolangSharedTypesInstance = {
+  region: 'nyc1',
+  instance_type: 's-2vcpu-2gb',
+  usage_type: 'ONDEMAND',
+  provider: 'DigitalOcean',
+  operating_system: 'linux',
+  service: 'Droplet',
+  availability_zone: '',
+  vm,
+};
+
+const pricing = await client.pricingComputePost({ instance });
+console.log(JSON.stringify(pricing.data, null, 2));
+```
+
+## Recommendations
+
+```typescript
+const vm: GithubComBaselinehqGolangSharedTypesVM = {
+  cpu_cores: 4,
+  ram_gb: 16,
+};
+
+const instance: GithubComBaselinehqGolangSharedTypesInstance = {
+  region: 'nyc1',
+  instance_type: 's-4vcpu-16gb-amd',
+  usage_type: 'ondemand',
+  provider: 'digitalocean',
+  operating_system: 'linux',
+  service: 'Droplet',
+  availability_zone: '',
+  vm,
+};
+
+const recommendations = await client.recommendationsComputePost({ instance });
+console.log(JSON.stringify(recommendations.data, null, 2));
+```
+
+## Providers
+
+```typescript
+const providers = await client.providersGet();
+console.log(JSON.stringify(providers.data, null, 2));
+```
+
+## Disk Pricing
+
+```typescript
+const disk: TypesDisk = {
+  provider: 'AWS',
+  service: 'AmazonEBS',
+  region: 'us-east-1',
+  type: 'gp3',
+  usage_type: 'ONDEMAND',
+  capacity_gb: 100,
+};
+
+const diskPricing = await client.pricingDisksPost(disk);
+console.log(JSON.stringify(diskPricing.data, null, 2));
+```
+
+## Disk Recommendations
+
+```typescript
+const disk: TypesDisk = {
+  provider: 'AWS',
+  service: 'AmazonEBS',
+  region: 'us-east-1',
+  type: 'gp3',
+  usage_type: 'ONDEMAND',
+  capacity_gb: 100,
+};
+
+const diskRecommendations = await client.recommendationsDisksPost({ instance: disk });
+console.log(JSON.stringify(diskRecommendations.data, null, 2));
+```

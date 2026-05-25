@@ -11,6 +11,7 @@ import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescr
 import type {
   GithubComBaselinehqGolangSharedTypesInstance,
   GithubComBaselinehqGolangSharedTypesVM,
+  TypesDisk,
 } from '@baselinehq/pricingapi-client-typescript';
 
 const token = process.env.COSTGRAPH_API_KEY;
@@ -79,13 +80,31 @@ console.log(JSON.stringify(providers.data, null, 2));
 ## Disk Pricing
 
 ```typescript
-const diskPricing = await client.pricingDisksPost();
+const disk: TypesDisk = {
+  provider: 'AWS',
+  service: 'AmazonEBS',
+  region: 'us-east-1',
+  type: 'gp3',
+  usage_type: 'ONDEMAND',
+  capacity_gb: 100,
+};
+
+const diskPricing = await client.pricingDisksPost(disk);
 console.log(JSON.stringify(diskPricing.data, null, 2));
 ```
 
 ## Disk Recommendations
 
 ```typescript
-const diskRecommendations = await client.recommendationsDisksPost();
+const disk: TypesDisk = {
+  provider: 'AWS',
+  service: 'AmazonEBS',
+  region: 'us-east-1',
+  type: 'gp3',
+  usage_type: 'ONDEMAND',
+  capacity_gb: 100,
+};
+
+const diskRecommendations = await client.recommendationsDisksPost({ instance: disk });
 console.log(JSON.stringify(diskRecommendations.data, null, 2));
 ```

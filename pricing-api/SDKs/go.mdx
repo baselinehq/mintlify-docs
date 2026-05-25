@@ -103,8 +103,17 @@ fmt.Printf("Providers: %v\n", resp)
 ## Disk Pricing
 
 ```go
+disk := *openapiclient.NewTypesDisk()
+disk.SetProvider("AWS")
+disk.SetService("AmazonEBS")
+disk.SetRegion("us-east-1")
+disk.SetType("gp3")
+disk.SetUsageType("ONDEMAND")
+disk.SetCapacityGb(100)
+
 resp, _, err := client.DefaultAPI.
     PricingDisksPost(context.Background()).
+    Instance(disk).
     Execute()
 
 if err != nil {
@@ -118,8 +127,20 @@ fmt.Printf("Disk pricing: %v\n", resp)
 ## Disk Recommendations
 
 ```go
+disk := *openapiclient.NewTypesDisk()
+disk.SetProvider("AWS")
+disk.SetService("AmazonEBS")
+disk.SetRegion("us-east-1")
+disk.SetType("gp3")
+disk.SetUsageType("ONDEMAND")
+disk.SetCapacityGb(100)
+
+diskReq := *openapiclient.NewTypesDiskRequest()
+diskReq.SetInstance(disk)
+
 resp, _, err := client.DefaultAPI.
     RecommendationsDisksPost(context.Background()).
+    Instance(diskReq).
     Execute()
 
 if err != nil {

@@ -1,0 +1,102 @@
+---
+title: Install
+description: "Connect your coding agent to CostGraph over MCP"
+---
+
+You already debug your infrastructure inside a coding agent. CostGraph's MCP puts cost data, pricing, and recommendations right next to it.
+
+## Prerequisites
+
+- An API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys).
+
+Point your agent at the endpoint below, using that key.
+
+```text
+https://mcp.costgraph.ai
+X-API-Key: bl_your_key
+```
+
+## Connect your agent
+
+Pick your agent and drop in the config.
+
+<Tabs>
+  <Tab title="Codex" icon="/images/mcp/codex.svg">
+    Add CostGraph to `~/.codex/config.toml`:
+
+    ```toml
+    [mcp_servers.costgraph]
+    url = "https://mcp.costgraph.ai"
+    http_headers = { "X-API-Key" = "bl_your_key" }
+    ```
+  </Tab>
+  <Tab title="Claude" icon="/images/mcp/claude.svg">
+    Run this once and Claude Code registers the server:
+
+    ```bash
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai \
+      --header "X-API-Key: bl_your_key"
+    ```
+  </Tab>
+  <Tab title="Amp" icon="/images/mcp/amp.svg">
+    Add CostGraph to your Amp `settings.json`:
+
+    ```json
+    {
+      "amp.mcpServers": {
+        "costgraph": {
+          "url": "https://mcp.costgraph.ai",
+          "headers": { "X-API-Key": "bl_your_key" }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="OpenCode" icon="/images/mcp/opencode.svg">
+    Add CostGraph to your `opencode.json`:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "costgraph": {
+          "type": "remote",
+          "url": "https://mcp.costgraph.ai",
+          "headers": { "X-API-Key": "bl_your_key" },
+          "enabled": true
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Generic" icon="plug">
+    Generic MCP configuration. Add this to your agent's MCP server config.
+
+    ```json
+    {
+      "mcpServers": {
+        "costgraph": {
+          "url": "https://mcp.costgraph.ai",
+          "headers": { "X-API-Key": "bl_your_key" }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Once it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Can the MCP change my infrastructure?">
+    No. CostGraph is read-only over MCP. It hands back recommendations, pricing, and your inventory. Your agent, using its own git or kubectl access, is what actually applies a change or opens a PR.
+  </Accordion>
+  <Accordion title="Which credential does it use?">
+    Your `bl_` API key, sent in the `X-API-Key` header. Every read is scoped to the tenant that key belongs to, so an agent only ever sees your own data.
+  </Accordion>
+  <Accordion title="What can my agent see?">
+    Cost recommendations, live pricing, and your tenant's inventory and metrics. See [Usage](/costgraph/mcp/usage) for the kinds of questions that maps to.
+  </Accordion>
+</AccordionGroup>

@@ -12,7 +12,7 @@ You already debug your infrastructure inside a coding agent. CostGraph's MCP put
 Point your agent at the endpoint below, using that key.
 
 ```text
-https://costgraph.ai/mcp
+https://mcp.costgraph.ai
 X-API-Key: bl_your_key
 ```
 
@@ -26,7 +26,7 @@ Pick your agent and drop in the config.
 
     ```toml
     [mcp_servers.costgraph]
-    url = "https://costgraph.ai/mcp"
+    url = "https://mcp.costgraph.ai"
     http_headers = { "X-API-Key" = "bl_your_key" }
     ```
   </Tab>
@@ -34,7 +34,7 @@ Pick your agent and drop in the config.
     Run this once and Claude Code registers the server:
 
     ```bash
-    claude mcp add --transport http costgraph https://costgraph.ai/mcp \
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai \
       --header "X-API-Key: bl_your_key"
     ```
   </Tab>
@@ -45,7 +45,7 @@ Pick your agent and drop in the config.
     {
       "amp.mcpServers": {
         "costgraph": {
-          "url": "https://costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }
@@ -61,7 +61,7 @@ Pick your agent and drop in the config.
       "mcp": {
         "costgraph": {
           "type": "remote",
-          "url": "https://costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai",
           "headers": { "X-API-Key": "bl_your_key" },
           "enabled": true
         }
@@ -76,7 +76,7 @@ Pick your agent and drop in the config.
     {
       "mcpServers": {
         "costgraph": {
-          "url": "https://costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }

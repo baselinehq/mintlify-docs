@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "CostGraph Pricing API",
-    "description": "Provides API level access to the CostGraph Pricing Services.",
+    "description": "Provides API level access to the Costgraph Services.",
     "termsOfService": "https://costgraph.baselinehq.cloud/terms-of-use",
     "contact": {
       "name": "Customer Support",
@@ -668,7 +668,7 @@
     "/recommendations": {
       "post": {
         "summary": "Get recommendations for compute instances",
-        "description": "Get recommendations for compute instances (Recommendations, InstancePricing, VM, Savings)",
+        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance",
         "requestBody": {
           "description": "Instance",
           "content": {
@@ -686,7 +686,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.ComputeResults"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/recommendations.ComputeRecommendationResult"
+                  }
                 }
               }
             }
@@ -746,7 +749,7 @@
     "/recommendations/compute": {
       "post": {
         "summary": "Get recommendations for compute instances",
-        "description": "Get recommendations for compute instances (Recommendations, InstancePricing, VM, Savings)",
+        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance",
         "requestBody": {
           "description": "Instance",
           "content": {
@@ -764,7 +767,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.ComputeResults"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/recommendations.ComputeRecommendationResult"
+                  }
                 }
               }
             }
@@ -824,7 +830,7 @@
     "/recommendations/disks": {
       "post": {
         "summary": "Get recommendations for disks",
-        "description": "Get recommendations for disks used in the server (Recommendations, DiskPricing, Savings)",
+        "description": "Get the cheapest disk candidate per provider with savings versus the requested disk",
         "requestBody": {
           "description": "Instance",
           "content": {
@@ -842,7 +848,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.DiskResults"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/recommendations.DiskRecommendationResult"
+                  }
                 }
               }
             }
@@ -927,7 +936,7 @@
             "type": "string"
           },
           "service": {
-            "$ref": "#/components/schemas/types.Service"
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
           },
           "usage_type": {
             "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
@@ -968,6 +977,35 @@
           "Hetzner",
           "OVHCloud",
           "Base"
+        ]
+      },
+      "github_com_baselinehq_golang-shared_types.Service": {
+        "type": "string",
+        "enum": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "ComputeEnginePersistentDisk"
+        ],
+        "x-enum-varnames": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "ComputeEnginePersistentDisk"
         ]
       },
       "github_com_baselinehq_golang-shared_types.UsageType": {
@@ -1193,23 +1231,14 @@
           }
         }
       },
-      "types.ComputeResults": {
+      "recommendations.ComputeRecommendationResult": {
         "type": "object",
-        "additionalProperties": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "instance_pricing": {
-                "$ref": "#/components/schemas/schema.ComputePricingsRow"
-              },
-              "savings": {
-                "$ref": "#/components/schemas/types.Savings"
-              },
-              "vm": {
-                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
-              }
-            }
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/schema.ComputePricingsRow"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
           }
         }
       },
@@ -1296,7 +1325,7 @@
             "type": "string"
           },
           "service": {
-            "$ref": "#/components/schemas/types.Service"
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
           },
           "throughput_mbps": {
             "type": "number"
@@ -1326,23 +1355,14 @@
           }
         }
       },
-      "types.DiskResults": {
+      "recommendations.DiskRecommendationResult": {
         "type": "object",
-        "additionalProperties": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "disk": {
-                "$ref": "#/components/schemas/schema.DiskPricingsRow"
-              },
-              "disk_pricing": {
-                "$ref": "#/components/schemas/schema.DiskPricingsRow"
-              },
-              "savings": {
-                "$ref": "#/components/schemas/types.Savings"
-              }
-            }
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/schema.DiskPricingsRow"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
           }
         }
       },
@@ -1437,35 +1457,6 @@
             "type": "number"
           }
         }
-      },
-      "types.Service": {
-        "type": "string",
-        "enum": [
-          "ComputeEngine",
-          "AmazonEC2",
-          "Droplet",
-          "AzureCompute",
-          "AzureManagedDisks",
-          "HetznerCompute",
-          "OVHPublicCloud",
-          "BaseCompute",
-          "BaseDisks",
-          "AmazonEBS",
-          "ComputeEnginePersistentDisk"
-        ],
-        "x-enum-varnames": [
-          "ComputeEngine",
-          "AmazonEC2",
-          "Droplet",
-          "AzureCompute",
-          "AzureManagedDisks",
-          "HetznerCompute",
-          "OVHPublicCloud",
-          "BaseCompute",
-          "BaseDisks",
-          "AmazonEBS",
-          "ComputeEnginePersistentDisk"
-        ]
       }
     },
     "securitySchemes": {

@@ -81,7 +81,7 @@
       },
       {
         "tab": "Pricing API",
-        "openapi": "https://raw.githubusercontent.com/baselinehq/mintlify-docs/refs/heads/main/api-reference/openapi.json",
+        "openapi": "https://raw.githubusercontent.com/baselinehq/mintlify-docs/main/api-reference/openapi.json",
         "groups": [
           {
             "group": "Getting Started",

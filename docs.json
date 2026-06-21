@@ -42,8 +42,7 @@
             "group": "Installation",
             "pages": [
               "costgraph/installation/operator/kubernetes-operator",
-              "costgraph/installation/agent/agent-systemd",
-              "costgraph/installation/agent/agent-docker",
+              "costgraph/installation/agent/virtual-machines",
               "costgraph/installation/agent/agent-homebrew"
             ]
           },
@@ -157,7 +156,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://costgraph.baselinehq.cloud"
+      "href": "https://app.costgraph.ai"
     }
   },
   "footer": {
@@ -167,6 +166,16 @@
       "linkedin": "https://linkedin.com/company/baselinehq"
     }
   },
+  "redirects": [
+    {
+      "source": "/costgraph/installation/agent/agent-systemd",
+      "destination": "/costgraph/installation/agent/virtual-machines"
+    },
+    {
+      "source": "/costgraph/installation/agent/agent-docker",
+      "destination": "/costgraph/installation/agent/virtual-machines"
+    }
+  ],
   "contextual": {
     "options": [
       "copy",

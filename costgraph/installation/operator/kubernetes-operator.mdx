@@ -3,13 +3,13 @@ title: Kubernetes Operator
 description: "Install the CostGraph Operator on Kubernetes via Helm"
 ---
 
-The CostGraph Operator deploys and manages cost monitoring for your Kubernetes cluster. It collects resource usage metrics, analyzes spending patterns, and generates rightsizing recommendations — all visible from the [CostGraph dashboard](https://costgraph.baselinehq.cloud).
+The CostGraph Operator deploys and manages cost monitoring for your Kubernetes cluster. It collects resource usage metrics, analyzes spending patterns, and generates rightsizing recommendations — all visible from the [CostGraph dashboard](https://app.costgraph.ai/).
 
 ## Prerequisites
 
 - A running Kubernetes cluster
 - [Helm 3+](https://helm.sh/docs/intro/install/)
-- An API key from the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/api-keys)
+- An API key from the [CostGraph dashboard](https://app.costgraph.ai/settings/account/api-keys)
 
 ## Quick Start
 
@@ -37,7 +37,7 @@ The CostGraph Operator deploys and manages cost monitoring for your Kubernetes c
     kubectl get pods -n costgraph
     ```
 
-    All pods should show `Running` status. Once ready, view your cluster metrics in the [CostGraph dashboard](https://costgraph.baselinehq.cloud/dashboard/cluster-metrics).
+    All pods should show `Running` status. Once ready, view your cluster metrics in the [CostGraph dashboard](https://app.costgraph.ai/).
   </Step>
 
 </Steps>

@@ -1,45 +1,207 @@
 ---
 title: CostGraph Agent
-description: "Process-level resource monitoring agent for hosts and VMs"
+# description: "Host, process, and container resource monitoring agent for VMs and bare metal"
 ---
 
-The CostGraph Agent monitors process-level resource usage on your hosts. It collects CPU and memory metrics per process and ships them to the CostGraph backend.
+The CostGraph Agent is a daemon that runs on your virtual machines and continuously reports resource usage to CostGraph. It collects:
+
+- **Host metrics** — CPU, memory, disk, and network utilization for the machine.
+- **Container metrics and inventory** — when a Docker or containerd runtime is present.
+
+These stream to CostGraph, where they power:
+
+- **VM inventory and cost** — every host and its attached disks, with compute and storage cost attributed per VM, plus live utilization and status.
+- **[Rightsizing recommendations](/costgraph/recommendations)** — resize suggestions from observed CPU and memory usage, including cheaper instance types across cloud providers.
+- **[Idle detection](/costgraph/recommendations#idle-detection)** — VMs with consistently low CPU, memory, network, and disk activity are flagged to terminate.
+- **Container and process insight** — per-container metrics and the top processes driving usage on each host.
+- **Cost anomalies** — unusual spend or utilization changes surfaced automatically.
 
 ## Prerequisites
 
-- Linux or macOS host
-- An API key from the [CostGraph dashboard](https://app.costgraph.ai/settings/account/api-keys)
+- A Linux host e.g Debian, Ubuntu, RHEL, Amazon Linux, Alpine etc (`amd64` or `arm64`).
+- An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys).
 
-## Quick Start
+## Install
 
-<Steps>
+<Tabs>
+  <Tab title="Script" icon="terminal">
+    Pipe the installer to `sh` with your API key on the `sh` side of the pipe:
 
-  <Step title="Download the agent">
-    See the installation guides for your platform:
-
-    - [Virtual Machines](/costgraph/installation/agent/virtual-machines)
-    - [Homebrew](/costgraph/installation/agent/agent-homebrew)
-  </Step>
-
-  <Step title="Run the agent">
-    Pass your API key as a flag or environment variable:
-
-    ```shell
-    costgraph-agent --api-key <your-api-key>
+    ```bash
+    curl -sSL https://setup.costgraph.ai/install.sh | COSTGRAPH_API_KEY="bl_..." sh
     ```
 
-    Or via environment variable:
+    Or download, inspect, then run:
 
-    ```shell
-    export COSTGRAPH_API_KEY=<your-api-key>
-    costgraph-agent
+    ```bash
+    curl -sSL https://setup.costgraph.ai/install.sh -o install.sh
+    chmod +x install.sh
+    COSTGRAPH_API_KEY="bl_..." ./install.sh
     ```
-  </Step>
 
-  <Step title="Verify">
-    The agent exposes metrics at `http://localhost:9101/metrics`. Once running, your host will appear in the [CostGraph dashboard](https://app.costgraph.ai/).
-  </Step>
+    The installer detects your init system and registers the agent as a **systemd** or **OpenRC** service that starts on boot. It supports Debian, Ubuntu, RHEL, Amazon Linux, and Alpine, and installs the latest stable release by default. Your API key is stored in `/etc/default/costgraph-agent` (systemd) or `/etc/conf.d/costgraph-agent` (OpenRC).
 
-</Steps>
+    Pin a specific release with `COSTGRAPH_AGENT_VERSION`, for example `COSTGRAPH_AGENT_VERSION=v0.0.64`.
 
-Sensible defaults are set out of the box. If you need finer control over remote write, sync intervals, or utilization targets, see the [Agent configuration reference](/costgraph/configuration/agent).
+    Manage the service the usual way:
+
+    ```bash
+    sudo systemctl status costgraph-agent
+    sudo journalctl -u costgraph-agent -f
+    ```
+  </Tab>
+  <Tab title="Docker" icon="docker">
+    The agent is published as a container image at `ghcr.io/baselinehq/costgraph-agent`.
+
+    <Tabs>
+      <Tab title="Docker Run" icon="play">
+        ```bash
+        docker run -d --name costgraph-agent \
+          --restart unless-stopped \
+          --pid host \
+          --network host \
+          -v /proc:/host/proc:ro \
+          -v costgraph-agent-state:/var/lib/costgraph-agent \
+          -e COSTGRAPH_API_KEY="bl_..." \
+          ghcr.io/baselinehq/costgraph-agent:latest
+        ```
+
+        - `--pid host` and `-v /proc:/host/proc:ro` give the agent visibility into host processes.
+        - `--network host` lets it reach the CostGraph backend and exposes its metrics on the host at port `9101`.
+        - The named volume persists the durable remote-write queue across restarts.
+        - To collect container inventory, also mount the runtime socket, for example `-v /var/run/docker.sock:/var/run/docker.sock:ro`.
+      </Tab>
+      <Tab title="Docker Compose" icon="layer-group">
+        ```yaml
+        services:
+          costgraph-agent:
+            image: ghcr.io/baselinehq/costgraph-agent:latest
+            container_name: costgraph-agent
+            restart: unless-stopped
+            pid: host
+            network_mode: host
+            environment:
+              - COSTGRAPH_API_KEY=bl_...
+            volumes:
+              - /proc:/host/proc:ro
+              - costgraph-agent-state:/var/lib/costgraph-agent
+              # Optional: container inventory
+              # - /var/run/docker.sock:/var/run/docker.sock:ro
+
+        volumes:
+          costgraph-agent-state:
+        ```
+
+        ```bash
+        docker compose up -d
+        docker compose logs -f costgraph-agent
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab title="Ansible" icon="server">
+    Roll the agent out across a fleet with the published Ansible collection.
+
+    <Steps>
+      <Step title="Install the collection">
+        ```bash
+        ansible-galaxy collection install \
+            https://downloads.costgraph.com/ansible/costgraph-agent-0.1.0.tar.gz
+        ```
+      </Step>
+
+      <Step title="Create a playbook">
+        ```yaml
+        ---
+        - name: Install CostGraph agent
+          hosts: all
+          become: true
+          roles:
+            - role: costgraph.agent.costgraph_agent
+              vars:
+                costgraph_api_key: "{{ lookup('env', 'COSTGRAPH_API_KEY') }}"
+        ```
+      </Step>
+
+      <Step title="Run it against your inventory">
+        ```bash
+        export COSTGRAPH_API_KEY='bl_...'
+        ansible-playbook -i inventory.ini install-costgraph-agent.yml
+        ```
+
+        The role installs the binary at `/usr/local/bin/costgraph-agent`, writes the API key to `/etc/default/costgraph-agent`, and manages the `costgraph-agent` systemd service. Pin a release with the `costgraph_agent_version` variable.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Note>macOS support via Homebrew is coming soon. For now, install on a Linux host using one of the methods above.</Note>
+
+## Verify
+
+Once it's running, your host appears in the [CostGraph platform](https://app.costgraph.ai/compute/virtual-machines).
+
+## Configuration
+
+The agent is configured entirely through command-line flags and the `COSTGRAPH_API_KEY` environment variable.
+
+```shell
+# API key via flag
+costgraph-agent --api-key <your-api-key>
+
+# or via environment variable
+export COSTGRAPH_API_KEY=<your-api-key>
+costgraph-agent
+```
+
+<Note>
+  When you install with the script or Ansible, your API key is written to `/etc/default/costgraph-agent` and loaded by the service automatically.
+</Note>
+
+<ParamField body="--api-key" type="string" required>
+  API key used to authenticate with CostGraph. Can also be set with the `COSTGRAPH_API_KEY` environment variable, which takes precedence over the flag.
+</ParamField>
+
+<ParamField body="--metrics-port" type="number" default="9101">
+  Port the agent exposes its own Prometheus metrics on, at `/metrics`.
+</ParamField>
+
+<ParamField body="--state-dir" type="string" default="/var/lib/costgraph-agent">
+  Directory for durable agent state, including the on-disk remote-write queue.
+</ParamField>
+
+<ParamField body="--remote-write-max-in-memory-blocks" type="number" default="128">
+  Maximum number of remote-write blocks buffered in memory before they spill to the on-disk queue.
+</ParamField>
+
+<ParamField body="--remote-write-max-pending-bytes" type="number" default="5368709120">
+  Maximum size of the on-disk remote-write queue in bytes (5 GiB) before backpressure is applied.
+</ParamField>
+
+<ParamField body="--log-level" type="string" default="info">
+  Log verbosity. One of `debug`, `info`, `warn`, or `error`.
+</ParamField>
+
+<ParamField body="--version" type="boolean">
+  Prints the agent version and exits.
+</ParamField>
+
+### Changing flags for the managed service
+
+The install script runs `costgraph-agent` as a systemd (or OpenRC) service with no extra flags. To change a flag for the managed service on a systemd host, add a drop-in:
+
+```shell
+sudo systemctl edit costgraph-agent
+```
+
+```ini
+[Service]
+ExecStart=
+ExecStart=/usr/local/bin/costgraph-agent --state-dir /opt/var/lib/costgraph-agent
+```
+
+```shell
+sudo systemctl restart costgraph-agent
+```
+
+The first empty `ExecStart=` clears the original command so your override fully replaces it.

@@ -3,9 +3,23 @@
   "theme": "maple",
   "name": "CostGraph Documentation",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#60A5FA",
-    "dark": "#0a3171"
+    "primary": "#0F6DFF",
+    "light": "#5394FD",
+    "dark": "#0E46A0"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Funnel Display"
+    },
+    "body": {
+      "family": "Geist"
+    }
+  },
+  "background": {
+    "color": {
+      "light": "#FFFFFF",
+      "dark": "#090A0B"
+    }
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,49 +28,27 @@
         "tab": "CostGraph",
         "groups": [
           {
-            "group": "Kubernetes Operator",
+            "group": "Get Started",
             "pages": [
-              "costgraph/overview",
-              "costgraph/architecture"
-            ]
-          },
-          {
-            "group": "VM Agent",
-            "pages": [
-              "costgraph/agent"
-            ]
-          },
-          {
-            "group": "Chat",
-            "pages": [
-              "costgraph/chat/overview"
-            ]
-          },
-          {
-            "group": "Core Concepts",
-            "pages": [
+              "index",
               "concepts/how-it-works"
             ]
           },
           {
-            "group": "Installation",
+            "group": "Costgraph Operator",
             "pages": [
+              "costgraph/overview",
               "costgraph/installation/operator/kubernetes-operator",
-              "costgraph/installation/agent/virtual-machines",
-              "costgraph/installation/agent/agent-homebrew"
-            ]
-          },
-          {
-            "group": "Reference",
-            "pages": [
               "costgraph/configuration/kubernetes",
-              "costgraph/configuration/agent"
+              "changelog/costgraph/operator"
             ]
           },
           {
-            "group": "Build on Costgraph",
+            "group": "Costgraph Agent",
             "pages": [
-              "costgraph/build/overview"
+              "costgraph/agent",
+              "costgraph/recommendations",
+              "changelog/costgraph/agent"
             ]
           },
           {
@@ -65,15 +57,6 @@
             "pages": [
               "costgraph/mcp/install",
               "costgraph/mcp/usage"
-            ]
-          },
-          {
-            "group": "Changelogs",
-            "icon": "clock-rotate-left",
-            "pages": [
-              "changelog/costgraph/operator",
-              "changelog/costgraph/agent",
-              "changelog/pricing/api"
             ]
           }
         ]
@@ -118,6 +101,13 @@
               "POST /marketplace/providers/disks",
               "DELETE /marketplace/providers/disks"
             ]
+          },
+          {
+            "group": "Changelog",
+            "icon": "clock-rotate-left",
+            "pages": [
+              "changelog/pricing/api"
+            ]
           }
         ]
       }
@@ -155,7 +145,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Platform",
       "href": "https://app.costgraph.ai"
     }
   },
@@ -169,11 +159,23 @@
   "redirects": [
     {
       "source": "/costgraph/installation/agent/agent-systemd",
-      "destination": "/costgraph/installation/agent/virtual-machines"
+      "destination": "/costgraph/agent#install"
     },
     {
       "source": "/costgraph/installation/agent/agent-docker",
-      "destination": "/costgraph/installation/agent/virtual-machines"
+      "destination": "/costgraph/agent#install"
+    },
+    {
+      "source": "/costgraph/installation/agent/virtual-machines",
+      "destination": "/costgraph/agent#install"
+    },
+    {
+      "source": "/costgraph/installation/agent/agent-homebrew",
+      "destination": "/costgraph/agent#install"
+    },
+    {
+      "source": "/costgraph/configuration/agent",
+      "destination": "/costgraph/agent#configuration"
     }
   ],
   "contextual": {

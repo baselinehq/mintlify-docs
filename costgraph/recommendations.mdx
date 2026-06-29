@@ -3,14 +3,14 @@ title: Recommendations
 description: "How CostGraph turns agent metrics into rightsizing, idle, and cross-cloud recommendations"
 ---
 
-CostGraph turns the metrics your [agent](/costgraph/agent) collects into per-VM recommendations: downsize, upsize, terminate, or leave as-is. The engine is deliberately **conservative** — capacity safety always beats savings, and weak or contradictory evidence produces *no* recommendation rather than a guess.
+CostGraph turns the metrics your [agent](/costgraph/agent) collects into recommendations: downsize, upsize, terminate, or leave as-is. The recommendation is deliberately conservative — capacity safety always beats savings, and weak or contradictory evidence produces no recommendation.
 
 ## What it observes
 
 Recommendations are computed from agent metrics over a rolling window:
 
-- **Observation window** — the last **168 hours**, with the most recent 24 hours tracked separately for recency.
-- **Idle window** — a longer **7-day** window, since terminating a VM demands stronger evidence.
+- **Observation window** — the last 168 hours, with the most recent 24 hours tracked separately for recency.
+- **Idle window** — a 7-day window, since terminating a VM demands stronger evidence.
 
 Across that window it summarizes each signal by percentile (p50/p95/p99):
 
@@ -24,7 +24,7 @@ Across that window it summarizes each signal by percentile (p50/p95/p99):
 
 ## Data-quality gates
 
-Before any sizing happens, a VM must clear every gate below. If it fails one, CostGraph returns **no recommendation** and tells you why — this is the usual reason a VM shows no suggestion:
+Before any sizing happens, a VM must clear every gate below. If it fails one, CostGraph returns no recommendation and tells you why — this is the usual reason a VM shows no suggestion:
 
 - **Coverage ≥ 70%** of the expected samples in the window. Sparse data → no recommendation.
 - **All required metrics present.** A missing metric stops sizing entirely.

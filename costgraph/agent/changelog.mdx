@@ -1,20 +1,30 @@
 ---
-sidebar_position: 2
-title: Changelogs
+title: Changelog
+description: "Release history for the CostGraph Agent"
 ---
 
-Agent releases are tagged with a major.minor version number.
+<Update label="2026-06-29" description="v1.0.0">
+  First stable release of the CostGraph Agent.
 
-## SLA
-- We will provide changelogs for major and minor releases of the agent
-- Customers will be made aware of any breaking changes in any release cycle
-- We aim to provide releases regularly for customer features and business priorities
-
-<Update label="2026-01-25" description="v0.1.38">
-    ### Breaking Changes
-    - We have renamed all existing metrics to have the `costgraph_` prefix. Previous metric definitions confused customers whilst limiting our brand. We thank all our customers for their understanding with this change and look forward to it bringing clarity with no impacting changes in the future. All existing customers will need to update their metric definitions to append the `costgraph_` prefix.
-
-    ### Updates
-    - Bugfix on the agent causing accumulated metrics to accrue metric values inaccurately over time, this now resets on every scrape.
+  The agent runs on cloud VMs reports host, process, and container metrics to CostGraph — powering VM inventory, cost attribution, [rightsizing and idle recommendations](/costgraph/recommendations), and cost anomaly detection. Install it with the [one-line script, Docker, Ansible, or cloud-init](/costgraph/agent#install).
 </Update>
 
+<Update label="2026-06" description="v0.0.64">
+  - Process-level metrics — per-process CPU and memory usage.
+  - Disk metrics for attached volumes.
+  - New install paths: one-line install script (systemd/OpenRC), Ansible collection, and cloud-init / user data.
+  - Standardized metric names under the `costgraph_` prefix.
+</Update>
+
+<Update label="2026-04" description="v0.0.48">
+  - Container metrics and inventory for Docker and containerd hosts, with live runtime tracking.
+</Update>
+
+<Update label="2026-01" description="v0.0.37">
+  - Host metrics pipeline — CPU, memory, disk, and network streamed to CostGraph.
+  - Backend integration with instance registration and durable remote write.
+</Update>
+
+<Update label="2025-06" description="v0.0.1">
+  - Initial release of the CostGraph Agent.
+</Update>

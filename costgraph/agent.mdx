@@ -41,7 +41,7 @@ These stream to CostGraph, where they power:
 
     The installer detects your init system and registers the agent as a **systemd** or **OpenRC** service that starts on boot. It supports Debian, Ubuntu, RHEL, Amazon Linux, and Alpine, and installs the latest stable release by default. Your API key is stored in `/etc/default/costgraph-agent` (systemd) or `/etc/conf.d/costgraph-agent` (OpenRC).
 
-    Pin a specific release with `COSTGRAPH_AGENT_VERSION`, for example `COSTGRAPH_AGENT_VERSION=v0.0.64`.
+    Pin a specific release with `COSTGRAPH_AGENT_VERSION` — see the [changelog](/costgraph/agent/changelog) for available versions.
 
     Manage the service the usual way:
 
@@ -129,9 +129,49 @@ These stream to CostGraph, where they power:
         ansible-playbook -i inventory.ini install-costgraph-agent.yml
         ```
 
-        The role installs the binary at `/usr/local/bin/costgraph-agent`, writes the API key to `/etc/default/costgraph-agent`, and manages the `costgraph-agent` systemd service. Pin a release with the `costgraph_agent_version` variable.
+        The role installs the binary at `/usr/local/bin/costgraph-agent`, writes the API key to `/etc/default/costgraph-agent`, and manages the `costgraph-agent` systemd service.
       </Step>
     </Steps>
+  </Tab>
+  <Tab title="Cloud-init" icon="cloud">
+    Run the installer from a VM's first-boot `user_data`. Each instance installs the agent and registers itself on boot — so it works for launch templates, instance templates, and autoscaling groups with no manual step.
+
+    Use a `#cloud-config`, which works across most cloud images:
+
+    ```yaml
+    #cloud-config
+    runcmd:
+      - curl -sSL https://setup.costgraph.ai/install.sh -o /tmp/costgraph-install.sh
+      - COSTGRAPH_API_KEY="bl_..." sh /tmp/costgraph-install.sh
+    ```
+
+    Or a plain script, for fields that take raw `user_data`:
+
+    ```bash
+    #!/bin/sh
+    curl -sSL https://setup.costgraph.ai/install.sh | COSTGRAPH_API_KEY="bl_..." sh
+    ```
+
+    Where you paste it depends on the provider:
+
+    <Tabs>
+      <Tab title="AWS">
+        Add it under **User data** on the instance or launch template (EC2 console -> Advanced details -> User data, or `aws ec2 run-instances --user-data file://user-data.sh`). Instances launched from that template by an Auto Scaling group install the agent automatically.
+      </Tab>
+      <Tab title="GCP">
+        Set it as the `startup-script` metadata key:
+
+        ```bash
+        gcloud compute instances create my-vm \
+          --metadata-from-file startup-script=user-data.sh
+        ```
+
+        Add the same key to an instance template to cover a managed instance group.
+      </Tab>
+      <Tab title="Azure">
+        Pass the `#cloud-config` as `custom_data` on the VM or scale set, for example `az vm create --custom-data user-data.yaml`.
+      </Tab>
+    </Tabs>
   </Tab>
 </Tabs>
 
@@ -140,6 +180,8 @@ These stream to CostGraph, where they power:
 ## Verify
 
 Once it's running, your host appears in the [CostGraph platform](https://app.costgraph.ai/compute/virtual-machines).
+
+<img src="/images/costgraph-agent-dashboard.png" alt="CostGraph agent host view in the platform" />
 
 ## Configuration
 

@@ -92,6 +92,14 @@
             ]
           },
           {
+            "group": "How-to",
+            "pages": [
+              "guides/managed-platforms",
+              "guides/elastic-beanstalk",
+              "guides/ecs-ec2"
+            ]
+          },
+          {
             "group": "MCP",
             "icon": "plug",
             "pages": [

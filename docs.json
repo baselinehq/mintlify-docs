@@ -25,29 +25,70 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "CostGraph",
+        "tab": "Guides",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Get started",
             "pages": [
               "index",
-              "concepts/how-it-works"
+              "concepts/how-it-works",
+              "platform/connect"
             ]
           },
           {
-            "group": "Costgraph Operator",
+            "group": "Platform",
             "pages": [
-              "costgraph/operator/overview",
-              "costgraph/operator/configuration",
-              "costgraph/operator/changelog"
+              {
+                "group": "Cost & optimization",
+                "pages": [
+                  "platform/cost-dashboard",
+                  "platform/cost-attribution",
+                  "platform/recommendations"
+                ]
+              },
+              {
+                "group": "Compute",
+                "pages": [
+                  "platform/clusters",
+                  "platform/virtual-machines"
+                ]
+              },
+              {
+                "group": "GraphAI",
+                "pages": [
+                  "platform/graphai"
+                ]
+              },
+              {
+                "group": "Administration",
+                "pages": [
+                  "platform/members",
+                  "platform/api-keys",
+                  "platform/billing",
+                  "platform/notifications"
+                ]
+              }
             ]
           },
           {
-            "group": "Costgraph Agent",
+            "group": "Install",
             "pages": [
-              "costgraph/agent",
-              "costgraph/agent/recommendations",
-              "costgraph/agent/changelog"
+              {
+                "group": "Kubernetes Operator",
+                "pages": [
+                  "costgraph/operator/overview",
+                  "costgraph/operator/configuration",
+                  "costgraph/operator/changelog"
+                ]
+              },
+              {
+                "group": "VM Agent",
+                "pages": [
+                  "costgraph/agent",
+                  "costgraph/agent/recommendations",
+                  "costgraph/agent/changelog"
+                ]
+              }
             ]
           },
           {
@@ -56,6 +97,13 @@
             "pages": [
               "costgraph/mcp/install",
               "costgraph/mcp/usage"
+            ]
+          },
+          {
+            "group": "FAQ",
+            "pages": [
+              "faq/general",
+              "faq/installation"
             ]
           }
         ]

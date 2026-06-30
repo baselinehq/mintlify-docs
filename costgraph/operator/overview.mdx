@@ -5,23 +5,23 @@ description: "Monitor Kubernetes cost, usage, and rightsizing with the CostGraph
 
 The CostGraph Operator runs in your Kubernetes cluster and continuously reports its state to CostGraph. It deploys two components:
 
-- **Resource exporter** — watches every Kubernetes resource (workloads, nodes, namespaces, and more) and exports their definitions to CostGraph.
-- **Metrics scraper** — scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
+- Resource exporter: watches every Kubernetes resource (workloads, nodes, namespaces, and more) and exports their definitions to CostGraph.
+- Metrics scraper: scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
 
 Together they collect:
 
-- **Cluster inventory** — the live manifests of all resources in the cluster.
-- **Container metrics** — per-container CPU and memory from cAdvisor.
-- **Host metrics** — node CPU, memory, disk, and network from node-exporter and the kubelet.
-- **Kubernetes object metrics** — pod, deployment, and node state from kube-state-metrics.
-- **GPU metrics** — optional, from the NVIDIA DCGM exporter.
+- Cluster inventory: the live manifests of all resources in the cluster.
+- Container metrics: per-container CPU and memory from cAdvisor.
+- Host metrics: node CPU, memory, disk, and network from node-exporter and the kubelet.
+- Kubernetes object metrics: pod, deployment, and node state from kube-state-metrics.
+- GPU metrics: optional, from the NVIDIA DCGM exporter.
 
 On the CostGraph platform, this data powers:
 
-- **Workload and namespace cost** — spend attributed across pods, deployments, and namespaces.
-- **Rightsizing recommendations** — CPU and memory resize suggestions for your workloads.
-- **Idle detection** — workloads running consistently below their requests.
-- **Cost anomalies** — unusual spend or utilization changes surfaced automatically.
+- Workload and namespace cost: spend attributed across pods, deployments, and namespaces.
+- Rightsizing recommendations: CPU and memory resize suggestions for your workloads.
+- Idle detection: workloads running consistently below their requests.
+- Cost anomalies: unusual spend or utilization changes surfaced automatically.
 
 ## Prerequisites
 
@@ -48,7 +48,7 @@ On the CostGraph platform, this data powers:
       --set global.apiKey=<your-api-key>
     ```
 
-    For production, store the API key in a Secret and reference it with `global.existingSecret` instead of passing it inline — see [Configuration](/costgraph/operator/configuration#global-settings).
+    For production, store the API key in a Secret and reference it with `global.existingSecret` instead of passing it inline, see [Configuration](/costgraph/operator/configuration#global-settings).
   </Step>
 
   <Step title="Verify">
@@ -61,7 +61,7 @@ On the CostGraph platform, this data powers:
 </Steps>
 
 <Note>
-  Running GPU nodes? Enable the DCGM exporter for GPU metrics — see [Configuration](/costgraph/operator/configuration#subcharts).
+  Running GPU nodes? Enable the DCGM exporter for GPU metrics, see [Configuration](/costgraph/operator/configuration#subcharts).
 </Note>
 
 The chart ships with sensible defaults. To tune scheduling, metrics sources, or the bundled exporters, see the [Configuration reference](/costgraph/operator/configuration).

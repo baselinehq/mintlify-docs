@@ -5,16 +5,16 @@ title: Overview
 
 The CostGraph Agent is a daemon that runs on your virtual machines and continuously reports resource usage to CostGraph. It collects:
 
-- **Host metrics** — CPU, memory, disk, and network utilization for the machine.
-- **Container metrics and inventory** — when a Docker or containerd runtime is present.
+- Host metrics: CPU, memory, disk, and network utilization for the machine.
+- Container metrics and inventory: when a Docker or containerd runtime is present.
 
 These stream to CostGraph, where they power:
 
-- **VM inventory and cost** — every host and its attached disks, with compute and storage cost attributed per VM, plus live utilization and status.
-- **[Rightsizing recommendations](/costgraph/agent/recommendations)** — resize suggestions from observed CPU and memory usage, including cheaper instance types across cloud providers.
-- **[Idle detection](/costgraph/agent/recommendations#idle-detection)** — VMs with consistently low CPU, memory, network, and disk activity are flagged to terminate.
-- **Container and process insight** — per-container metrics and the top processes driving usage on each host.
-- **Cost anomalies** — unusual spend or utilization changes surfaced automatically.
+- VM inventory and cost: every host and its attached disks, with compute and storage cost attributed per VM, plus live utilization and status.
+- [Rightsizing recommendations](/costgraph/agent/recommendations): resize suggestions from observed CPU and memory usage, including cheaper instance types across cloud providers.
+- [Idle detection](/costgraph/agent/recommendations#idle-detection): VMs with consistently low CPU, memory, network, and disk activity are flagged to terminate.
+- Container and process insight: per-container metrics and the top processes driving usage on each host.
+- Cost anomalies: unusual spend or utilization changes surfaced automatically.
 
 ## Prerequisites
 
@@ -39,9 +39,9 @@ These stream to CostGraph, where they power:
     COSTGRAPH_API_KEY="bl_..." ./install.sh
     ```
 
-    The installer detects your init system and registers the agent as a **systemd** or **OpenRC** service that starts on boot. It supports Debian, Ubuntu, RHEL, Amazon Linux, and Alpine, and installs the latest stable release by default. Your API key is stored in `/etc/default/costgraph-agent` (systemd) or `/etc/conf.d/costgraph-agent` (OpenRC).
+    The installer detects your init system and registers the agent as a systemd or OpenRC service that starts on boot. It supports Debian, Ubuntu, RHEL, Amazon Linux, and Alpine, and installs the latest stable release by default. Your API key is stored in `/etc/default/costgraph-agent` (systemd) or `/etc/conf.d/costgraph-agent` (OpenRC).
 
-    Pin a specific release with `COSTGRAPH_AGENT_VERSION` — see the [changelog](/costgraph/agent/changelog) for available versions.
+    Pin a specific release with `COSTGRAPH_AGENT_VERSION`, see the [changelog](/costgraph/agent/changelog) for available versions.
 
     Manage the service the usual way:
 
@@ -134,7 +134,7 @@ These stream to CostGraph, where they power:
     </Steps>
   </Tab>
   <Tab title="Cloud-init" icon="cloud">
-    Run the installer from a VM's first-boot `user_data`. Each instance installs the agent and registers itself on boot — so it works for launch templates, instance templates, and autoscaling groups with no manual step.
+    Run the installer from a VM's first-boot `user_data`. Each instance installs the agent and registers itself on boot, so it works for launch templates, instance templates, and autoscaling groups with no manual step.
 
     Use a `#cloud-config`, which works across most cloud images:
 
@@ -156,7 +156,7 @@ These stream to CostGraph, where they power:
 
     <Tabs>
       <Tab title="AWS">
-        Add it under **User data** on the instance or launch template (EC2 console -> Advanced details -> User data, or `aws ec2 run-instances --user-data file://user-data.sh`). Instances launched from that template by an Auto Scaling group install the agent automatically.
+        Add it under User data on the instance or launch template (in the EC2 console, expand Advanced details to reach User data; or `aws ec2 run-instances --user-data file://user-data.sh`). Instances launched from that template by an Auto Scaling group install the agent automatically.
       </Tab>
       <Tab title="GCP">
         Set it as the `startup-script` metadata key:

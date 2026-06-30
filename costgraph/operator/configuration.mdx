@@ -12,7 +12,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 </ParamField>
 
 <ParamField body="global.apiKey" type="string">
-  API key for authenticating with CostGraph. Don't commit a real key — prefer `existingSecret` in production.
+  API key for authenticating with CostGraph. Don't commit a real key, prefer `existingSecret` in production.
 </ParamField>
 
 <ParamField body="global.existingSecret" type="string">
@@ -40,7 +40,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 </ParamField>
 
 <ParamField body="operatorKubernetes.replicas" type="number" default="1">
-  Keep at `1` — the exporter is not designed to run multiple replicas.
+  Keep at `1`, the exporter is not designed to run multiple replicas.
 </ParamField>
 
 <ParamField body="operatorKubernetes.resources" type="object">
@@ -81,7 +81,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 ### Scrape targets
 
-`operatorPrometheus.scrapeTargets` is a map of the in-cluster `/metrics` endpoints to scrape. The chart ships defaults for cAdvisor, kube-state-metrics, node-exporter, and the kubelet (DCGM is off). Add a source by appending an entry — no new operator image is required.
+`operatorPrometheus.scrapeTargets` is a map of the in-cluster `/metrics` endpoints to scrape. The chart ships defaults for cAdvisor, kube-state-metrics, node-exporter, and the kubelet (DCGM is off). Add a source by appending an entry, no new operator image is required.
 
 Each entry accepts:
 
@@ -94,7 +94,7 @@ Each entry accepts:
 </ParamField>
 
 <ParamField body="namespace" type="string">
-  Pod targets only — namespace to discover pods in.
+  Pod targets only, namespace to discover pods in.
 </ParamField>
 
 <ParamField body="labelSelector" type="string">
@@ -102,7 +102,7 @@ Each entry accepts:
 </ParamField>
 
 <ParamField body="port" type="number">
-  Pod targets only — port the exporter listens on.
+  Pod targets only, port the exporter listens on.
 </ParamField>
 
 <ParamField body="path" type="string" default="/metrics">

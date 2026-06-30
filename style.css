@@ -1,0 +1,9 @@
+img[src*="mcp"] {
+  filter: brightness(0) !important;
+}
+
+html.dark img[src*="mcp"],
+html[data-theme="dark"] img[src*="mcp"],
+.dark img[src*="mcp"] {
+  filter: brightness(0) invert(1) !important;
+}

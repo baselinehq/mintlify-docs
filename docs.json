@@ -46,7 +46,7 @@
             "group": "Costgraph Agent",
             "pages": [
               "costgraph/agent",
-              "costgraph/recommendations",
+              "costgraph/agent/recommendations",
               "costgraph/agent/changelog"
             ]
           },
@@ -195,6 +195,10 @@
     {
       "source": "/costgraph/configuration/kubernetes",
       "destination": "/costgraph/operator/configuration"
+    },
+    {
+      "source": "/costgraph/recommendations",
+      "destination": "/costgraph/agent/recommendations"
     }
   ],
   "contextual": {

@@ -1,0 +1,26 @@
+---
+title: Apply a rightsizing recommendation
+description: "Turn a CostGraph recommendation into a change on your workload or VM"
+---
+
+CostGraph recommends the change; you apply it. Each [recommendation](/platform/recommendations) shows the current and recommended values, so applying it is a matter of setting those values on the resource.
+
+## Kubernetes
+
+Open a cluster, select the Workloads tab, and select a workload to see its recommended CPU and memory requests and limits. Apply them to the workload, for example with `kubectl`:
+
+```bash
+kubectl set resources deployment/<name> -n <namespace> \
+  --requests=cpu=<cpu>,memory=<memory> \
+  --limits=cpu=<cpu-limit>,memory=<memory-limit>
+```
+
+Or edit the values in your manifests or Helm chart and redeploy through your usual pipeline.
+
+## Virtual machines
+
+Open the VM to see its recommended instance type. Resize it with your cloud provider (for most providers: stop the instance, change the type, and start it again), or recreate it from your infrastructure-as-code with the new type.
+
+## With an AI agent
+
+Connect a coding agent over [MCP](/costgraph/mcp/install) and ask it to apply a recommendation. It pulls the recommended values and produces a change you can apply or open as a pull request. CostGraph never makes the change itself.

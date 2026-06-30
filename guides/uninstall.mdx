@@ -1,0 +1,38 @@
+---
+title: Disconnect or uninstall
+description: "Remove the operator from a cluster or the agent from a host"
+---
+
+## Operator
+
+Uninstall the Helm release and remove its namespace:
+
+```bash
+helm uninstall costgraph-operator --namespace costgraph
+kubectl delete namespace costgraph
+```
+
+## Agent
+
+The agent runs as a service. Stop it, then remove its files.
+
+<Tabs>
+  <Tab title="systemd">
+    ```bash
+    sudo systemctl disable --now costgraph-agent
+    sudo rm /etc/systemd/system/costgraph-agent.service /etc/default/costgraph-agent
+    sudo systemctl daemon-reload
+    sudo rm -rf /usr/local/bin/costgraph-agent /var/lib/costgraph-agent
+    ```
+  </Tab>
+  <Tab title="OpenRC">
+    ```bash
+    sudo rc-service costgraph-agent stop
+    sudo rc-update del costgraph-agent
+    sudo rm /etc/init.d/costgraph-agent /etc/conf.d/costgraph-agent
+    sudo rm -rf /usr/local/bin/costgraph-agent /var/lib/costgraph-agent
+    ```
+  </Tab>
+</Tabs>
+
+The host or cluster stops reporting right away. Data already collected stays in the CostGraph platform.

@@ -94,9 +94,13 @@
           {
             "group": "How-to",
             "pages": [
+              "guides/apply-recommendation",
+              "guides/connect-kubernetes",
               "guides/managed-platforms",
               "guides/elastic-beanstalk",
-              "guides/ecs-ec2"
+              "guides/ecs-ec2",
+              "guides/golden-image",
+              "guides/uninstall"
             ]
           },
           {

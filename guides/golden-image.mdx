@@ -1,0 +1,19 @@
+---
+title: Bake the agent into a machine image
+description: "Pre-install the agent in a golden image so every instance reports on boot"
+---
+
+For immutable infrastructure and large fleets, install the agent while building a machine image (an AMI, GCP image, or Azure image) rather than on each running instance. Install it with the service start skipped, so it activates on first boot of every instance launched from the image.
+
+## During the image build
+
+In your image build, such as a Packer provisioner, run the installer with `COSTGRAPH_AGENT_SKIP_START=1`:
+
+```bash
+curl -sSL https://setup.costgraph.ai/install.sh | \
+  COSTGRAPH_API_KEY="bl_..." COSTGRAPH_AGENT_SKIP_START=1 sh
+```
+
+This installs the binary and registers the service without starting it during the build. The service is enabled, so it starts automatically when an instance boots from the image and the host begins reporting.
+
+Pin a release with `COSTGRAPH_AGENT_VERSION` for reproducible images. See the [changelog](/costgraph/agent/changelog) for available versions.

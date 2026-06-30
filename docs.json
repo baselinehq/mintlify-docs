@@ -40,7 +40,7 @@
               "costgraph/overview",
               "costgraph/installation/operator/kubernetes-operator",
               "costgraph/configuration/kubernetes",
-              "changelog/costgraph/operator"
+              "costgraph/operator/changelog"
             ]
           },
           {
@@ -48,7 +48,7 @@
             "pages": [
               "costgraph/agent",
               "costgraph/recommendations",
-              "changelog/costgraph/agent"
+              "costgraph/agent/changelog"
             ]
           },
           {
@@ -176,6 +176,14 @@
     {
       "source": "/costgraph/configuration/agent",
       "destination": "/costgraph/agent#configuration"
+    },
+    {
+      "source": "/changelog/costgraph/agent",
+      "destination": "/costgraph/agent/changelog"
+    },
+    {
+      "source": "/changelog/costgraph/operator",
+      "destination": "/costgraph/operator/changelog"
     }
   ],
   "contextual": {

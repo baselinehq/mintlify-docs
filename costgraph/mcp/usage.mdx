@@ -7,7 +7,7 @@ Just ask your agent in plain language. A few prompts to start with, output is il
 
 ## Find your biggest savings
 
-> You: What are my biggest cost savings this month?
+> **You:** What are my biggest cost savings this month?
 
 Your agent calls `readRecommendations` and gets back a ranked summary, largest monthly savings first.
 
@@ -25,7 +25,7 @@ Estimated total: ~$889/mo. Want me to draft the change for any of these?
 
 ## Turn a recommendation into a change
 
-> You: Rightsize the checkout deployment in the production namespace.
+> **You:** Rightsize the checkout deployment in the production namespace.
 
 It pulls the detailed recommendation with `readRecommendations`, then asks `readCostGraphKnowledge` for the `executing_recommendations` knowledge to format the change. You get a diff you can apply or open as a PR.
 
@@ -39,7 +39,7 @@ CostGraph never makes the change itself. Your agent applies it with its own acce
 
 ## Price out an instance swap
 
-> You: Is there a cheaper instance than m5.xlarge for this host?
+> **You:** Is there a cheaper instance than m5.xlarge for this host?
 
 Your agent calls `readPricingApi` and compares cheaper instances that still fit the workload.
 

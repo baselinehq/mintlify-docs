@@ -10,112 +10,17 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - We aim to provide releases on a regular basis for customer features and business priorities
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies
 
-<Update label="2025-10-05" description="v0.1.27">
+<Update label="2026-07-02" description="v0.1.0">
     ### Breaking Changes
     - N/A
 
     ### Updates
-    - Disk and Network metrics are now available via the Gateway APIs, dashboards updates to support this feature are coming soon
-    - We now ignore right-sizings if the resource does not have valid settings to apply the recommendations.
-    - Prometheus library updated to have improved performance and stability
-    - Bugfixes and cleanup logic improvements
+    - Initial release of the CostGraph Kubernetes operator, exporting resource manifests and runtime metrics for all supported Kubernetes cloud providers
+    - Cluster resources are watched through dynamic informers with local caching to keep API server load and operator memory footprint low
+    - Resource creations, updates and deletions are now propagated to the backend so the topology stays in sync with the live cluster state
+    - Operator and runtime Prometheus metrics are pushed to the ingestion API via remote write, namespaced under a unified `costgraph_` prefix
+    - Cluster registration, re-registration and authentication against the ingestion API are handled automatically on startup
+    - Health, heartbeat and scrape-target signals are surfaced through Prometheus for visibility into operator connectivity and ingestion status
+    - Least-privilege watching that only targets resources whose API verbs support watch and list
+    - Graceful shutdown handling and profiling endpoints for improved operability
 </Update>
-
-<Update label="2025-09-17" description="v0.1.26">
-    ### Breaking Changes
-    - N/A
-
-    ### Updates
-    - Prometheus interval bug causing CPU usage to be reported incorrectly is fixed, this is now autodiscovered from the prometheus configuration
-    - Inactive resources are now included in historical data to support rightsizing recommendations
-    - Provider metadata is now included in the exported metrics
-    - Annotations and labels are now included in the exported metrics
-    - Bugfixes and cleanup logic improvements
-</Update>
-
-<Update label="2025-09-03" description="v0.1.25">
-    ### Breaking Changes
-    - We will be removing the automatic deployment of superset and postgres in this release and for the future. With our now updated dashboard providing support for visuals, customers who want superset can now enable them on installation
-    If you have superset enabled, the instance will keep running. However, you will need to manually enable postgres and configure the operator to push data entries to continue having support for these instances
-    In the future, we will be removing the superset and postgres dependencies from the operator and they will be only supported by customer installations outside our helm charts
-
-    ### Updates
-    - Support for GCP managed prometheus added to our environment, Workload Identity Federation is required for this feature. See [here](https://cloud.google.com/stackdriver/docs/managed-prometheus/setup-otel#gmp-prereqs) for more information
-    - Automated rightsizings are now available and can be enabled on a workload-by-workload basis.
-    - Idle usage is now part of the recommendation data, usage can be audited from the dashboard
-    - Performance improvements to the owner resource grouping process
-    - Cluster provider specific metadata is now included in the exported data
-    - Reconcile time period is now configurable.
-</Update>
-
-<Update label="2025-08-12" description="v0.1.24">
-  ### Breaking Changes
-  - N/A
-
-  ### Updates
-  - Retry logic improvements for the prometheus base to ease large cluster throttling failures
-  - Consume labels and annotations as part of improvements to topology for cluster resources
-  - Instant usage metric is now available to view data about container resource dynamics
-  - Deploy resource filter to disambiguate emptyDir vs memory usage data
-  - Bugfixes and cleanup logic improvements
-</Update>
-
-<Update label="2025-07-29" description="v0.1.23">
-  ### Breaking Changes
-  - N/A
-
-  ### Updates
-  - Cost reporting improvements to correct errors in usage metrics
-  - Bugfix correcting misrepresented memory values with emptyDir configurations
-  - Addition of backoff and retries to our codebase
-  - Performance and memory improvements dropping memory usage requirements by 50%
-  - `metric_window_days` parameter allowing custom intervals to perform recommendations.
-</Update>
-
-<Update label="2025-06-20" description="v0.1.22">
-  ### Breaking Changes
-  - N/A
-
-  ### Updates
-  - Base memory usage improvements in the operator data aggregation pipeline
-</Update>
-
-<Update label="2025-06-13" description="v0.1.21">
-  ### Breaking Changes
-  - N/A
-
-  ### Updates
-  - Upgrade of database provider module to the latest version
-  - Addition of Computed usage metrics to the data model
-  - Performance improvements and logging updates
-</Update>
-
-<Update label="2025-06-03" description="v0.1.0">
-  ### Breaking Changes
-  - Due to the deployment of our new pricing infrastructure, customers using the raw pricing data will see schema changes. As much as we attempt to provide a standard schema, this change was unavoidable. This change is limited to customers developing with the data from our operator, no changes will be observed for dashboard and prometheus experiences.
-
-  ### Updates
-  - Deployment of a new pricing infrastructure bringing improved operator performance with lower latency 
-  - Updates to the savings dashboard to show more than 5 entries previously causing customers to miss relatively smaller container resources
-  - Improved pricing updates supporting newer cloud instance types and various usage types such as spot and reserved
-  - Addition of per-CPU and per-Memory pricing for all cloud providers improving the Cost Driver dashboard experience
-  - Support for newer GCP instance types and their upcoming Sweden region release
-  - Addition of liveness and readiness probe endpoints for customer visibility on failed instance deployments
-  - Hotfix for GCP custom instance types deviating from standard pricing obtained from cloud providers
-  - Hotfix for AZ based AWS spot pricing on Opt-In regions 
-  - Support for all regional DigitalOcean pricing information providing customers more value for this provider
-  - Future support for resource pricing updates in Storage, Network, GPUs and related resource types
-</Update>
-
-<Update label="2025-03-05" description="v0.0.1">
-  ### Breaking Changes
-  - N/A
-
-  ### Updates
-  - Initial release
-  - Support for all major kubernetes cloud providers such as AWS, GCP, Azure
-  - Dashboards iterations with customers for their internal use cases
-  - API key support for multiple clusters within a single account
-  - RBAC and invitation support for organizations
-  - Clusters can now be viewed on the web dashboard
-</Update> 

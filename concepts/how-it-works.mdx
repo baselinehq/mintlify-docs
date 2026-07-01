@@ -1,43 +1,20 @@
 ---
-title: "How Does Costgraph Work?"
+title: How CostGraph works
 ---
 
+CostGraph turns the data your clusters and VMs already produce into cost insight and rightsizing recommendations.
 
-This guide walks through the algorithm Costgraph utilises in providing recommendations.
-
-## Costgraph Algorithm
-
-Costgraph is a tool that provides recommendations for the requests and limits of containers in a Kubernetes cluster. The recommendations are based on the historical utilisation of the resources in the cluster. The algorithm used by Costgraph is as follows:
-
-<Tabs>
-  <Tab title="Recommendation Algorithm">
-    Costgraph works by:
-    1. Fetching a maximum of 45 days metric data from Prometheus on resource utilisation with a 5-minute granularity.
-    2. Aggregating the fetch information by container and node, each metric is partitioned by namespace.
-    3. Filtering is done on the data retrieved to remove outliers and optimise the stable trend of the captured window.
-    4. We use the filtered data to generate recommendations for the requests and limits.
-    5. The generated recommendations are computed per container and node per each namespace the application runs.
-    6. Each recommendation is deployed to parquet and the resulting files are ingested into Postgres.
-  </Tab>
-  <Tab title="QoS Algorithm">
-    In obtaining the requests and limits, Costgraph uses the algorithm:
-    1. The *Current* value is always the requests from kubernetes if specified. If not, then there is no QoS, and we use our computed value.
-    2. When defining the *Recommendation*, we compute two values, the scaled computed value which is the `100 * computed_value / expected_utilisation_percent` and the minimum request over the maximum 45 day period we sampled utilisation metrics
-    3. The *Recommendation* is the `max(scaled computed value, minimum request)`
-    4. The *Savings* is the difference between the *Current* and the *Recommendation*
-  </Tab>
-  <Tab title="Resource Quota Algorithm">
-    In any cluster, the recommended resource quota at any time is double the limits in use at the point of recommendation.
-
-    ```bash
-    recommended_resource_quota_namespace = 2 * total_limit_in_use_namespace
-    ```
-
-    We use the recommended limit values to compute the recommended resource quota values.
-  </Tab>
-</Tabs>
-
-## Cost Usage Reporting (CUR) Pricing
-All pricing information on Costgraph is provided through our [pricing API](/api-reference/introduction). Costgraph currently all major cloud providers, with [our list](/api-reference/introduction#supported-cloud-providers) expanding fast. 
-
-Once the CPU and Memory values are computed, the values are multiplied by the per-hour CPU and Memory pricing to obtain the pricing results.
+<Steps>
+  <Step title="Collect">
+    Install the [operator](/costgraph/operator/overview) on a Kubernetes cluster or the [agent](/costgraph/agent) on a VM. Each collects resource usage and inventory and remote-writes it to CostGraph. Only metrics leave your environment.
+  </Step>
+  <Step title="Attribute">
+    CostGraph maps spend to the resources behind it. For Kubernetes, down to namespace, workload, and container; for VMs, at the instance, split into CPU, memory, and storage. Prices come from the [Pricing API](/api-reference/introduction), covering all major clouds.
+  </Step>
+  <Step title="Recommend">
+    From observed CPU and memory usage over a rolling window, CostGraph recommends rightsizing (lowering Kubernetes requests and limits, or moving a VM to a smaller instance) and flags idle resources.
+  </Step>
+  <Step title="Act">
+    Review the savings in the [platform](/platform/cost-dashboard), ask [GraphAI](/platform/graphai) in plain language, or pull it all programmatically over [MCP](/costgraph/mcp/install).
+  </Step>
+</Steps>

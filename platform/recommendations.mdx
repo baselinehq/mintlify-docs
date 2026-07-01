@@ -1,0 +1,26 @@
+---
+title: Recommendations
+description: "Find and act on rightsizing and idle-cleanup savings across your clusters and VMs"
+---
+
+CostGraph analyzes your usage and surfaces recommendations to cut spend. The total available shows as Potential cost impact on the [dashboard](/platform/cost-dashboard).
+
+## Where recommendations appear
+
+Recommendations are attached to the resources they apply to:
+
+- Kubernetes: open a cluster and select the Workloads tab. Each workload shows its worst action, urgency, current cost, and monthly savings; the summary cards total the workloads with recommendations and the savings from applying them all.
+- Virtual machines: the Virtual Machines list and each VM's detail page show a rightsizing recommendation per instance.
+
+<img src="/images/platform/cluster-workloads.png" alt="Workload rightsizing recommendations with worst action, urgency, and monthly savings" />
+
+## What gets recommended
+
+- Rightsizing: match CPU and memory to real usage. For Kubernetes that means lowering requests and limits (*Downsize request*, *Downsize request and limit*); for VMs it means moving to a smaller or cheaper instance type.
+- Idle cleanup: resources running consistently near zero, flagged for removal.
+
+Each recommendation carries an urgency (low, medium, high) and an estimated monthly saving. Click a workload to see the per-container detail behind it.
+
+## How rightsizing is calculated
+
+For how VM rightsizing is calculated, see [VM recommendations](/costgraph/agent/recommendations).

@@ -1,0 +1,23 @@
+---
+title: Connect your infrastructure
+description: "Connect a Kubernetes cluster or virtual machine to start tracking cost"
+---
+
+To start tracking spend, utilization, and savings, connect your infrastructure to CostGraph. CostGraph collects metrics only, no workload data, secrets, or logs leave your environment.
+
+There are two ways to connect, and you can use both:
+
+<CardGroup cols={2}>
+  <Card title="Kubernetes cluster" icon="dharmachakra" href="/costgraph/operator/overview#install">
+    EKS, GKE, AKS, or any self-hosted cluster. Install the CostGraph Operator with Helm.
+  </Card>
+  <Card title="Virtual machine" icon="server" href="/costgraph/agent#install">
+    EC2, Compute Engine, Azure VM, or bare metal. Install the CostGraph Agent with a single shell command.
+  </Card>
+</CardGroup>
+
+On the Get started screen, which walks you through the connection and confirms when data begins flowing.
+
+<img src="/images/platform/get-started.png" alt="CostGraph Get started, connect a Kubernetes cluster or a virtual machine" />
+
+Once connected, your clusters and VMs appear in the [cost dashboard](/platform/cost-dashboard) within a few minutes.

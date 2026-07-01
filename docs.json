@@ -25,82 +25,29 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "CostGraph",
         "groups": [
           {
-            "group": "Get started",
+            "group": "Get Started",
             "pages": [
               "index",
-              "concepts/how-it-works",
-              "platform/connect"
+              "concepts/how-it-works"
             ]
           },
           {
-            "group": "Platform",
+            "group": "Costgraph Operator",
             "pages": [
-              {
-                "group": "Cost & optimization",
-                "pages": [
-                  "platform/cost-dashboard",
-                  "platform/cost-attribution",
-                  "platform/recommendations"
-                ]
-              },
-              {
-                "group": "Compute",
-                "pages": [
-                  "platform/clusters",
-                  "platform/virtual-machines"
-                ]
-              },
-              {
-                "group": "GraphAI",
-                "pages": [
-                  "platform/graphai"
-                ]
-              },
-              {
-                "group": "Administration",
-                "pages": [
-                  "platform/members",
-                  "platform/api-keys",
-                  "platform/billing",
-                  "platform/notifications"
-                ]
-              }
+              "costgraph/operator/overview",
+              "costgraph/operator/configuration",
+              "costgraph/operator/changelog"
             ]
           },
           {
-            "group": "Install",
+            "group": "Costgraph Agent",
             "pages": [
-              {
-                "group": "Kubernetes Operator",
-                "pages": [
-                  "costgraph/operator/overview",
-                  "costgraph/operator/configuration",
-                  "costgraph/operator/changelog"
-                ]
-              },
-              {
-                "group": "VM Agent",
-                "pages": [
-                  "costgraph/agent",
-                  "costgraph/agent/recommendations",
-                  "costgraph/agent/changelog"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "How-to",
-            "pages": [
-              "guides/apply-recommendation",
-              "guides/connect-kubernetes",
-              "guides/managed-platforms",
-              "guides/elastic-beanstalk",
-              "guides/ecs-ec2",
-              "guides/golden-image",
-              "guides/uninstall"
+              "costgraph/agent",
+              "costgraph/agent/recommendations",
+              "costgraph/agent/changelog"
             ]
           },
           {
@@ -109,13 +56,6 @@
             "pages": [
               "costgraph/mcp/install",
               "costgraph/mcp/usage"
-            ]
-          },
-          {
-            "group": "FAQ",
-            "pages": [
-              "faq/general",
-              "faq/installation"
             ]
           }
         ]

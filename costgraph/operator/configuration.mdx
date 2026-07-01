@@ -1,0 +1,230 @@
+---
+title: Configuration
+description: "Helm values reference for the CostGraph Operator"
+---
+
+The CostGraph Operator is configured through Helm `values.yaml`. The defaults work for most clusters; this page covers the options you're most likely to change.
+
+## Global settings
+
+<ParamField body="global.clusterName" type="string" required>
+  Name used to identify this cluster in the CostGraph platform.
+</ParamField>
+
+<ParamField body="global.apiKey" type="string">
+  API key for authenticating with CostGraph. Don't commit a real key — prefer `existingSecret` in production.
+</ParamField>
+
+<ParamField body="global.existingSecret" type="string">
+  Name of a pre-existing Secret holding the API key. When set, `apiKey` is ignored.
+</ParamField>
+
+<ParamField body="global.existingSecretKey" type="string" default="apiKey">
+  Key within `existingSecret` that holds the API key value.
+</ParamField>
+
+<ParamField body="global.backendURL" type="string" default="https://api.costgraph.ai">
+  Base URL of the CostGraph API.
+</ParamField>
+
+<ParamField body="global.namespace" type="string" default="costgraph">
+  Namespace the operator runs in.
+</ParamField>
+
+## Resource exporter
+
+`operatorKubernetes` watches cluster resources and exports them to CostGraph.
+
+<ParamField body="operatorKubernetes.enabled" type="boolean" default="true">
+  Deploy the resource exporter.
+</ParamField>
+
+<ParamField body="operatorKubernetes.replicas" type="number" default="1">
+  Keep at `1` — the exporter is not designed to run multiple replicas.
+</ParamField>
+
+<ParamField body="operatorKubernetes.resources" type="object">
+  Resource requests and limits.
+</ParamField>
+
+<ParamField body="operatorKubernetes.nodeSelector / tolerations / affinity" type="object">
+  Standard pod scheduling controls.
+</ParamField>
+
+<ParamField body="operatorKubernetes.env" type="array">
+  Additional environment variables.
+</ParamField>
+
+## Metrics scraper
+
+`operatorPrometheus` scrapes in-cluster metrics endpoints and remote-writes them to CostGraph.
+
+<ParamField body="operatorPrometheus.enabled" type="boolean" default="true">
+  Deploy the metrics scraper.
+</ParamField>
+
+<ParamField body="operatorPrometheus.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
+  Remote-write endpoint for collected metrics.
+</ParamField>
+
+<ParamField body="operatorPrometheus.config.remoteWritePath" type="string" default="/api/v1/write">
+  Remote-write path appended to the URL.
+</ParamField>
+
+<ParamField body="operatorPrometheus.config.prometheusAPIProvider" type="string" default="prometheus">
+  Metrics API flavor. `prometheus` or `victoriametrics`.
+</ParamField>
+
+<ParamField body="operatorPrometheus.config.httpTimeout" type="string" default="30s">
+  Timeout for scrape and backend requests.
+</ParamField>
+
+### Scrape targets
+
+`operatorPrometheus.scrapeTargets` is a map of the in-cluster `/metrics` endpoints to scrape. The chart ships defaults for cAdvisor, kube-state-metrics, node-exporter, and the kubelet (DCGM is off). Add a source by appending an entry — no new operator image is required.
+
+Each entry accepts:
+
+<ParamField body="enabled" type="boolean" default="true">
+  Include this target.
+</ParamField>
+
+<ParamField body="kind" type="string" default="pod">
+  `pod` discovers and scrapes matching pods; `node` scrapes each node's kubelet through the API-server proxy.
+</ParamField>
+
+<ParamField body="namespace" type="string">
+  Pod targets only — namespace to discover pods in.
+</ParamField>
+
+<ParamField body="labelSelector" type="string">
+  Label selector for pod (or node) discovery. Required for pod targets.
+</ParamField>
+
+<ParamField body="port" type="number">
+  Pod targets only — port the exporter listens on.
+</ParamField>
+
+<ParamField body="path" type="string" default="/metrics">
+  Metrics path to scrape.
+</ParamField>
+
+<ParamField body="nodeMetrics" type="boolean" default="false">
+  Stamp `costgraph_instance_hostname` and `costgraph_instance_id` on node-scoped sources like cAdvisor and node-exporter.
+</ParamField>
+
+<ParamField body="metricNamePrefixes" type="array">
+  Keep only metric families whose names match one of these prefixes. Empty keeps everything.
+</ParamField>
+
+## Bundled exporters
+
+The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster.
+
+<ParamField body="kube-state-metrics.enabled" type="boolean" default="true">
+  Kubernetes object-level metrics (pods, deployments, nodes).
+</ParamField>
+
+<ParamField body="cadvisor.enabled" type="boolean" default="true">
+  Per-container resource usage. Uses the `baselinehq/cadvisor` image.
+</ParamField>
+
+<ParamField body="prometheus-node-exporter.enabled" type="boolean" default="true">
+  Host-level metrics (CPU, memory, disk, network) on port `9100`.
+</ParamField>
+
+<ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
+  NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`.
+</ParamField>
+
+## Full values reference
+
+<Accordion title="Complete values.yaml">
+```yaml
+global:
+  clusterName: ""
+  apiKey: ""
+  existingSecret: ""
+  existingSecretKey: ""
+  backendURL: "https://api.costgraph.ai"
+  namespace: "costgraph"
+
+serviceAccount:
+  create: true
+  automount: true
+
+kube-state-metrics:
+  enabled: true
+
+cadvisor:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: baselinehq/cadvisor
+    tag: "0.56.3-baseline"
+
+prometheus-node-exporter:
+  enabled: true
+  service:
+    port: 9100
+    targetPort: 9100
+
+dcgm-exporter:
+  enabled: false
+  nodeSelector:
+    accelerator: nvidia
+  tolerations: []
+
+operatorKubernetes:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  env: []
+
+operatorPrometheus:
+  enabled: true
+  replicas: 1
+  config:
+    remoteWriteURL: "https://tsdb.costgraph.ai"
+    remoteWritePath: "/api/v1/write"
+    prometheusAPIProvider: "prometheus"
+    httpTimeout: "30s"
+  scrapeTargets:
+    cadvisor:
+      enabled: true
+      labelSelector: "app.kubernetes.io/name=cadvisor"
+      port: 8080
+      nodeMetrics: true
+    kube-state-metrics:
+      enabled: true
+      labelSelector: "app.kubernetes.io/name=kube-state-metrics"
+      port: 8080
+    node-exporter:
+      enabled: true
+      labelSelector: "app.kubernetes.io/name=prometheus-node-exporter"
+      port: 9100
+      nodeMetrics: true
+    kubelet:
+      enabled: true
+      kind: node
+      nodeMetrics: true
+      metricNamePrefixes:
+        - kubelet_
+    dcgm-exporter:
+      enabled: false
+      labelSelector: "app.kubernetes.io/name=dcgm-exporter"
+      port: 9400
+      nodeMetrics: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  env: []
+```
+</Accordion>

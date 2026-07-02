@@ -15,12 +15,9 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - N/A
 
     ### Updates
-    - Initial release of the CostGraph Kubernetes operator, exporting resource manifests and runtime metrics for all supported Kubernetes cloud providers
-    - Cluster resources are watched through dynamic informers with local caching to keep API server load and operator memory footprint low
-    - Resource creations, updates and deletions are now propagated to the backend so the topology stays in sync with the live cluster state
-    - Operator and runtime Prometheus metrics are pushed to the ingestion API via remote write, namespaced under a unified `costgraph_` prefix
-    - Cluster registration, re-registration and authentication against the ingestion API are handled automatically on startup
-    - Health, heartbeat and scrape-target signals are surfaced through Prometheus for visibility into operator connectivity and ingestion status
-    - Least-privilege watching that only targets resources whose API verbs support watch and list
-    - Graceful shutdown handling and profiling endpoints for improved operability
+    - Initial release of the CostGraph Kubernetes operator, with support for all major Kubernetes cloud providers
+    - Exports Kubernetes resources and keeps them in sync with your live cluster as resources are created, updated and removed
+    - Efficient resource collection designed to keep operator overhead and cluster API load low
+    - Automatic cluster registration and authentication on startup
+    - Operator health and connectivity are surfaced through Prometheus for improved visibility
 </Update>

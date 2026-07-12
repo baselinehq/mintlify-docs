@@ -31,7 +31,8 @@
             "group": "Get Started",
             "pages": [
               "index",
-              "concepts/how-it-works"
+              "concepts/how-it-works",
+              "costgraph/billing"
             ]
           },
           {

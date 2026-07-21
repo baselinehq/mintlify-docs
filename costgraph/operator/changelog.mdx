@@ -10,6 +10,24 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 - We aim to provide releases on a regular basis for customer features and business priorities
 - All related tag updates will be made under a helm release, no update is needed from customers for operator dependencies
 
+<Note>
+    Entries labelled `costgraph-operator vX.Y.Z` are releases of the current `costgraph-operator` chart, which deploys the domain-specific operators. Earlier entries labelled `vX.Y.Z` are releases of the deprecated single-binary `costgraph` chart. The two version series are independent, so the numbers do not run continuously.
+</Note>
+
+<Update label="2026-07-21" description="costgraph-operator v0.1.14">
+    ### Breaking Changes
+    - The single-binary operator, installed from the `costgraph` chart, is deprecated and replaced by domain-specific operators installed from the `costgraph-operator` chart. Values are not compatible between the two charts, so this is a reinstall rather than an upgrade. Existing `costgraph` installations keep running but will receive no further releases
+
+    ### Updates
+    - The operator now ships as two independently versioned components, `costgraph-operator-kubernetes` for cluster inventory and `costgraph-operator-prometheus` for metrics, both pinned to released image tags rather than build tags
+    - Cluster inventory now removes resources when they are deleted, so stale workloads no longer linger in the dashboard
+    - Scrape targets are discovered dynamically, including the kubelet, with support for a customer-supplied cAdvisor deployment
+    - GPU metrics and recommendations are collected for GPU-backed nodes
+    - Metric labels are namespaced under the `costgraph_` prefix for consistency across all exported series
+    - Lower memory use when scraping high-cardinality exporters
+    - Health markers for scraped resources give clearer visibility into partially reporting clusters
+</Update>
+
 <Update label="2025-10-05" description="v0.1.27">
     ### Breaking Changes
     - N/A

@@ -16,7 +16,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-07-21" description="costgraph-operator v0.1.14">
     ### Breaking Changes
-    - The `costgraph` chart is now formally deprecated. It has been in maintenance since the April beta and receives no further releases. Existing installations keep running, but they will not pick up new features or fixes. Values are not compatible between the two charts, so migrating is a reinstall rather than an upgrade - see [Overview](/costgraph/operator/overview) for the install steps
+    - The `costgraph` chart is deprecated and no longer supported. It receives no further releases and no fixes. Install the `costgraph-operator` chart - see [Overview](/costgraph/operator/overview)
 
     ### Updates
     - Both operators now ship as tagged releases, `v0.1.0`, and the chart pins those tags rather than build identifiers. You can now see exactly which operator version a chart release deploys via the chart `appVersion`
@@ -53,7 +53,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - Chart documentation refreshed for the split components
 
     <Note>
-        This release reaches feature parity with the deprecated `costgraph` chart. If you are still on the single-binary operator, this is the recommended point to migrate.
+        This release reaches feature parity with the `costgraph` chart, which is superseded from this point on.
     </Note>
 </Update>
 
@@ -85,7 +85,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - GPU metrics and rightsizing recommendations for GPU-backed nodes
 
     <Note>
-        With this release the `costgraph` chart enters maintenance. It continues to receive critical fixes only. New installations should use the `costgraph-operator` chart.
+        With this release the `costgraph` chart is superseded. New installations should use the `costgraph-operator` chart.
     </Note>
 </Update>
 
@@ -108,7 +108,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - Cluster identity is attached to every published metric, so multi-cluster accounts attribute data correctly
 
     <Note>
-        This chart is installed as `costgraph-operator` and runs alongside, not on top of, an existing `costgraph` installation. The `costgraph` chart remains fully supported at this point. Do not run both against the same cluster.
+        This chart is installed as `costgraph-operator` and is separate from the `costgraph` chart. Do not run both against the same cluster.
     </Note>
 </Update>
 

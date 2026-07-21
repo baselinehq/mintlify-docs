@@ -16,16 +16,100 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-07-21" description="costgraph-operator v0.1.14">
     ### Breaking Changes
-    - The single-binary operator, installed from the `costgraph` chart, is deprecated and replaced by domain-specific operators installed from the `costgraph-operator` chart. Values are not compatible between the two charts, so this is a reinstall rather than an upgrade. Existing `costgraph` installations keep running but will receive no further releases
+    - The `costgraph` chart is now formally deprecated. It has been in maintenance since the April beta and receives no further releases. Existing installations keep running, but they will not pick up new features or fixes. Values are not compatible between the two charts, so migrating is a reinstall rather than an upgrade - see [Overview](/costgraph/operator/overview) for the install steps
 
     ### Updates
-    - The operator now ships as two independently versioned components, `costgraph-operator-kubernetes` for cluster inventory and `costgraph-operator-prometheus` for metrics, both pinned to released image tags rather than build tags
-    - Cluster inventory now removes resources when they are deleted, so stale workloads no longer linger in the dashboard
-    - Scrape targets are discovered dynamically, including the kubelet, with support for a customer-supplied cAdvisor deployment
-    - GPU metrics and recommendations are collected for GPU-backed nodes
-    - Metric labels are namespaced under the `costgraph_` prefix for consistency across all exported series
+    - Both operators now ship as tagged releases, `v0.1.0`, and the chart pins those tags rather than build identifiers. You can now see exactly which operator version a chart release deploys via the chart `appVersion`
+    - Cluster inventory removes resources when they are deleted, so decommissioned workloads no longer linger in the dashboard
     - Lower memory use when scraping high-cardinality exporters
-    - Health markers for scraped resources give clearer visibility into partially reporting clusters
+    - Default resource requests tuned to match observed usage of the operator components
+</Update>
+
+<Update label="2026-06-05" description="costgraph-operator v0.1.13">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Both operators expose profiling on the standard port `6060` for cluster-internal diagnostics, making support investigations faster
+    - Metric names and external labels are consistently namespaced under the `costgraph_` prefix across every exported series
+</Update>
+
+<Update label="2026-06-04" description="costgraph-operator v0.1.12">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - The kubelet is scraped directly as a metrics destination, improving host and container metric coverage on clusters where cAdvisor is unavailable
+    - Additional diagnostics to help troubleshoot partially reporting clusters
+</Update>
+
+<Update label="2026-05-28" description="costgraph-operator v0.1.11">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Health markers are published for scraped resources, so clusters that are only partially reporting are now visible rather than silently incomplete
+    - Node scheduling keys are configurable for the operator components and their exporters
+    - Chart documentation refreshed for the split components
+
+    <Note>
+        This release reaches feature parity with the deprecated `costgraph` chart. If you are still on the single-binary operator, this is the recommended point to migrate.
+    </Note>
+</Update>
+
+<Update label="2026-05-13" description="costgraph-operator v0.1.10">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Resource requests and limits are configurable for every bundled dependency, so the operator can be sized to the cluster it runs in
+    - Includes chart patch releases v0.1.8 and v0.1.9: node-exporter is bundled as a metrics source, scrape targets are discovered dynamically instead of being statically configured, and a Helm value override failure under ArgoCD is fixed
+</Update>
+
+<Update label="2026-04-17" description="costgraph-operator v0.1.7">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - Cluster role rules corrected so that subresources are no longer requested with a wildcard, which some admission controllers rejected
+    - Includes chart patch releases v0.1.4 through v0.1.6: the API key can be supplied from an existing Secret, the backend URL is overridable for private deployments, and a rendering error caused by whitespace in release names is fixed
+</Update>
+
+<Update label="2026-04-12" description="costgraph-operator v0.1.3">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - **Beta release of the Kubernetes operator.** The `costgraph-operator` chart now deploys the full split - `costgraph-operator-kubernetes` for cluster inventory and `costgraph-operator-prometheus` for metrics
+    - Resource discovery is restricted to API resources that actually support `watch` and `list`, removing repeated permission errors on clusters with custom aggregated APIs
+    - GPU metrics and rightsizing recommendations for GPU-backed nodes
+
+    <Note>
+        With this release the `costgraph` chart enters maintenance. It continues to receive critical fixes only. New installations should use the `costgraph-operator` chart.
+    </Note>
+</Update>
+
+<Update label="2026-03-19" description="costgraph-operator v0.1.2">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - A customer-supplied cAdvisor deployment can be used instead of the bundled one
+    - Scheduled reconciliation replaced with event-driven collection, so cluster changes are reflected without waiting for the next cycle
+    - Includes chart patch release v0.1.1: the bundled cAdvisor image maps PVC device information, which is required for volume cost attribution
+</Update>
+
+<Update label="2026-02-11" description="costgraph-operator v0.1.0">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - **First release of the redesigned operator.** The single-binary operator is being broken out into components with a single responsibility each, released and versioned independently. This release ships the metrics component, which scrapes cluster, host and container metrics and remote-writes them to CostGraph
+    - Cluster identity is attached to every published metric, so multi-cluster accounts attribute data correctly
+
+    <Note>
+        This chart is installed as `costgraph-operator` and runs alongside, not on top of, an existing `costgraph` installation. The `costgraph` chart remains fully supported at this point. Do not run both against the same cluster.
+    </Note>
 </Update>
 
 <Update label="2025-10-05" description="v0.1.27">

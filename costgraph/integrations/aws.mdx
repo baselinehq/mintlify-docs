@@ -1,0 +1,92 @@
+---
+title: Amazon Web Services
+description: "Connect an AWS account to CostGraph for FOCUS-based cost, allocation, and cross-provider recommendations"
+---
+
+CostGraph reads your AWS spend from a **FOCUS Data Export** delivered to S3. Unlike
+Google Cloud, AWS exposes a full API for this, so the entire setup can be automated -
+CostGraph (or a short Terraform module) creates the export and the read role for you.
+
+## What you enable
+
+A single **FOCUS 1.2 Data Export** (`FOCUS_1_2_AWS`) written as Parquet to an S3
+bucket. It carries billed and effective cost, usage, credits, and commitment
+(Savings Plans / Reserved Instances) columns in the normalized FOCUS schema.
+
+## Automated setup (recommended)
+
+CostGraph creates the export on your behalf when you connect with a role that allows
+`bcm-data-exports` and S3 bucket management, or you can apply the Terraform below. The
+export is created in **us-east-1** (where AWS billing data lives).
+
+```hcl
+resource "aws_s3_bucket" "focus" {
+  bucket = "costgraph-focus-export-${data.aws_caller_identity.current.account_id}"
+}
+
+resource "aws_s3_bucket_policy" "focus" {
+  bucket = aws_s3_bucket.focus.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "EnableAWSDataExportsWrite"
+      Effect    = "Allow"
+      Principal = { Service = ["billingreports.amazonaws.com", "bcm-data-exports.amazonaws.com"] }
+      Action    = ["s3:PutObject", "s3:GetBucketPolicy"]
+      Resource  = [aws_s3_bucket.focus.arn, "${aws_s3_bucket.focus.arn}/*"]
+      Condition = {
+        StringLike   = { "aws:SourceArn" = [
+          "arn:aws:cur:us-east-1:${data.aws_caller_identity.current.account_id}:definition/*",
+          "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*"
+        ] }
+        StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }
+      }
+    }]
+  })
+}
+
+resource "aws_bcmdataexports_export" "focus" {
+  export {
+    name = "costgraph-focus-1-2"
+    data_query { query_statement = "SELECT * FROM FOCUS_1_2_AWS" }
+    destination_configurations {
+      s3_destination {
+        s3_bucket = aws_s3_bucket.focus.id
+        s3_prefix = "focus-1-2"
+        s3_region = "us-east-1"
+        s3_output_configurations {
+          output_type = "CUSTOM"
+          format      = "PARQUET"
+          compression = "PARQUET"
+          overwrite   = "OVERWRITE_REPORT"
+        }
+      }
+    }
+    refresh_cadence { frequency = "SYNCHRONOUS" }
+  }
+}
+```
+
+First Parquet files land within about 24 hours.
+
+## Read access
+
+CostGraph reads the export bucket with a cross-account role granting `s3:GetObject` and
+`s3:ListBucket` on the export prefix. The connect flow provides the exact trust policy
+and external ID.
+
+## Connect in CostGraph
+
+1. Open **Integrations** and choose **Amazon Web Services**.
+2. Provide the read role (and, for automated setup, the provisioning role), then connect.
+3. CostGraph creates or discovers the FOCUS export, validates access, and starts the
+   first sync.
+
+## What CostGraph does with it
+
+- **Cost**: FOCUS line items normalized to the same canonical model as every other
+  provider, keeping billed and effective cost, credits, and commitment attribution.
+- **Reconciliation**: allocated plus unallocated cost is checked to equal the invoice
+  per billing account per month.
+- **Allocation**: spend attributed by resource, tag, and account, with an explicit
+  unallocated bucket for tax, shared, and commitment costs.

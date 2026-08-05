@@ -1,0 +1,93 @@
+---
+title: Google Cloud
+description: "Connect a Google Cloud billing account to CostGraph for FOCUS-based cost, allocation, and cross-provider recommendations"
+---
+
+CostGraph reads your Google Cloud spend from a **FOCUS billing export** in BigQuery. You
+enable the export on your billing account, grant a read-only service account access to
+the exported data, and CostGraph ingests it into normalized, reconciled cost.
+
+Google does not offer an API to turn the billing export on, so one step is a manual
+click in the Cloud Console. Everything else is read-only and least-privilege.
+
+## What you enable
+
+| Export | Required | Why |
+|--------|----------|-----|
+| **FOCUS** | Yes | The normalized, cross-provider cost feed CostGraph ingests |
+| **Detailed usage cost** | Yes | Reconciles the (Preview) FOCUS export and adds resource-level rows |
+| Standard usage cost | No | Detailed is a superset; skip it |
+| Pricing | No | Used later for catalog pricing, not cost ingestion |
+
+## Step 1: Enable the exports (Console)
+
+<Note>
+Enabling a billing export is **Console-only** - Google provides no API, gcloud command,
+or Terraform resource for the toggle itself. This is the one manual step.
+</Note>
+
+1. In the Cloud Console, open **Billing** and select the billing account you want to
+   connect.
+2. Go to **Billing export -> BigQuery export**.
+3. Under **FOCUS export**, click **Edit settings**, choose a **region** (US or EU), and
+   **Save**. Google creates its own immutable dataset named
+   `gcp_billing_immutable_<BILLING_ACCOUNT_ID>_<region>` - you do not pick the dataset.
+4. Under **Detailed usage cost**, click **Edit settings**, choose a project and dataset
+   (or let it create `gcp_billing_export_resource_v1_<region>`), and **Save**.
+
+First rows appear within a few hours. A multi-region export backfills roughly the
+previous month.
+
+## Step 2: Grant CostGraph read access
+
+Create a service account for the billing reads (or reuse one), and note the project
+that holds the export datasets. Grant it, least-privilege:
+
+| Role | Scope | Why |
+|------|-------|-----|
+| `roles/bigquery.jobUser` | export project | Run the read queries |
+| `roles/bigquery.dataViewer` | the FOCUS dataset | Read FOCUS cost rows |
+| `roles/bigquery.dataViewer` | the Detailed dataset | Read Detailed rows for reconciliation |
+
+Dataset-level `dataViewer` (rather than project-level) keeps access scoped to the
+billing data only.
+
+<Note>
+**Keyless is recommended.** Rather than exporting a service-account key, grant
+CostGraph's identity permission to impersonate this service account (via Workload
+Identity Federation or `roles/iam.serviceAccountTokenCreator`). No secret leaves your
+project and there is no key to rotate. The connect screen provides CostGraph's
+identity to authorize. A downloaded service-account key is supported as a fallback.
+</Note>
+
+CostGraph does not use OAuth "sign in with Google" for billing access - that ties
+access to one person's account and grants broad scopes. Impersonation (or a scoped
+service-account key) is the correct trust model.
+
+## Step 3: Connect in CostGraph
+
+1. Open **Integrations** and choose **Google Cloud**.
+2. Choose **impersonation** (recommended - authorize CostGraph's identity on your
+   service account) or paste a **service-account key**, then enter the **billing
+   account ID**.
+3. CostGraph validates it can run a query and read the FOCUS dataset, then starts the
+   first sync. If a role is missing, the connect screen names the exact grant to add.
+
+## What CostGraph does with it
+
+- **Cost**: FOCUS line items normalized to a canonical model, keeping both billed and
+  effective (amortized) cost, credits, and commitment attribution.
+- **Reconciliation**: allocated plus unallocated cost is checked to equal the invoice
+  per billing account per month; FOCUS is validated against the Detailed export.
+- **Allocation**: spend attributed by resource, label, and project, with an explicit
+  unallocated bucket for tax, shared, and commitment costs.
+
+## Automating the setup
+
+Everything except the export toggle can be provisioned as code:
+
+- `google_bigquery_dataset` for the Detailed destination
+- `google_bigquery_dataset_iam_member` / `google_project_iam_member` for the grants
+- `google_project_service` to enable the BigQuery API
+
+The FOCUS export toggle remains a one-time manual Console step per billing account.

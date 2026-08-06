@@ -60,5 +60,8 @@ Re-label with the correct ID and the change applies on the next sync. Remove the
 label and the resource falls back to normal matching; if nothing matches, it keeps
 its last rate rather than silently becoming free.
 
-If the ID is malformed, or names a rate that has been deleted, the resource is
-left unpriced and the operator logs a warning naming the resource and the value.
+If the ID is malformed, or names a rate that has been deleted, CostGraph logs a
+warning naming the resource and the value. It never falls back to attribute
+matching. A resource that was never priced stays unpriced; one that was already
+priced keeps the rate it last resolved until a valid ID or a normal match
+replaces it.

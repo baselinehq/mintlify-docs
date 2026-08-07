@@ -18,6 +18,15 @@ curl -X POST https://api.costgraph.ai/marketplace/providers/compute \
   -d '{"entries":[{"service":"BaseCompute","region":"dc-east","instance_type":"bare-metal-xl","operating_system":"linux","cpu_cores":64,"ram_gb":512,"cost_per_hour":1.85,"period_billing_hours":730}]}'
 ```
 
+A disk rate takes capacity bounds instead of CPU and memory:
+
+```bash
+curl -X POST https://api.costgraph.ai/marketplace/providers/disks \
+  -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"entries":[{"service":"BaseDisks","region":"dc-east","type":"nvme","usage_type":"ONDEMAND","cost_per_gb_hour":0.0002,"min_capacity_gb":0,"max_capacity_gb":65536,"period_billing_hours":730}]}'
+```
+
 The response carries an `id` for each entry. That UUID is what you label with.
 
 ## Label the resource
@@ -61,8 +70,14 @@ so treat an ID as a secret you hand out deliberately.
 ## Fix a mistake
 
 Re-label with the correct ID and the change applies on the next sync. Remove the
-label and the resource falls back to normal matching; if nothing matches, it keeps
-its last rate rather than silently becoming free.
+label with a trailing hyphen:
+
+```bash
+kubectl label node/node-1 costgraph.ai/pricing-id-
+```
+
+The resource then falls back to normal matching; if nothing matches, it keeps its
+last rate rather than silently becoming free.
 
 If the ID is malformed, or names a rate that has been deleted, CostGraph logs a
 warning naming the resource and the value. It never falls back to attribute

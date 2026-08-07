@@ -40,6 +40,7 @@
             "pages": [
               "costgraph/operator/overview",
               "costgraph/operator/configuration",
+              "costgraph/operator/on-prem-pricing",
               "costgraph/operator/changelog"
             ]
           },

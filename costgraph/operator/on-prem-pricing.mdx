@@ -9,9 +9,12 @@ the resource with the ID of a rate you registered in the pricing marketplace.
 
 ## Register a rate
 
+Use `/marketplace/providers/compute` for nodes and `/marketplace/providers/disks` for PersistentVolumes.
+
 ```bash
 curl -X POST https://api.costgraph.ai/marketplace/providers/compute \
   -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
   -d '{"entries":[{"service":"BaseCompute","region":"dc-east","instance_type":"bare-metal-xl","operating_system":"linux","cpu_cores":64,"ram_gb":512,"cost_per_hour":1.85,"period_billing_hours":730}]}'
 ```
 
@@ -20,9 +23,10 @@ The response carries an `id` for each entry. That UUID is what you label with.
 ## Label the resource
 
 ```bash
-kubectl label node/node-1 costgraph.ai/pricing-id=<uuid>
-kubectl label nodes -l rack=r1 costgraph.ai/pricing-id=<uuid>
-kubectl label pv/pv-1 costgraph.ai/pricing-id=<uuid>
+PRICING_ID="00000000-0000-0000-0000-000000000000"
+kubectl label node/node-1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
+kubectl label nodes -l rack=r1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
+kubectl label pv/pv-1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
 ```
 
 On a node the ID must refer to a compute rate; on a PersistentVolume, to a disk

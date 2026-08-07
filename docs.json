@@ -59,6 +59,13 @@
               "costgraph/mcp/install",
               "costgraph/mcp/usage"
             ]
+          },
+          {
+            "group": "Integrations",
+            "icon": "plug",
+            "pages": [
+              "costgraph/integrations/planetscale"
+            ]
           }
         ]
       },

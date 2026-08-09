@@ -17,9 +17,19 @@ bucket. It carries billed and effective cost, usage, credits, and commitment
 
 CostGraph creates the export on your behalf when you connect with a role that allows
 `bcm-data-exports` and S3 bucket management, or you can apply the Terraform below. The
-export is created in **us-east-1** (where AWS billing data lives).
+export is created in **us-east-1** (where AWS billing data lives), so
+`aws_bcmdataexports_export` must be managed by an AWS provider configured for that
+region. If your root provider targets another region, add an aliased one and point the
+export at it.
 
 ```hcl
+provider "aws" {
+  alias  = "billing"
+  region = "us-east-1"
+}
+
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "focus" {
   bucket = "costgraph-focus-export-${data.aws_caller_identity.current.account_id}"
 }
@@ -31,14 +41,11 @@ resource "aws_s3_bucket_policy" "focus" {
     Statement = [{
       Sid       = "EnableAWSDataExportsWrite"
       Effect    = "Allow"
-      Principal = { Service = ["billingreports.amazonaws.com", "bcm-data-exports.amazonaws.com"] }
-      Action    = ["s3:PutObject", "s3:GetBucketPolicy"]
-      Resource  = [aws_s3_bucket.focus.arn, "${aws_s3_bucket.focus.arn}/*"]
+      Principal = { Service = "bcm-data-exports.amazonaws.com" }
+      Action    = ["s3:PutObject"]
+      Resource  = ["${aws_s3_bucket.focus.arn}/*"]
       Condition = {
-        StringLike   = { "aws:SourceArn" = [
-          "arn:aws:cur:us-east-1:${data.aws_caller_identity.current.account_id}:definition/*",
-          "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*"
-        ] }
+        StringLike   = { "aws:SourceArn" = "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*" }
         StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }
       }
     }]
@@ -46,6 +53,8 @@ resource "aws_s3_bucket_policy" "focus" {
 }
 
 resource "aws_bcmdataexports_export" "focus" {
+  provider = aws.billing
+
   export {
     name = "costgraph-focus-1-2"
     data_query { query_statement = "SELECT * FROM FOCUS_1_2_AWS" }

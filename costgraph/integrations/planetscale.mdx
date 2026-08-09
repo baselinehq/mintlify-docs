@@ -1,0 +1,54 @@
+---
+title: PlanetScale
+description: "Connect a PlanetScale organization to CostGraph for managed-database cost and rightsizing"
+---
+
+CostGraph connects to PlanetScale with a **service token**. The token lets CostGraph
+read your databases, their branch cluster sizes, invoices, and metrics endpoints, so
+it can attribute cost and recommend rightsizing for your managed databases.
+
+## Create a service token
+
+1. In the PlanetScale dashboard, open your organization's **Settings -> Service tokens**.
+2. Create a token and copy the **token ID** and **token value**. The value is shown once.
+3. Grant the token the accesses below.
+
+## Required accesses
+
+Grant these at the organization level:
+
+| Access | Why CostGraph needs it |
+|--------|------------------------|
+| `read_organization` | Confirm the token and identify the organization |
+| `read_databases` | List databases and their regions |
+| `read_invoices` | Attribute real billed spend per database |
+| `read_metrics_endpoints` | Discover the Prometheus endpoints for usage metrics |
+
+Then grant this **per database** you want rightsized (Databases -> Accesses on the
+service token):
+
+| Access | Why CostGraph needs it |
+|--------|------------------------|
+| `read_branch` | Read each database's cluster size (the SKU, e.g. `PS-10`) to price nodes and produce cost recommendations |
+
+<Note>
+`read_branch` is granted per database, not at the organization level. Without it,
+CostGraph still ingests inventory and billing, but **database size and cost
+recommendations are disabled** for that database. The connect screen warns you when
+the token is missing `read_branch`.
+</Note>
+
+## Connect in CostGraph
+
+1. Open **Integrations** and choose **PlanetScale**.
+2. Paste the token ID and token value, pick the tenant, and connect.
+3. If the token is missing `read_branch`, CostGraph accepts the connection and shows a
+   warning. Grant the access in PlanetScale, then reconnect or wait for the next sync.
+
+## What CostGraph does with it
+
+- **Inventory**: databases, regions, and nodes.
+- **Billing**: real invoice line items, mapped to each database.
+- **Sizing and cost**: each node is matched to its pricing (size SKU, architecture,
+  HA topology, region) so storage and replica recommendations show real dollar
+  savings.

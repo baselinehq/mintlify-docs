@@ -29,14 +29,21 @@ or Terraform resource for the toggle itself. This is the one manual step.
 1. In the Cloud Console, open **Billing** and select the billing account you want to
    connect.
 2. Go to **Billing export -> BigQuery export**.
-3. Under **FOCUS export**, click **Edit settings**, choose a **region** (US or EU), and
-   **Save**. Google creates its own immutable dataset named
-   `gcp_billing_immutable_<BILLING_ACCOUNT_ID>_<region>` - you do not pick the dataset.
+3. Under **FOCUS export**, click **Edit settings**, choose the **project** that will hold
+   the export, choose a **data location**, and **Save**. Google creates its own immutable
+   dataset named `gcp_billing_immutable_<BILLING_ACCOUNT_ID>_<region>` - you do not pick
+   the dataset.
 4. Under **Detailed usage cost**, click **Edit settings**, choose a project and dataset
    (or let it create `gcp_billing_export_resource_v1_<region>`), and **Save**.
 
-First rows appear within a few hours. A multi-region export backfills roughly the
-previous month.
+The export project must have billing enabled and be linked to the billing account you
+are exporting.
+
+Any supported [data location](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-focus-setup)
+works, but the **US or EU multi-regions are recommended**: they backfill the current and
+previous month, which can take up to five days to complete. Regional locations do not
+backfill any prior data, so history only starts from the day you enable the export.
+First new rows appear within a few hours either way.
 
 ## Step 2: Grant CostGraph read access
 
@@ -54,9 +61,11 @@ billing data only.
 
 <Note>
 **Keyless is recommended.** Rather than exporting a service-account key, grant
-CostGraph's identity permission to impersonate this service account (via Workload
-Identity Federation or `roles/iam.serviceAccountTokenCreator`). No secret leaves your
-project and there is no key to rotate. The connect screen provides CostGraph's
+CostGraph's identity permission to impersonate this service account: grant
+`roles/iam.workloadIdentityUser` on the service account to CostGraph's federated
+principal (Workload Identity Federation). Use `roles/iam.serviceAccountTokenCreator`
+only when the caller is a Google identity - it is broader than external federation
+needs. No secret leaves your project and there is no key to rotate. The connect screen provides CostGraph's
 identity to authorize. A downloaded service-account key is supported as a fallback.
 </Note>
 

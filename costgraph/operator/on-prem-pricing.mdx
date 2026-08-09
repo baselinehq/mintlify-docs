@@ -1,0 +1,86 @@
+---
+title: On-prem pricing
+description: "Price bare-metal nodes and volumes with a pricing ID label"
+---
+
+Nodes and volumes running outside a supported cloud have no instance type, region
+or provider ID for CostGraph to price against. Instead of inventing those, label
+the resource with the ID of a rate you registered in the pricing marketplace.
+
+## Register a rate
+
+Use `/marketplace/providers/compute` for nodes and `/marketplace/providers/disks` for PersistentVolumes.
+
+```bash
+curl -X POST https://api.costgraph.ai/marketplace/providers/compute \
+  -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"entries":[{"service":"BaseCompute","region":"dc-east","instance_type":"bare-metal-xl","operating_system":"linux","cpu_cores":64,"ram_gb":512,"cost_per_hour":1.85,"period_billing_hours":730}]}'
+```
+
+A disk rate takes capacity bounds instead of CPU and memory:
+
+```bash
+curl -X POST https://api.costgraph.ai/marketplace/providers/disks \
+  -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"entries":[{"service":"BaseDisks","region":"dc-east","type":"nvme","usage_type":"ONDEMAND","cost_per_gb_hour":0.0002,"min_capacity_gb":0,"max_capacity_gb":65536,"period_billing_hours":730}]}'
+```
+
+The response carries an `id` for each entry. That UUID is what you label with.
+
+## Label the resource
+
+```bash
+PRICING_ID="00000000-0000-0000-0000-000000000000"
+kubectl label node/node-1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
+kubectl label nodes -l rack=r1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
+kubectl label pv/pv-1 costgraph.ai/pricing-id="$PRICING_ID" --overwrite
+```
+
+On a node the ID must refer to a compute rate; on a PersistentVolume, to a disk
+rate. Review what is labelled with:
+
+```bash
+kubectl get nodes -L costgraph.ai/pricing-id
+```
+
+A labelled resource needs no other metadata. CPU and memory still come from the
+node's capacity, and volume size from the PV, because those are the billed
+quantities.
+
+## Change a rate
+
+Re-POST the same entry with a new `cost_per_hour`. The ID is unchanged and every
+labelled resource picks up the new rate from the next hour. Already-billed hours
+keep the rate they were billed at.
+
+<Warning>
+  Changing `region`, `instance_type` or `period_billing_hours` creates a new rate
+  with a new ID, because those describe a different SKU. Re-label the affected
+  resources with the new ID.
+</Warning>
+
+## Share a rate
+
+Anyone holding the ID can label with it, which is how a provider prices the
+clusters they sell to. Only your own organisation's rates are listed back to you,
+so treat an ID as a secret you hand out deliberately.
+
+## Fix a mistake
+
+Re-label with the correct ID and the change applies on the next sync. Remove the
+label with a trailing hyphen:
+
+```bash
+kubectl label node/node-1 costgraph.ai/pricing-id-
+```
+
+The resource then falls back to normal matching; if nothing matches, it keeps its
+last rate rather than silently becoming free.
+
+If the ID is malformed, or names a rate that has been deleted, CostGraph logs a
+warning naming the resource and the value. It never falls back to attribute
+matching. A resource that was never priced stays unpriced; one that was already
+priced keeps the rate it last resolved until a valid ID or a normal match
+replaces it.

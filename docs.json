@@ -40,6 +40,7 @@
             "pages": [
               "costgraph/operator/overview",
               "costgraph/operator/configuration",
+              "costgraph/operator/on-prem-pricing",
               "costgraph/operator/changelog"
             ]
           },
@@ -63,6 +64,7 @@
             "group": "Integrations",
             "icon": "plug",
             "pages": [
+              "costgraph/integrations/planetscale",
               "costgraph/integrations/gcp",
               "costgraph/integrations/aws"
             ]

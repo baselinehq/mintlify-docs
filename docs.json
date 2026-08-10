@@ -64,9 +64,16 @@
             "group": "Integrations",
             "icon": "plug",
             "pages": [
-              "costgraph/integrations/planetscale",
+              "costgraph/integrations/anthropic",
+              "costgraph/integrations/aws",
+              "costgraph/integrations/confluent",
               "costgraph/integrations/gcp",
-              "costgraph/integrations/aws"
+              "costgraph/integrations/helicone",
+              "costgraph/integrations/modal",
+              "costgraph/integrations/openai",
+              "costgraph/integrations/openrouter",
+              "costgraph/integrations/planetscale",
+              "costgraph/integrations/respanai"
             ]
           }
         ]

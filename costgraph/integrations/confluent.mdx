@@ -1,0 +1,84 @@
+---
+title: Confluent Cloud
+description: "Bring Confluent Cloud cost into CostGraph, pulled by us or pushed by you"
+---
+
+Confluent Cloud bills per product and resource. CostGraph reads the billing API so Kafka spend is attributed per cluster and environment.
+
+CostGraph reads Confluent Cloud as **FOCUS 1.2** records at a grain of billing line item (product x resource).
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You give us read-only credentials and we call Confluent Cloud once a day. Fastest to set
+    up, and nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) in your own
+    infrastructure and send us the records. Credentials never leave your side.
+  </Card>
+</CardGroup>
+
+## Permissions
+
+Create a **Cloud API key** (org-scoped, not a cluster or resource key) whose owner holds the **OrganizationAdmin** or **BillingAdmin** role.
+
+<Warning>
+A resource-scoped key, or a key without a billing role, returns `403`.
+</Warning>
+
+CostGraph only ever reads. The exact endpoints called are listed in the
+[Confluent Cloud exporter reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/confluent.md).
+
+## Values you will need
+
+| Variable | Required | Kind |
+|----------|----------|------|
+| `CONFLUENT_CLOUD_API_KEY` | Yes | Credential |
+| `CONFLUENT_CLOUD_API_SECRET` | Yes | Credential |
+| `CONFLUENT_ORG_ID` | Yes | Identifier |
+
+## Option 1: let CostGraph pull
+
+1. In CostGraph, open **Settings -> Integrations** and pick **FOCUS pull**.
+2. Choose **Confluent Cloud** and name the connection.
+3. Enter the billing account these charges belong to, then fill in:
+   - `CONFLUENT_CLOUD_API_KEY`
+   - `CONFLUENT_CLOUD_API_SECRET`
+   - `CONFLUENT_ORG_ID`
+4. Select **Connect**.
+
+CostGraph runs a short verification fetch before saving, so a wrong value or a
+missing permission fails immediately rather than silently at the next sync.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Confluent Cloud at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Option 2: push it yourself
+
+1. In CostGraph, open **Settings -> Integrations** and pick **FOCUS push**.
+2. Create the connection and copy its **Connection ID**.
+3. Create a CostGraph API key with the `focus:write` scope.
+4. Run the exporter with your own credentials:
+
+```bash
+export CONFLUENT_CLOUD_API_KEY=...
+export CONFLUENT_CLOUD_API_SECRET=...
+export CONFLUENT_ORG_ID=...
+
+focus-exporter --provider confluent --month 2026-07 --format json
+```
+
+5. Send the output to CostGraph, quoting the connection id and API key.
+
+Every environment variable and the full FOCUS field mapping are documented in the
+[Confluent Cloud exporter reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/confluent.md).
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Confluent Cloud spend appears in Cost Overview and in anomaly
+detection alongside every other provider.

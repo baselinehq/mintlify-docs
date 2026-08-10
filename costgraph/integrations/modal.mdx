@@ -1,0 +1,80 @@
+---
+title: Modal
+description: "Bring Modal cost into CostGraph, pulled by us or pushed by you"
+---
+
+Modal bills serverless GPU and compute per object. CostGraph reads the usage API so per-function CPU, memory, and GPU cost is attributed.
+
+CostGraph reads Modal as **FOCUS 1.2** records at a grain of day x object (per-resource CPU/mem/GPU cost).
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You give us read-only credentials and we call Modal once a day. Fastest to set
+    up, and nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) in your own
+    infrastructure and send us the records. Credentials never leave your side.
+  </Card>
+</CardGroup>
+
+## Permissions
+
+Create a token with `modal token new`. It is sent as gRPC metadata and only reads usage.
+
+CostGraph only ever reads. The exact endpoints called are listed in the
+[Modal exporter reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/modal.md).
+
+## Values you will need
+
+| Variable | Required | Kind |
+|----------|----------|------|
+| `MODAL_TOKEN_ID` | Yes | Credential |
+| `MODAL_TOKEN_SECRET` | Yes | Credential |
+| `MODAL_WORKSPACE_ID` | Yes | Identifier |
+
+## Option 1: let CostGraph pull
+
+1. In CostGraph, open **Settings -> Integrations** and pick **FOCUS pull**.
+2. Choose **Modal** and name the connection.
+3. Enter the billing account these charges belong to, then fill in:
+   - `MODAL_TOKEN_ID`
+   - `MODAL_TOKEN_SECRET`
+   - `MODAL_WORKSPACE_ID`
+4. Select **Connect**.
+
+CostGraph runs a short verification fetch before saving, so a wrong value or a
+missing permission fails immediately rather than silently at the next sync.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Modal at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Option 2: push it yourself
+
+1. In CostGraph, open **Settings -> Integrations** and pick **FOCUS push**.
+2. Create the connection and copy its **Connection ID**.
+3. Create a CostGraph API key with the `focus:write` scope.
+4. Run the exporter with your own credentials:
+
+```bash
+export MODAL_TOKEN_ID=...
+export MODAL_TOKEN_SECRET=...
+export MODAL_WORKSPACE_ID=...
+
+focus-exporter --provider modal --month 2026-07 --format json
+```
+
+5. Send the output to CostGraph, quoting the connection id and API key.
+
+Every environment variable and the full FOCUS field mapping are documented in the
+[Modal exporter reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/modal.md).
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Modal spend appears in Cost Overview and in anomaly
+detection alongside every other provider.

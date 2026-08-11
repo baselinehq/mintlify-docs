@@ -1,0 +1,114 @@
+---
+title: Grafana Cloud
+description: "Exports FOCUS 1.2 records from the Grafana Cloud billed-usage API. Each billed dimension (Metrics, Logs, Traces, Grafana Users, ...) is emitted per stack,..."
+---
+
+Exports FOCUS 1.2 records from the Grafana Cloud **billed-usage** API. Each billed
+dimension (Metrics, Logs, Traces, Grafana Users, ...) is emitted per **stack**,
+using the per-stack cost (`attributedCost`) Grafana returns, so each stack is a
+resource that can be charged back.
+
+Provider name (for `--provider`): `grafanacloud`
+
+## Why this adapter
+
+Grafana Cloud's billed-usage API returns dollars per dimension **and per stack**
+(`attributedCost`), with the applied rate card, so there is no pricing to
+reconstruct and no allocation to guess - the adapter maps Grafana's own per-stack
+cost into FOCUS, with the stack in the `SubAccount` columns for chargeback.
+(Grafana also ships a native FOCUS export; this adapter is the same data in one
+pipeline with the rest of your providers, keyed to per-stack `SubAccount`.)
+
+## Environment variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `GRAFANA_CLOUD_TOKEN` | yes | Grafana Cloud **Access Policy token** (`glc_...`) whose policy realm is the org and which carries billing read scopes (e.g. `billing-metrics:read`, `org-billing-info:read`, `org-billing-rate:read`, `invoices:read`, `orgs:read`). A stack **service-account** token (`glsa_...`) does not work - the billed-usage endpoint is on grafana.com, not the stack. Sent as `Authorization: Bearer <token>`. |
+| `GRAFANA_CLOUD_ORG` | yes | Grafana Cloud organization slug (the `{org}` in `grafana.com/orgs/{org}`). |
+
+## API endpoints used
+
+Base URL: `https://grafana.com/api`
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /orgs/{org}/billed-usage?year=&month=` | Billed dimensions for one calendar month. Returns `{ "items": [ ... ] }`; each item has `dimensionName`, `unit`, `amountDue` (USD), `overage`, and a per-stack `usages[]` breakdown (`stackId`, `stackName`, `totalUsage`, `attributedCost`, `isProrated`). |
+
+The endpoint takes only `year` and `month` (no pagination params) and returns
+every dimension in one response, so the requested `--start`/`--end` window is
+split into months and each month is fetched once.
+
+## FOCUS mapping
+
+| FOCUS column | Source |
+| --- | --- |
+| `BilledCost`, `EffectiveCost`, `ListCost` | the stack's `attributedCost` (for a dimension with no stack breakdown, the dimension `amountDue`) |
+| `BillingCurrency` | `USD` |
+| `ChargePeriodStart` / `ChargePeriodEnd` | the dimension's `periodStart` / `periodEnd` |
+| `ChargeCategory` | `Usage` (`Credit` when the amount is negative) |
+| `ChargeFrequency` | `Usage-Based` |
+| `PricingCategory` | `Standard` |
+| `Provider`, `Publisher`, `InvoiceIssuer` | `Grafana Cloud` |
+| `ServiceName` | `Grafana Cloud <dimensionName>` (e.g. `Grafana Cloud Metrics`) |
+| `ServiceCategory` | `Management and Governance` (observability) |
+| `BillingAccountId` / `BillingAccountName` | `GRAFANA_CLOUD_ORG` |
+| `ConsumedQuantity` / `ConsumedUnit` | the stack's `totalUsage` / the dimension `unit` |
+| `ResourceId` / `ResourceName` | `stackId` / `stackName` |
+| `ResourceType` | `Grafana Stack` |
+| `SubAccountId` / `SubAccountName` / `SubAccountType` | `stackName` / `stackName` / `Stack` |
+| `SkuId`, `SkuMeter` | `dimensionId` |
+| `x_Overage` | the dimension's billed `overage`, when non-zero |
+| `x_IsProrated` / `x_StackLabels` | per-stack flags when present |
+
+A dimension with no per-stack breakdown (org-level dimensions) is emitted as a
+single row with `amountDue`.
+
+## Example
+
+```bash
+export GRAFANA_CLOUD_TOKEN=glc_...
+export GRAFANA_CLOUD_ORG=acme
+
+focus-exporter --provider grafanacloud --month 2026-07 --format json
+```
+
+Representative record (a stack's Metrics cost from `attributedCost`):
+
+```json
+{
+  "BilledCost": "86.67",
+  "EffectiveCost": "86.67",
+  "ListCost": "86.67",
+  "BillingCurrency": "USD",
+  "ChargePeriodStart": "2026-07-01T00:00:00Z",
+  "ChargePeriodEnd": "2026-07-31T23:59:59Z",
+  "Provider": "Grafana Cloud",
+  "ServiceName": "Grafana Cloud Metrics",
+  "ServiceCategory": "Management and Governance",
+  "ChargeCategory": "Usage",
+  "ChargeDescription": "Metrics active series",
+  "ResourceId": "111",
+  "ResourceName": "prod",
+  "ResourceType": "Grafana Stack",
+  "ConsumedQuantity": "20000",
+  "ConsumedUnit": "series",
+  "SkuId": "metrics",
+  "SubAccountId": "prod",
+  "SubAccountName": "prod",
+  "SubAccountType": "Stack",
+  "x_Overage": "20000"
+}
+```
+
+## Notes and limitations
+
+- **Per-stack cost is Grafana's own** (`attributedCost`), not an allocation, so
+  `sum(BilledCost)` equals the invoice exactly.
+- **Granularity is monthly.** The billed-usage endpoint reports one calendar month
+  at a time.
+- **Currency.** The endpoint reports the org's billed amount; this adapter labels
+  it `USD` (Grafana Cloud's default). Verify for non-USD-billed orgs.
+- Verified live against a real org (5 dimensions, `sum(BilledCost)` matching the
+  month's invoice to the cent, 0 FOCUS-invalid, per-stack attribution populated).
+- A stack line with an unparseable `attributedCost` (or an org-level dimension
+  with an unparseable `amountDue`) is logged and skipped.

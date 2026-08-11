@@ -1,0 +1,113 @@
+---
+title: Cloudflare
+description: "Exports FOCUS 1.2 records from Cloudflare's Billable Usage API. One record per billable line item (service x charge period). Cloudflare returns billed..."
+---
+
+Exports FOCUS 1.2 records from Cloudflare's **Billable Usage API**. One record per
+billable line item (service x charge period). Cloudflare returns billed dollars
+per service already, and its field names are FOCUS-native, so the mapping is
+almost one-to-one.
+
+Provider name (for `--provider`): `cloudflare`
+
+## Why this adapter
+
+Cloudflare cost was historically hard to pull - the GraphQL Analytics API returns
+usage only and is explicitly not billing-accurate. Cloudflare's newer **Billable
+Usage API** returns actual **billed dollars** (`BilledCost`, `EffectiveCost`,
+`ListCost`, `ContractedCost`) per service per day, and shapes its field names
+directly on FOCUS columns (including `ChargeCategory` and `ChargeDescription`). So
+this is a clean invoice-cost adapter with no rate card to maintain - and it does
+not depend on any third-party (e.g. Vantage's invoice-upload converter).
+
+## Environment variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | yes | Cloudflare API token with the **Billing Read** permission (account scope). Sent as `Authorization: Bearer <token>`. |
+| `CLOUDFLARE_ACCOUNT_ID` | yes | Cloudflare account id whose billable usage is exported (the `{account_id}` in `/accounts/{account_id}`). |
+
+## API endpoints used
+
+Base URL: `https://api.cloudflare.com`
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /client/v4/accounts/{account_id}/billable-usage?from=&to=` | Billed usage line items for the window (`from`/`to` are `YYYY-MM-DD`). Each item carries FOCUS-shaped fields: `BilledCost`/`EffectiveCost`/`ListCost`/`ContractedCost`, `BillingCurrency`, `ChargeCategory`, `ChargeDescription`, `ChargePeriodStart`/`End`, `ServiceName`, `ServiceFamilyName`, `ConsumedQuantity`/`ConsumedUnit`, `PricingQuantity`/`PricingUnit`, `BillingAccountId`/`BillingAccountName`. |
+
+The requested `--start`/`--end` window is passed as `from`/`to`. Cloudflare's `to`
+is an exclusive upper bound (it returns charge periods whose end falls on or
+before `to`), so the exporter passes `--end` through unchanged to capture the
+window's last day. Cloudflare filters server-side. Charge periods are **daily**
+and data is updated daily.
+
+## FOCUS mapping
+
+| FOCUS column | Source |
+| --- | --- |
+| `BilledCost`, `EffectiveCost` | `BilledCost` |
+| `ListCost` | `ListCost` |
+| `ContractedCost` | `ContractedCost` |
+| `BillingCurrency` | `BillingCurrency` (USD) |
+| `ChargePeriodStart` / `ChargePeriodEnd` | `ChargePeriodStart` / `ChargePeriodEnd` (daily) |
+| `ChargeCategory` | `ChargeCategory` (the API's own value: `Usage`, `Tax`, `Credit`, ...) |
+| `ChargeFrequency` | `Usage-Based` |
+| `PricingCategory` | `Standard` |
+| `ChargeDescription` | `ChargeDescription` |
+| `Provider`, `Publisher`, `InvoiceIssuer` | `Cloudflare` |
+| `ServiceName` | `ServiceName` (e.g. `R2 Storage`, `Workers Paid Requests`) |
+| `ServiceCategory` | mapped from `ServiceFamilyName` (Workers/Durable Objects -> Compute, R2 -> Storage, D1/Workers KV -> Databases, Workers AI -> AI and Machine Learning, Calls/Load Balancing -> Networking, Stream -> Media, Zero Trust -> Security, ...); unrecognized -> `Other` |
+| `BillingAccountId` / `BillingAccountName` | `BillingAccountId` / `BillingAccountName` (falls back to `CLOUDFLARE_ACCOUNT_ID`) |
+| `ConsumedQuantity` / `ConsumedUnit` | `ConsumedQuantity` / `ConsumedUnit` |
+| `PricingQuantity` / `PricingUnit` | `PricingQuantity` / `PricingUnit` |
+| `SkuId`, `SkuMeter` | `ServiceName`, `ServiceFamilyName` |
+
+## Example
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ACCOUNT_ID=...
+
+focus-exporter --provider cloudflare --month 2026-07 --format json
+```
+
+Representative record (a Workers charge with a list-vs-billed discount):
+
+```json
+{
+  "BilledCost": "12.5",
+  "EffectiveCost": "12.5",
+  "ListCost": "15",
+  "ContractedCost": "12.5",
+  "BillingCurrency": "USD",
+  "ChargePeriodStart": "2026-07-25T00:00:00Z",
+  "ChargePeriodEnd": "2026-07-26T00:00:00Z",
+  "Provider": "Cloudflare",
+  "ServiceName": "Workers Paid Requests",
+  "ServiceCategory": "Compute",
+  "ChargeCategory": "Usage",
+  "ChargeDescription": "Workers Paid usage measured in requests",
+  "ConsumedQuantity": "1500000",
+  "ConsumedUnit": "requests",
+  "SkuId": "Workers Paid Requests",
+  "SkuMeter": "Workers",
+  "BillingAccountId": "acct-9",
+  "BillingAccountName": "Revyl"
+}
+```
+
+## Notes and limitations
+
+- **Grain is account x service x day.** The Billable Usage API has no resource or
+  zone dimension - line items are per service (and service family), per day, for
+  the whole account. There is no per-resource `SubAccount` attribution to emit.
+- **Coverage is the usage-based self-serve catalog** (Workers, Durable Objects,
+  R2, D1, Workers KV, Calls, Workers AI, Vectorize, Images, Stream, ...).
+  Enterprise/contract line items may be billed outside this API.
+- **Not yet full-FOCUS-conformant.** Cloudflare states the fields map to FOCUS
+  columns but does not yet claim full conformance; this adapter maps the returned
+  fields into a conformant record and validates every one.
+- Verified live against a real account (258 line items over ~6 weeks, 0
+  FOCUS-invalid, `BillingAccountName` and categories populated from the API).
+- A line item with an unparseable `BilledCost` or `ChargePeriodStart` is logged
+  and skipped.

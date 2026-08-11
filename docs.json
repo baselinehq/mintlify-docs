@@ -68,6 +68,7 @@
               "costgraph/integrations/aws",
               "costgraph/integrations/confluent",
               "costgraph/integrations/gcp",
+              "costgraph/integrations/github",
               "costgraph/integrations/helicone",
               "costgraph/integrations/modal",
               "costgraph/integrations/openai",

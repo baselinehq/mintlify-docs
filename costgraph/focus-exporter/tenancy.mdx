@@ -1,0 +1,130 @@
+---
+title: Tenancy (sub-account attribution)
+description: "Some bills belong to someone other than whoever pays the provider. A team runs one Helicone account in front of many of its own customers; a company leases..."
+---
+
+Some bills belong to someone other than whoever pays the provider. A team runs
+one Helicone account in front of many of its own customers; a company leases
+PlanetScale databases and re-sells them to downstream users. The provider issues
+one invoice to one billing account, but the spend inside it splits across
+several owners.
+
+FOCUS models this split with the **sub-account** columns, and focus-exporter
+lets any adapter populate them.
+
+## The model
+
+| FOCUS column | Meaning |
+| --- | --- |
+| `BillingAccountId` / `BillingAccountName` | Who the provider bills and who pays. Unchanged - it is still the account holder. |
+| `SubAccountId` | Who the spend belongs to (the tenant / customer / downstream owner). |
+| `SubAccountName` | Display name for that owner. Defaults to `SubAccountId`. |
+| `SubAccountType` | The kind of owner (e.g. `Tenant`, `Customer`, or the metadata property name it came from). |
+
+The billing account answers "who gets the invoice"; the sub-account answers "who
+should this line be charged back to". FOCUS requires `SubAccountId` whenever a
+name or type is present, so an adapter either resolves a real owner id or leaves
+all three unset (output is then identical to no tenancy).
+
+## Setting it in an adapter
+
+An adapter attaches an owner with one call:
+
+```go
+rec.SetSubAccount(ownerID, "Tenant")
+```
+
+It no-ops on an empty id, so it is safe to call unconditionally. Adapters that
+aggregate (the gateways) also add the owner to their grouping key, so one
+`(day, model, provider)` bucket becomes `(day, model, provider, tenant)` and each
+owner gets its own rows.
+
+## Two ways an owner is resolved
+
+### 1. Per-request provider metadata (adapter-native)
+
+Gateways let the caller tag each request, and the read API returns the tag per
+row, so the adapter can split spend by owner during aggregation. This is the
+cleanest source and each gateway enables it with one env var:
+
+| Provider | Env var | Owner source |
+| --- | --- | --- |
+| Helicone | `HELICONE_TENANT_PROPERTY` | the named custom property (`Helicone-Property-<name>`) on each request, read from `request_properties` |
+| RespanAI | `RESPANAI_TENANT_FIELD` | `customer_identifier`, or the named key in each log's `metadata` |
+| OpenAI | `OPENAI_TENANT_GROUP=project_id` | adds `project_id` to the cost `group_by`, so each project's spend is its own sub-account |
+| Anthropic | `ANTHROPIC_TENANT_GROUP=workspace_id` | adds `workspace_id` to the usage and cost report `group_by` |
+
+`SubAccountType` is set to the property/field/group name. When the env var is
+unset the adapter emits no sub-account and output is unchanged.
+
+The first-party APIs (OpenAI, Anthropic) aggregate usage server-side, so their
+finest grain is a project/workspace, not an arbitrary per-request tag - the env
+value is fixed to the one supported grouping (`project_id` / `workspace_id`) and
+any other value is rejected.
+
+Not every gateway can do this: OpenRouter's `/activity` is a daily pre-aggregate
+with no per-request or per-project breakdown, so a per-owner split is not
+available there - use `--tenant-map` if the resource id is enough to attribute.
+
+### 2. Operator-supplied owner mapping (`--tenant-map`, any provider)
+
+When the provider has no per-request tag but the exporter operator knows who owns
+each resource - the PlanetScale re-seller case - pass `--tenant-map` a JSON
+string mapping a record's `ResourceId` to an owner:
+
+```bash
+--tenant-map '{"db-abc123": "acme", "db-def456": "globex"}'
+```
+
+This applies to **every** provider uniformly: each emitted record whose
+`ResourceId` is in the map gets that owner as its sub-account
+(`SubAccountType: "Tenant"`). It only fills a sub-account that an adapter did not
+already set natively, so native per-request tenancy always wins. Records whose
+`ResourceId` is not in the map are left untouched.
+
+The database is still billed to the re-seller's PlanetScale account
+(`BillingAccountId`); each database's line is attributed to its lessee
+(`SubAccountId`). The same map works for Confluent clusters, Modal objects, or
+any provider whose `ResourceId` is the leased thing.
+
+## Example (Helicone)
+
+```bash
+export HELICONE_API_KEY=sk-helicone-...
+export HELICONE_ORG_ID=your-org
+export HELICONE_TENANT_PROPERTY=Tenant
+focus-exporter --provider helicone --month 2026-07 --format json
+```
+
+Two requests for the same model and upstream provider on the same day, tagged
+`Tenant: acme` and `Tenant: globex`, become two FOCUS rows:
+
+```json
+{ "ServiceName": "gpt-4o", "BillingAccountId": "your-org", "SubAccountId": "acme",   "SubAccountName": "acme",   "SubAccountType": "Tenant", "BilledCost": "0.10" }
+{ "ServiceName": "gpt-4o", "BillingAccountId": "your-org", "SubAccountId": "globex", "SubAccountName": "globex", "SubAccountType": "Tenant", "BilledCost": "0.25" }
+```
+
+Without `HELICONE_TENANT_PROPERTY` the two collapse into a single untagged row,
+so tenancy is strictly opt-in.
+
+## Example (PlanetScale re-seller)
+
+```bash
+focus-exporter --provider planetscale --month 2026-07 \
+  --tenant-map '{"db-abc123": "acme", "db-def456": "globex"}'
+```
+
+Each database's line items are billed to your PlanetScale org
+(`BillingAccountId`) but attributed to the lessee that owns the database
+(`SubAccountId`), so a downstream cost breakdown is possible from the export
+alone.
+
+## Verification note
+
+Native tenancy only works if the provider's read API returns the owner per row.
+Helicone's `request/query` (`request_properties`), RespanAI's request-logs
+(`customer_identifier` / `metadata`), and the OpenAI/Anthropic `group_by`
+result fields (`project_id` / `workspace_id`) are taken from the documented
+schemas and are pending live verification against a real key, like the rest of
+those adapters. The `--tenant-map` string has no such dependency - it is
+operator-supplied and works offline.

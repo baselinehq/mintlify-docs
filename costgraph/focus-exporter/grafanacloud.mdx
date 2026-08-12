@@ -1,12 +1,15 @@
 ---
 title: Grafana Cloud
-description: "Exports FOCUS 1.2 records from the Grafana Cloud billed-usage API. Each billed dimension (Metrics, Logs, Traces, Grafana Users, ...) is emitted per stack,..."
+description: "Exports FOCUS 1.2 records from the Grafana Cloud billed-usage API. When Grafana returns a per-stack breakdown for a billed dimension (Metrics, Logs, Traces,..."
 ---
 
-Exports FOCUS 1.2 records from the Grafana Cloud **billed-usage** API. Each billed
-dimension (Metrics, Logs, Traces, Grafana Users, ...) is emitted per **stack**,
-using the per-stack cost (`attributedCost`) Grafana returns, so each stack is a
-resource that can be charged back.
+Exports FOCUS 1.2 records from the Grafana Cloud **billed-usage** API. When Grafana
+returns a per-stack breakdown for a billed dimension (Metrics, Logs, Traces, Grafana
+Users, ...), each stack is emitted as its own row using the per-stack cost
+(`attributedCost`) Grafana returns, so each stack is a resource that can be charged
+back. A dimension with no stack breakdown (org-level dimensions) is emitted as a
+single row carrying the dimension `amountDue`, with the `SubAccount` columns left
+empty.
 
 Provider name (for `--provider`): `grafanacloud`
 
@@ -16,6 +19,9 @@ Grafana Cloud's billed-usage API returns dollars per dimension **and per stack**
 (`attributedCost`), with the applied rate card, so there is no pricing to
 reconstruct and no allocation to guess - the adapter maps Grafana's own per-stack
 cost into FOCUS, with the stack in the `SubAccount` columns for chargeback.
+Attribution is per stack only when Grafana returns a stack breakdown for the
+dimension; an org-level dimension (no breakdown) maps to one row with the
+dimension `amountDue` and empty `SubAccount` columns.
 (Grafana also ships a native FOCUS export; this adapter is the same data in one
 pipeline with the rest of your providers, keyed to per-stack `SubAccount`.)
 

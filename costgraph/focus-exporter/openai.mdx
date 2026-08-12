@@ -19,7 +19,7 @@ Provider name (for `--provider`): `openai`
 | --- | --- | --- |
 | `OPENAI_ADMIN_KEY` | yes | An Admin API key (`sk-admin-...`) or a key with the `api.usage.read` scope. Only an org owner can create an admin key / grant the scope. |
 | `OPENAI_ORG_ID` | yes | Sets `BillingAccountId` on every record (mandatory FOCUS column; the cost endpoint doesn't return the org id). |
-| `OPENAI_TENANT_GROUP` | no | Set to `project_id` to split spend per project into the FOCUS sub-account columns (adds `project_id` to the cost `group_by`). Any other value is rejected. See [tenancy.md](../tenancy.md). |
+| `OPENAI_TENANT_GROUP` | no | Set to `project_id` to split spend per project into the FOCUS sub-account columns (adds `project_id` to the cost `group_by`). Any other value is rejected. See [Guide](/costgraph/focus-exporter/tenancy). |
 
 The key is sent as `Authorization: Bearer <key>`.
 

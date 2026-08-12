@@ -18,7 +18,7 @@ Provider name (for `--provider`): `respanai`
 | --- | --- | --- |
 | `RESPANAI_API_KEY` | yes | API key, sent as `Authorization: Bearer <key>`. |
 | `RESPANAI_ORG_ID` | yes | Populates the mandatory `BillingAccountId` (the logs API returns no account id). |
-| `RESPANAI_TENANT_FIELD` | no | Splits spend per downstream tenant into the FOCUS sub-account columns. Set to `customer_identifier` to use each log's customer id, or to a key in each log's `metadata`. See [tenancy.md](../tenancy.md). |
+| `RESPANAI_TENANT_FIELD` | no | Splits spend per downstream tenant into the FOCUS sub-account columns. Set to `customer_identifier` to use each log's customer id, or to a key in each log's `metadata`. See [Guide](/costgraph/focus-exporter/tenancy). |
 
 ## API endpoints used
 

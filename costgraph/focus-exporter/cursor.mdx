@@ -1,0 +1,81 @@
+---
+title: Cursor
+description: "Exports FOCUS 1.2 records from the Cursor Admin API usage-events endpoint. Cursor routes AI coding requests across many models, so one integration captures..."
+---
+
+Exports FOCUS 1.2 records from the Cursor **Admin API** usage-events endpoint.
+Cursor routes AI coding requests across many models, so one integration captures
+team spend across every model and developer. One record per
+**(day, model, attributee)**, aggregated from per-request events.
+
+Provider name (for `--provider`): `cursor`
+
+This adapter uses an HTTP **POST** (the usage-events API takes a JSON body),
+unlike the GET-based adapters, and authenticates with HTTP **Basic** auth (the
+API key is the username, the password is empty), unlike the Bearer adapters.
+
+## Environment variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `CURSOR_API_KEY` | yes | Cursor Team/Enterprise Admin API key (Cursor dashboard -> Settings -> Team -> API Keys). Sent via HTTP Basic auth as the username with an empty password. |
+| `CURSOR_TEAM` | no | Label for the mandatory `BillingAccountId` / `BillingAccountName` (your Cursor team name). The events API returns no team id, so this defaults to `Cursor` when unset. |
+
+## API endpoints used
+
+Base URL: `https://api.cursor.com`
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /teams/filtered-usage-events` | Per-request usage events over the window. The body carries `startDate`/`endDate` (epoch-millis, inclusive) plus `page` (1-indexed) and `pageSize` (max 1000); the adapter pages until `pagination.hasNextPage` is false and rolls the events up by (day, model, attributee) client-side. Events outside the window are also dropped client-side as a guard. |
+
+Per-event `chargedCents` (model cost plus any Cursor token fee) is the billed
+amount; the Cursor docs note that summing `chargedCents` across events reconciles
+to the `/teams/spend` total, so this endpoint is the cost source of record.
+
+## FOCUS mapping
+
+| FOCUS column | Source |
+| --- | --- |
+| `BilledCost` / `EffectiveCost` | sum of `chargedCents` / 100, in USD (fractional cents preserved) |
+| `BillingCurrency` / `PricingCurrency` | `USD` |
+| `ChargePeriodStart` / `ChargePeriodEnd` | the day (from the event `timestamp`, epoch-millis) |
+| `ConsumedQuantity` / `ConsumedUnit` | `tokenUsage.inputTokens + outputTokens` / `tokens` |
+| `ServiceName` | `Cursor` |
+| `ServiceCategory` / `ServiceSubcategory` | `AI and Machine Learning` / `Generative AI` |
+| `Provider` / `Publisher` / `InvoiceIssuer` | `Cursor` |
+| `ChargeDescription` | `Cursor <model>` |
+| `ResourceId` / `ResourceName` / `ResourceType` | `model` / `model` / `Model` |
+| `SkuId` / `SkuMeter` / `SkuPriceId` | `model` |
+| `x_InputTokens` / `x_OutputTokens` / `x_CacheReadTokens` / `x_CacheWriteTokens` | token counts, when present |
+| `BillingAccountId` / `BillingAccountName` | `CURSOR_TEAM` (or `Cursor`) |
+| `SubAccountId` / `SubAccountName` / `SubAccountType` | the event's `userEmail` (`User`); for events with no user it falls back to the service account (`Service Account`) or cloud agent (`Cloud Agent`) |
+
+## Example
+
+```bash
+export CURSOR_API_KEY=...
+export CURSOR_TEAM="Acme Engineering"
+focus-exporter --provider cursor --start 2026-07-01 --end 2026-08-01 --format json
+```
+
+## Notes and limitations
+
+- **A window is required.** Pass `--start`/`--end` or `--month`.
+- **Per-developer attribution uses the developer's email.** Spend is split into
+  the FOCUS sub-account columns by the event `userEmail`, so a member's email
+  address is emitted as `SubAccountId`/`SubAccountName`. This is the intended
+  chargeback dimension for a team-spend export; events with no user (service
+  accounts, cloud agents) attribute to those instead.
+- **Cost is `chargedCents`, aggregated per (day, model, attributee).** Max-mode
+  and normal requests are summed together (the charge is already reflected in
+  `chargedCents`); token counts ride as `x_` extensions.
+- **Subscription/seat fees are not captured (API gap).** Reported `BilledCost` is
+  usage-event spend; Cursor's per-seat subscription is billed separately and is
+  not in this endpoint, so it is not fabricated (see the charge-completeness rule
+  in AGENTS.md).
+- The endpoint, the Basic-auth shape, the request body (`startDate`/`endDate`
+  epoch-millis, `page`/`pageSize`), the `usageEvents` wrapper with
+  `pagination.hasNextPage`, and the event fields (`timestamp`, `userEmail`,
+  `model`, `chargedCents`, `tokenUsage`) are taken from the documented schema;
+  live verification against a real key is pending.

@@ -27,7 +27,7 @@ attribution that DigitalOcean's own tooling does not surface.
 | Variable | Required | Description |
 | --- | --- | --- |
 | `DIGITALOCEAN_TOKEN` | yes | Personal Access Token with **read** scope. Reads the `/v2/customers/my` billing endpoints. Sent as `Authorization: Bearer <token>`. |
-| `DIGITALOCEAN_ACCOUNT_ID` | no | Explicit billing-account id. When empty the adapter resolves it from `/v2/account` (team UUID/name, else account UUID/email); if that call is not accessible (e.g. a billing-only token) the export fails and asks you to set this, rather than inventing an id. |
+| `DIGITALOCEAN_ACCOUNT_ID` | no | Explicit billing-account id. When empty the adapter resolves it from `/v2/account`: a team gives its UUID and name, and an individual account (no team) uses the account UUID for both the id and the name. The account email is never used as a label, so no personal email lands in FOCUS output. If that call is not accessible (e.g. a billing-only token) the export fails and asks you to set this, rather than inventing an id. |
 
 ## Credential setup
 
@@ -68,7 +68,7 @@ are JSON strings and are parsed as exact decimals.
 | `Provider`, `Publisher`, `InvoiceIssuer` | `DigitalOcean` |
 | `ServiceName` | `product` (`Droplets`, `Kubernetes Clusters`, `Spaces Subscription`, ...) |
 | `ServiceCategory` | mapped from `product` - DigitalOcean's fixed product-type vocabulary (`Droplets`/`Kubernetes Clusters` -> Compute, `Spaces Subscription`/`Volumes` -> Storage, `Database Clusters` -> Databases, `Load Balancers`/`Floating IPs` -> Networking); an unrecognized product falls back to `Other` |
-| `BillingAccountId` / `BillingAccountName` | resolved team (or account) from `/v2/account`, or `DIGITALOCEAN_ACCOUNT_ID` |
+| `BillingAccountId` / `BillingAccountName` | the team UUID/name from `/v2/account`, or the account UUID (used for both) when there is no team, or `DIGITALOCEAN_ACCOUNT_ID` when set; the account email is never used as a label |
 | `ResourceId` | `resource_uuid` (falls back to `resource_id`) |
 | `ResourceName` | `group_description` (falls back to the resource id) |
 | `ResourceType` | `product` |

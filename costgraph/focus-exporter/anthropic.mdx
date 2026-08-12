@@ -16,7 +16,7 @@ Provider name (for `--provider`): `anthropic`
 | --- | --- | --- |
 | `ANTHROPIC_ADMIN_KEY` | yes | An Admin API key (`sk-ant-admin...`). Only an organization admin can create one. Treat it as a credential; never commit it. |
 | `ANTHROPIC_ORG_ID` | no | Overrides `BillingAccountId`. Normally the org id and name are resolved automatically from `GET /v1/organizations/me`; set this only to force a different value. |
-| `ANTHROPIC_TENANT_GROUP` | no | Set to `workspace_id` to split spend per workspace into the FOCUS sub-account columns (adds `workspace_id` to the usage and cost report `group_by`). Any other value is rejected. See [tenancy.md](../tenancy.md). |
+| `ANTHROPIC_TENANT_GROUP` | no | Set to `workspace_id` to split spend per workspace into the FOCUS sub-account columns (adds `workspace_id` to the usage and cost report `group_by`). Any other value is rejected. See [Guide](/costgraph/focus-exporter/tenancy). |
 
 The key is sent as the `x-api-key` header, with `anthropic-version: 2023-06-01`.
 

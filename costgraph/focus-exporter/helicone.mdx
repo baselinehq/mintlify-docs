@@ -19,7 +19,7 @@ body), unlike the GET-based adapters.
 | --- | --- | --- |
 | `HELICONE_API_KEY` | yes | Helicone API key (`sk-helicone-...`), sent as `Authorization: Bearer <key>`. |
 | `HELICONE_ORG_ID` | yes | Populates the mandatory `BillingAccountId` (the query API returns no account id). |
-| `HELICONE_TENANT_PROPERTY` | no | Custom-property name that carries the downstream tenant/customer (e.g. `Tenant`). When set, spend is split per tenant into the FOCUS sub-account columns. See [tenancy.md](../tenancy.md). |
+| `HELICONE_TENANT_PROPERTY` | no | Custom-property name that carries the downstream tenant/customer (e.g. `Tenant`). When set, spend is split per tenant into the FOCUS sub-account columns. See [Guide](/costgraph/focus-exporter/tenancy). |
 
 ## API endpoints used
 
@@ -70,7 +70,7 @@ focus-exporter --provider helicone --start 2026-07-01 --end 2026-08-01 --format 
 - **Per-tenant attribution is opt-in** via `HELICONE_TENANT_PROPERTY`. When set,
   the rollup grain becomes (day, model, provider, tenant) and each tenant's spend
   lands in its own `SubAccountId`. Unset, output is unchanged. See
-  [tenancy.md](../tenancy.md).
+  [Guide](/costgraph/focus-exporter/tenancy).
 - The exact `request/query` filter shape, cost field (`costUSD` vs `cost`), and
   the per-request property field (`request_properties`) are taken from the
   documented schema; live verification against a real key is pending.

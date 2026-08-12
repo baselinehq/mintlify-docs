@@ -83,9 +83,11 @@
             "pages": [
               "costgraph/focus-exporter/overview",
               "costgraph/focus-exporter/sinks",
+              "costgraph/focus-exporter/tenancy",
               "costgraph/focus-exporter/anthropic",
               "costgraph/focus-exporter/cloudflare",
               "costgraph/focus-exporter/confluent",
+              "costgraph/focus-exporter/cursor",
               "costgraph/focus-exporter/digitalocean",
               "costgraph/focus-exporter/github",
               "costgraph/focus-exporter/grafanacloud",

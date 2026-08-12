@@ -1,12 +1,7 @@
 ---
-title: FOCUS Exporter
-description: "Per-provider setup guides for the open-source FOCUS exporter, which pulls each vendor's cost API and emits FOCUS 1.2 records."
+title: Providers
+description: "Each provider is a small adapter behind one interface (integrations.Source) that pulls that vendor's own cost/usage API and returns []model.UsageRecord;..."
 ---
-
-The [focus-exporter](https://github.com/baselinehq/focus-exporter) is an
-open-source CLI that pulls a provider's own cost/usage API and emits FOCUS 1.2
-records, which you can write to a file or push to CostGraph. The guides below
-cover the credentials and configuration each provider needs.
 
 Each provider is a small adapter behind one interface (`integrations.Source`)
 that pulls that vendor's own cost/usage API and returns `[]model.UsageRecord`;

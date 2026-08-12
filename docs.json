@@ -88,6 +88,7 @@
               "costgraph/focus-exporter/anthropic",
               "costgraph/focus-exporter/cloudflare",
               "costgraph/focus-exporter/confluent",
+              "costgraph/focus-exporter/costgraph",
               "costgraph/focus-exporter/digitalocean",
               "costgraph/focus-exporter/github",
               "costgraph/focus-exporter/grafanacloud",

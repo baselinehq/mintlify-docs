@@ -1,0 +1,124 @@
+---
+title: CostGraph
+description: "Exports one FOCUS 1.2 record per (billing period, workspace, meter) from the CostGraph billing API, plus a record for each account-level fee, tax and credit."
+---
+
+Exports one FOCUS 1.2 record per **(billing period, workspace, meter)** from the
+CostGraph billing API, plus a record for each account-level fee, tax and credit on
+the invoice. This is what your organization owes CostGraph, so you can fold your
+FinOps tooling's own cost into the same dataset as the infrastructure it watches.
+
+Provider name (for `--provider`): `costgraph`
+
+The API already returns FOCUS records, so this adapter maps rather than derives:
+costs, charge categories and the usage-versus-fee split are computed server-side and
+reconciled against the invoice.
+
+## Environment variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `COSTGRAPH_API_KEY` | yes | API key with the `focus:read` scope. Treat as a credential; never commit it. |
+| `COSTGRAPH_URL` | no | API base URL. Defaults to `https://api.costgraph.ai`. |
+
+The key is sent as `X-API-Key` on every request.
+
+## Credential setup
+
+1. In CostGraph go to **Settings -> API keys** and create a key.
+2. Grant it the **`focus:read`** scope. Nothing else is required - the key reads
+   billing data for the organization it belongs to.
+3. Export it:
+   ```bash
+   export COSTGRAPH_API_KEY=...
+   ```
+
+<Note>
+  The key must belong to an organization owner or billing admin. A key created by a
+  member carries that member's role and cannot read billing data.
+</Note>
+
+## API endpoints used
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/v1/billing/usage?period=YYYY-MM` | The organization's FOCUS records for one billing period. Called once per month in the window. |
+
+## FOCUS mapping
+
+| FOCUS column | Source |
+| --- | --- |
+| `EffectiveCost` / `ContractedCost` | what is owed after any freemium waiver |
+| `BilledCost` | what has actually been invoiced - `0` while the period is still accruing |
+| `ListCost` | the charge before the waiver, so `ListCost - EffectiveCost` is the discount |
+| `BillingCurrency` / `PricingCurrency` | `BillingCurrency` |
+| `BillingAccountId` / `BillingAccountName` | your CostGraph organization |
+| `SubAccountId` / `SubAccountName` / `SubAccountType` | the CostGraph workspace, `Workspace`. Account-level fees and tax carry none. |
+| `ChargePeriodStart` / `ChargePeriodEnd` | the charge period on the record |
+| `ChargeCategory` | `Usage` for metered charges, `Purchase` for fees, `Tax`, `Credit` for discounts |
+| `ChargeFrequency` | `Usage-Based` for meters, `One-Time` for fees and adjustments |
+| `ChargeDescription` / `SkuMeter` / `SkuId` | the meter or fee |
+| `ConsumedQuantity` / `ConsumedUnit` | the metered quantity and its unit |
+| `ListUnitPrice` | the per-unit price, where the charge has one |
+| `Provider` / `Publisher` / `InvoiceIssuer` / `ServiceName` | `CostGraph` |
+| `ServiceCategory` | `Management and Governance` |
+| `InvoiceId` | the invoice that billed the charge |
+| `x_ChargeStatus` | `accruing`, `invoiced` or `waived` |
+
+Every other `x_` column the API returns is carried through. `x_Direction` is the one
+exception and is deliberately dropped: CostGraph stamps it `inflow` because the charge
+is its revenue, and in the dataset of the organization paying it that label is wrong.
+
+## Example
+
+```bash
+export COSTGRAPH_API_KEY=...
+focus-exporter --provider costgraph --month 2026-07 --format json
+```
+
+```json
+{
+  "BilledCost": "4",
+  "EffectiveCost": "4",
+  "ListCost": "4",
+  "ContractedCost": "4",
+  "BillingAccountId": "org-1",
+  "BillingAccountName": "Globex",
+  "BillingCurrency": "USD",
+  "BillingPeriodStart": "2026-07-01T00:00:00Z",
+  "BillingPeriodEnd": "2026-08-01T00:00:00Z",
+  "ChargeCategory": "Usage",
+  "ChargeFrequency": "Usage-Based",
+  "ChargePeriodStart": "2026-07-01T00:00:00Z",
+  "ChargePeriodEnd": "2026-08-01T00:00:00Z",
+  "ChargeDescription": "Pricing API requests",
+  "ConsumedQuantity": "400",
+  "ConsumedUnit": "request",
+  "ListUnitPrice": "0.01",
+  "PricingCategory": "Standard",
+  "Provider": "CostGraph",
+  "Publisher": "CostGraph",
+  "InvoiceIssuer": "CostGraph",
+  "ServiceName": "CostGraph",
+  "ServiceCategory": "Management and Governance",
+  "SkuId": "pricing_api_requests",
+  "SkuMeter": "pricing_api_requests",
+  "SubAccountId": "tenant-1",
+  "SubAccountName": "prod",
+  "SubAccountType": "Workspace",
+  "InvoiceId": "in_1",
+  "x_ChargeStatus": "invoiced"
+}
+```
+
+## Limitations
+
+- A period that has not been invoiced yet reports the accrual in `EffectiveCost` with
+  `BilledCost` zero and `x_ChargeStatus: accruing`, so summing `BilledCost` never
+  claims money you have not been billed.
+- A charge the API returns with a value outside the FOCUS enums is logged and skipped
+  rather than exported, so one bad row cannot fail the run or emit a non-conformant
+  record.
+- The window is read a month at a time, so a partial month is returned whole; filter
+  downstream if you need day-level boundaries.
+- Charges carry no region or resource id, so `RegionId` and `ResourceId` are empty.

@@ -1,0 +1,64 @@
+---
+title: DigitalOcean
+description: "Bring DigitalOcean cost into CostGraph, pulled by us or pushed by you"
+---
+
+DigitalOcean bills Droplets, volumes, load balancers, databases and spaces against one
+account, so a single connection captures the whole invoice.
+
+CostGraph reads DigitalOcean as **FOCUS 1.2** records at a grain of invoice line item
+(product x resource), with per-project attribution.
+
+<Card title="DigitalOcean reference" icon="book" href="https://docs.costgraph.ai/costgraph/focus-exporter/digitalocean">
+  The credentials and permissions DigitalOcean needs, every environment variable, the
+  API endpoints called, and the full FOCUS field mapping. Kept with the exporter so it
+  never drifts from the code.
+</Card>
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply a read-only token and we call DigitalOcean once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
+    Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **DigitalOcean**.
+2. Name the connection.
+3. Create a Personal Access Token with **read** scope under **Account -> API -> Tokens**
+   and paste it in.
+4. Select **Connect**.
+
+The billing account label is optional: leave it empty and we resolve it from your
+account. A team gives its UUID and name; an account with no team uses the account UUID
+for both. Your account email is never used as a label, so no personal email reaches
+CostGraph.
+
+CostGraph verifies the token with a short fetch before saving, so a wrong value or a
+missing permission fails while you are still on the form.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke the token
+in DigitalOcean at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+1. Open **Settings -> Integrations** and pick **FOCUS push**.
+2. Create the connection and copy its **Connection ID**.
+3. Create a CostGraph API key with the `focus:write` scope.
+4. Run the exporter with `--provider digitalocean`, following the
+   [DigitalOcean reference](https://docs.costgraph.ai/costgraph/focus-exporter/digitalocean) for the environment it needs.
+5. Send the records to CostGraph, quoting the connection id and API key.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there DigitalOcean spend appears in Cost Overview and in anomaly
+detection alongside every other provider.

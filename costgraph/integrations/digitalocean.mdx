@@ -9,12 +9,6 @@ account, so a single connection captures the whole invoice.
 CostGraph reads DigitalOcean as **FOCUS 1.2** records at a grain of invoice line item
 (product x resource), with per-project attribution.
 
-<Card title="DigitalOcean reference" icon="book" href="https://docs.costgraph.ai/costgraph/focus-exporter/digitalocean">
-  The credentials and permissions DigitalOcean needs, every environment variable, the
-  API endpoints called, and the full FOCUS field mapping. Kept with the exporter so it
-  never drifts from the code.
-</Card>
-
 ## Choose how the data reaches us
 
 <CardGroup cols={2}>
@@ -54,7 +48,7 @@ in DigitalOcean at any time and the connection stops; nothing else is affected.
 2. Create the connection and copy its **Connection ID**.
 3. Create a CostGraph API key with the `focus:write` scope.
 4. Run the exporter with `--provider digitalocean`, following the
-   [DigitalOcean reference](https://docs.costgraph.ai/costgraph/focus-exporter/digitalocean) for the environment it needs.
+   [DigitalOcean reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/digitalocean.md) for the environment it needs.
 5. Send the records to CostGraph, quoting the connection id and API key.
 
 ## What CostGraph does with it

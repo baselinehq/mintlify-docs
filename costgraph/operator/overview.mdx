@@ -7,13 +7,13 @@ The CostGraph Operator runs in your Kubernetes cluster and continuously reports 
 
 - **Resource exporter** — watches every Kubernetes resource (workloads, nodes, namespaces, and more) and exports their definitions to CostGraph.
 - **Operational/Compute Metrics scraper** — scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
-- **Network Metrics scraper** - scrapes container and,optionally, host-process network metrics and remote-writes them to Costgraph.
+- **Network Metrics scraper** - scrapes container network metrics and, optionally, host-process network metrics, then remote-writes them to CostGraph.
 
 Together they collect:
 
 - **Cluster inventory** — the live manifests of all resources in the cluster.
 - **Container CPU/memory metrics** — per-container CPU and memory from cAdvisor.
-- **Container and host process network metrics** - per-container and, optionally, per-process bytes sent/received, packets sent/received, new connections count per-container and per-process.
+- **Container and host process network metrics** - per-container and, optionally, per-process bytes sent/received, packets sent/received, new-connection counts.
 - **Host metrics** — node CPU, memory, disk, and network from node-exporter and the kubelet.
 - **Kubernetes object metrics** — pod, deployment, and node state from kube-state-metrics.
 - **GPU metrics** — optional, from the NVIDIA DCGM exporter.
@@ -30,7 +30,7 @@ On the CostGraph platform, this data powers:
 - A running Kubernetes cluster
 - [Helm 3+](https://helm.sh/docs/intro/install/)
 - An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys)
-- For network flow tracing, a BTF-enabled kernel and a host-mounted cgroup v2 filesystem
+- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem
 
 ## Install
 

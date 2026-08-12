@@ -81,7 +81,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 ## Network Metrics scraper
 
-`flowtrace` scrapes per-container, per-process network metrics and remote-writes them to Costgraph.
+`flowtrace` scrapes per-container network metrics and, optionally, host-process network metrics, then remote-writes them to Costgraph.
 
 <ParamField body="flowtrace.enabled" type="boolean" default="true">
   Deploy the network metrics scraper.
@@ -100,7 +100,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 </ParamField>
 
 <ParamField body="flowtrace.config.includeHostFlows" type="boolean" default="false">
-  Collect host-process network flows alongside container network flows.
+  Container network flows are collected by default. Host-process network flows are collected only when this is enabled.
 </ParamField>
 
 ### Scrape targets
@@ -143,7 +143,7 @@ Each entry accepts:
 
 ## Bundled exporters
 
-The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. For flowtrace, disable if network tracing isn't a need.
+The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `\flowtrace` if you do not need network tracing.
 
 <ParamField body="kube-state-metrics.enabled" type="boolean" default="true">
   Kubernetes object-level metrics (pods, deployments, nodes).
@@ -253,6 +253,11 @@ operatorPrometheus:
       cpu: 100m
       memory: 64Mi
   env: []
+
+# flowtrace runs on every node and tolerates all taints by default, 
+# requires BTF and cgroup v2, and enters CrashLoopBackOff on incompatible nodes. 
+# Use nodeSelector to target compatible nodes in mixed clusters and
+# set flowtrace.enabled to false when no compatible nodes exist.
 
 flowtrace:
   enabled: true

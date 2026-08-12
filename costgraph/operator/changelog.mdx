@@ -19,8 +19,8 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - N/A
 
     ### Updates
-    - Added a Daemonset-based, root-priveleged BPF network-flow tracing agent that runs on compatible nodes across the fleet. Compatible nodes must expose a host-mounted cgroup v2 filesystem and run a BTF-enabled kernel for the fentry programs.
-    - Added default host filesystem mounts for `/proc` (`/host/proc`) and the host cgroup v2 filesystem `/sys/fs/cgroup`(`/host/sys/fs/cgroup`)
+    - Added a DaemonSet-based, root-privileged BPF network-flow tracing agent that runs on compatible nodes across the fleet. Compatible nodes must expose a host-mounted cgroup v2 filesystem and run a BTF-enabled kernel for the fentry programs.
+    - Added default host filesystem mounts for `/proc:/host/proc` and the host cgroup v2 filesystem `/sys/fs/cgroup:/host/sys/fs/cgroup`
 </Update>
 
 <Update label="2026-07-21" description="costgraph-operator v0.1.14">

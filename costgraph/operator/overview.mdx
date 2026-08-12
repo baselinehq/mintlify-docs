@@ -6,12 +6,14 @@ description: "Monitor Kubernetes cost, usage, and rightsizing with the CostGraph
 The CostGraph Operator runs in your Kubernetes cluster and continuously reports its state to CostGraph. It deploys two components:
 
 - **Resource exporter** — watches every Kubernetes resource (workloads, nodes, namespaces, and more) and exports their definitions to CostGraph.
-- **Metrics scraper** — scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
+- **Operational/Compute Metrics scraper** — scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
+- **Network Metrics scraper** - scrapes container and,optionally, host-process network metrics and remote-writes them to Costgraph.
 
 Together they collect:
 
 - **Cluster inventory** — the live manifests of all resources in the cluster.
-- **Container metrics** — per-container CPU and memory from cAdvisor.
+- **Container CPU/memory metrics** — per-container CPU and memory from cAdvisor.
+- **Container and host process network metrics** - per-container and, optionally, per-process bytes sent/received, packets sent/received, new connections count per-container and per-process.
 - **Host metrics** — node CPU, memory, disk, and network from node-exporter and the kubelet.
 - **Kubernetes object metrics** — pod, deployment, and node state from kube-state-metrics.
 - **GPU metrics** — optional, from the NVIDIA DCGM exporter.

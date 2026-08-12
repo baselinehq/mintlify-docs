@@ -66,15 +66,22 @@
             "pages": [
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
+              "costgraph/integrations/cloudflare",
               "costgraph/integrations/confluent",
+              "costgraph/integrations/cursor",
+              "costgraph/integrations/digitalocean",
               "costgraph/integrations/gcp",
               "costgraph/integrations/github",
+              "costgraph/integrations/grafanacloud",
               "costgraph/integrations/helicone",
               "costgraph/integrations/modal",
               "costgraph/integrations/openai",
               "costgraph/integrations/openrouter",
+              "costgraph/integrations/ovhcloud",
               "costgraph/integrations/planetscale",
-              "costgraph/integrations/respanai"
+              "costgraph/integrations/respanai",
+              "costgraph/integrations/stackit",
+              "costgraph/integrations/vercel"
             ]
           }
         ]

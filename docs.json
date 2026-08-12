@@ -78,26 +78,6 @@
               "costgraph/integrations/planetscale",
               "costgraph/integrations/respanai"
             ]
-          },
-          {
-            "group": "FOCUS Exporter",
-            "icon": "file-export",
-            "pages": [
-              "costgraph/focus-exporter/overview",
-              "costgraph/focus-exporter/sinks",
-              "costgraph/focus-exporter/anthropic",
-              "costgraph/focus-exporter/cloudflare",
-              "costgraph/focus-exporter/confluent",
-              "costgraph/focus-exporter/digitalocean",
-              "costgraph/focus-exporter/github",
-              "costgraph/focus-exporter/grafanacloud",
-              "costgraph/focus-exporter/helicone",
-              "costgraph/focus-exporter/modal",
-              "costgraph/focus-exporter/openai",
-              "costgraph/focus-exporter/openrouter",
-              "costgraph/focus-exporter/planetscale",
-              "costgraph/focus-exporter/respanai"
-            ]
           }
         ]
       },

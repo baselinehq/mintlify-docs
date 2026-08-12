@@ -3,7 +3,7 @@ title: Overview
 # description: "Host, process, and container resource monitoring agent for VMs and bare metal"
 ---
 
-The CostGraph Agent is a daemon that runs on your virtual machines and continuously reports resource usage to CostGraph. It collects:
+The CostGraph Agent is a daemon that runs on your virtual machines and continuously reports resource and network usage to CostGraph. It collects:
 
 - **Host metrics** — CPU, memory, disk, and network utilization for the machine.
 - **Container metrics and inventory** — when a Docker or containerd runtime is present.
@@ -20,6 +20,7 @@ These stream to CostGraph, where they power:
 
 - A Linux host e.g Debian, Ubuntu, RHEL, Amazon Linux, Alpine etc (`amd64` or `arm64`).
 - An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys).
+- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem
 
 ## Installation
 

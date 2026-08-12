@@ -36,7 +36,9 @@ CostGraph reads DigitalOcean as **FOCUS 1.2** records at a grain of invoice line
 4. Select **Connect**.
 
 The billing account label is optional: leave it empty and we resolve it from your
-account, using the team name where there is one.
+account. A team gives its UUID and name; an account with no team uses the account UUID
+for both. Your account email is never used as a label, so no personal email reaches
+CostGraph.
 
 CostGraph verifies the token with a short fetch before saving, so a wrong value or a
 missing permission fails while you are still on the form.

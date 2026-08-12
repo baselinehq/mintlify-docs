@@ -4,10 +4,12 @@ description: "Bring Grafana Cloud cost into CostGraph, pulled by us or pushed by
 ---
 
 Grafana Cloud bills metrics, logs, traces and profiles across every stack in an
-organization, so one connection covers them all and attributes cost per stack.
+organization, so one connection covers them all.
 
 CostGraph reads Grafana Cloud as **FOCUS 1.2** records at a grain of billed dimension
-x stack.
+x stack. Where Grafana Cloud returns a per-stack breakdown for a billed dimension, cost
+is attributed to each stack; where it does not, that dimension arrives as a single
+organization-level row.
 
 <Card title="Grafana Cloud reference" icon="book" href="https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/grafanacloud.md">
   The credentials and permissions Grafana Cloud needs, every environment variable, the
@@ -64,4 +66,5 @@ in Grafana Cloud at any time and the connection stops; nothing else is affected.
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there Grafana Cloud spend appears in Cost Overview and in anomaly
-detection alongside every other provider, attributed per stack.
+detection alongside every other provider, attributed per stack wherever Grafana Cloud
+breaks the dimension down that way, and at the organization level where it does not.

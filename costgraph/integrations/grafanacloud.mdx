@@ -3,15 +3,19 @@ title: Grafana Cloud
 description: "Bring Grafana Cloud cost into CostGraph, pulled by us or pushed by you"
 ---
 
-Grafana Cloud bills usage per billing dimension, so spend is attributed per metered dimension across your org.
+Grafana Cloud bills metrics, logs, traces and profiles across every stack in an
+organization, so one connection covers them all.
 
-CostGraph reads Grafana Cloud as **FOCUS 1.2** records at a grain of day x billing dimension.
+CostGraph reads Grafana Cloud as **FOCUS 1.2** records at a grain of billed dimension
+x stack. Where Grafana Cloud returns a per-stack breakdown for a billed dimension, cost
+is attributed to each stack; where it does not, that dimension arrives as a single
+organization-level row.
 
 ## Choose how the data reaches us
 
 <CardGroup cols={2}>
   <Card title="CostGraph pulls it" icon="cloud-arrow-down">
-    You supply read-only credentials and we call Grafana Cloud once a day. Nothing to run.
+    You supply a read-only token and we call Grafana Cloud once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
     You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
@@ -21,20 +25,26 @@ CostGraph reads Grafana Cloud as **FOCUS 1.2** records at a grain of day x billi
 
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **FOCUS pull**.
-2. Choose **Grafana Cloud**, name the connection, and enter the billing account these
-   charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables Grafana Cloud
-   needs, marks which are optional, and links this provider's reference for the
-   permissions each one requires.
+1. Open **Settings -> Integrations** and pick **Grafana Cloud**.
+2. Name the connection and enter your organization slug, the `{org}` in
+   `grafana.com/orgs/{org}`.
+3. Create an **Access Policy token** whose realm is the organization, carrying the
+   billing read scopes: `billing-metrics:read`, `org-billing-info:read`,
+   `org-billing-rate:read`, `invoices:read` and `orgs:read`. Paste it in.
 4. Select **Connect**.
 
-CostGraph verifies the credentials with a short fetch before saving, so a wrong
-value or a missing permission fails while you are still on the form.
+<Warning>
+The token must be an organization Access Policy token, which starts with `glc_`. A
+stack service account token, starting with `glsa_`, cannot read billing and will fail
+verification.
+</Warning>
+
+CostGraph verifies the token with a short fetch before saving, so a wrong value or a
+missing scope fails while you are still on the form.
 
 <Note>
-Credentials are encrypted at rest and used only to read billing data. Revoke them in
-Grafana Cloud at any time and the connection stops; nothing else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke the token
+in Grafana Cloud at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
@@ -49,4 +59,5 @@ Grafana Cloud at any time and the connection stops; nothing else is affected.
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there Grafana Cloud spend appears in Cost Overview and in anomaly
-detection alongside every other provider.
+detection alongside every other provider, attributed per stack wherever Grafana Cloud
+breaks the dimension down that way, and at the organization level where it does not.

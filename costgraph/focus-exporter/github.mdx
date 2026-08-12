@@ -235,11 +235,6 @@ things fall back to the aggregate automatically:
   aggregate (a departed seat holder with spend), the aggregate is kept rather
   than under-counting.
 
-Live verification against a real usage-based-billing org is pending; the endpoint,
-its `usageItems` fields (`model`, `sku`, `grossAmount`/`netAmount`/`discountAmount`,
-`netQuantity`, `unitType`, `pricePerUnit`), and the overlap with the general report
-are taken from the documented schema (the billing model changed in June 2026).
-
 ## Notes and limitations
 
 - **Granularity is daily.** The usage report has no finer grain than a day, so

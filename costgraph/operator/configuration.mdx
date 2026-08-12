@@ -55,12 +55,12 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
   Additional environment variables.
 </ParamField>
 
-## Metrics scraper
+## Operational/Compute Metrics scraper
 
 `operatorPrometheus` scrapes in-cluster metrics endpoints and remote-writes them to CostGraph.
 
 <ParamField body="operatorPrometheus.enabled" type="boolean" default="true">
-  Deploy the metrics scraper.
+  Deploy the operational/compute metrics scraper.
 </ParamField>
 
 <ParamField body="operatorPrometheus.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
@@ -77,6 +77,30 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 <ParamField body="operatorPrometheus.config.httpTimeout" type="string" default="30s">
   Timeout for scrape and backend requests.
+</ParamField>
+
+## Network Metrics scraper
+
+`flowtrace` scrapes per-container, per-process network metrics and remote-writes them to Costgraph.
+
+<ParamField body="flowtrace.enabled" type="boolean" default="true">
+  Deploy the network metrics scraper.
+</ParamField>
+
+<ParamField body="flowtrace.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
+  Remote-write endpoint for collected metrics.
+</ParamField>
+
+<ParamField body="flowtrace.config.remoteWritePath" type="string" default="/api/v1/write/short">
+  Remote-write path appended to the URL.
+</ParamField>
+
+<ParamField body="flowtrace.config.httpTimeout" type="string" default="30s">
+  Timeout for write and backend requests.
+</ParamField>
+
+<ParamField body="flowtrace.config.includeHostFlows" type="boolean" default="false">
+  Collect host-process network flows alongside container network flows.
 </ParamField>
 
 ### Scrape targets
@@ -119,7 +143,7 @@ Each entry accepts:
 
 ## Bundled exporters
 
-The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster.
+The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. For flowtrace, disable if network tracing isn't a need.
 
 <ParamField body="kube-state-metrics.enabled" type="boolean" default="true">
   Kubernetes object-level metrics (pods, deployments, nodes).
@@ -136,6 +160,9 @@ The chart pulls in the metrics sources as subcharts. Disable any you already run
 <ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
   NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`.
 </ParamField>
+
+<ParamField body="flowtrace.enabled" type="boolean" default="true">
+  Per-container and, optionally, host per-process network metrics (bytes sent/received, packets sent/received, connection count).
 
 ## Full values reference
 
@@ -225,6 +252,30 @@ operatorPrometheus:
     requests:
       cpu: 100m
       memory: 64Mi
+  env: []
+
+flowtrace:
+  enabled: true
+  config:
+    remoteWriteURL: "https://tsdb.costgraph.ai"
+    remoteWritePath: "/api/v1/write/short"
+    pushInterval: "4m"
+    includeHostFlows: false
+    httpTimeout: "30s"
+  maxUnavailable: 1
+  priorityClassName: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  tolerations:
+    - operator: Exists
+  nodeSelector: {}
+  affinity: {}
+  podAnnotations: {}
+  podLabels: {}
   env: []
 ```
 </Accordion>

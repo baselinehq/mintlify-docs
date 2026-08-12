@@ -7,7 +7,7 @@ Helicone is an LLM gateway, so one connection captures spend across every model 
 
 CostGraph reads Helicone as **FOCUS 1.2** records at a grain of day x model x upstream provider (request spend).
 
-<Card title="Helicone reference" icon="book" href="https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/helicone.md">
+<Card title="Helicone reference" icon="book" href="https://docs.costgraph.ai/costgraph/focus-exporter/helicone">
   The credentials and permissions Helicone needs, every environment variable, the API
   endpoints called, and the full FOCUS field mapping. Kept with the exporter so it
   never drifts from the code.
@@ -49,7 +49,7 @@ Helicone at any time and the connection stops; nothing else is affected.
 2. Create the connection and copy its **Connection ID**.
 3. Create a CostGraph API key with the `focus:write` scope.
 4. Run the exporter with `--provider helicone`, following the
-   [Helicone reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/helicone.md) for the environment it needs.
+   [Helicone reference](https://docs.costgraph.ai/costgraph/focus-exporter/helicone) for the environment it needs.
 5. Send the records to CostGraph, quoting the connection id and API key.
 
 ## What CostGraph does with it

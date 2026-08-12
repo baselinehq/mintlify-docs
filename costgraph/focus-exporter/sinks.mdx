@@ -1,0 +1,58 @@
+---
+title: Sinks
+description: "A sink decides where the exported FOCUS records go. The --sink flag only selects the sink; each sink is configured entirely from the environment, so adding..."
+---
+
+A sink decides where the exported FOCUS records go. The `--sink` flag only
+selects the sink; each sink is configured entirely from the environment, so
+adding a new sink never adds a new flag.
+
+| `--sink` | Destination | Default |
+| --- | --- | --- |
+| `file` | stdout or a file | yes |
+| `costgraph` | costgraph ingest endpoint | - |
+
+## `file`
+
+Writes the records to stdout, or to `--out <path>`, in the format chosen by
+`--format`.
+
+| Flag | Meaning | Default |
+| --- | --- | --- |
+| `--format` | `json` or `csv` | `json` |
+| `-o`, `--out` | Output file | stdout |
+
+```bash
+focus-exporter --provider planetscale --month 2026-07 --format csv -o july.csv
+```
+
+## `costgraph`
+
+POSTs the records straight to costgraph's ingest endpoint
+(`/api/v1/tenant/billing/focus`) instead of writing a file, authenticated with a
+`focus:write` API key. The run's window is sent as a full-window replace, so
+re-running the same window is idempotent.
+
+A push is tied to one connection and provider (the backend rejects
+mixed-provider rows), so `--sink costgraph` requires exactly one `--provider`
+and an explicit window (`--month` or `--start`/`--end`). `--format` is ignored.
+
+| Env | Meaning | Default |
+| --- | --- | --- |
+| `COSTGRAPH_API_KEY` | `focus:write` API key. Treat as a credential; never commit it. | required |
+| `COSTGRAPH_CONNECTION_ID` | Integration connection id (`fpc_...`). | required |
+| `COSTGRAPH_URL` | Costgraph base URL. | `https://api.costgraph.ai` |
+
+```bash
+COSTGRAPH_API_KEY=... COSTGRAPH_CONNECTION_ID=fpc_... focus-exporter \
+  --provider planetscale --month 2026-07 --sink costgraph
+```
+
+If the payload exceeds the backend's size limit the push fails with a `413` and
+a message telling you to narrow the window.
+
+## Adding a sink
+
+Implement the `Sink` interface in `pkg/sink` (`Write(recs []focus.Record) error`),
+read its config from the environment, and wire it into the `--sink` switch in
+`cmd/focus-exporter/main.go`. No new flags.

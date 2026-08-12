@@ -1,0 +1,102 @@
+---
+title: OpenAI
+description: "Exports FOCUS 1.2 records from the OpenAI Costs Admin API."
+---
+
+Exports FOCUS 1.2 records from the OpenAI [Costs Admin API](https://platform.openai.com/docs/api-reference/usage/costs).
+
+OpenAI's cost endpoint returns, per day and per `line_item`, the billed
+`amount`, the billed `quantity` (token count), and the `project_id`. A line item
+is `"<model>, <token-type>"` (e.g. `"gpt-4o-2024-08-06, input"`), so a single
+cost row already carries cost, quantity, model, and token bucket together - no
+cross-endpoint join is needed. Each row becomes one FOCUS charge.
+
+Provider name (for `--provider`): `openai`
+
+## Environment variables
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `OPENAI_ADMIN_KEY` | yes | An Admin API key (`sk-admin-...`) or a key with the `api.usage.read` scope. Only an org owner can create an admin key / grant the scope. |
+| `OPENAI_ORG_ID` | yes | Sets `BillingAccountId` on every record (mandatory FOCUS column; the cost endpoint doesn't return the org id). |
+| `OPENAI_TENANT_GROUP` | no | Set to `project_id` to split spend per project into the FOCUS sub-account columns (adds `project_id` to the cost `group_by`). Any other value is rejected. See [tenancy.md](../tenancy.md). |
+
+The key is sent as `Authorization: Bearer <key>`.
+
+## Credential setup
+
+The Costs endpoint requires the `api.usage.read` scope. Create an **Admin key**
+in the OpenAI dashboard (Settings -> Organization -> Admin keys), or grant an
+existing service-account/API key the **Usage read** role. A regular or
+service-account key without that scope returns `403 Missing scopes:
+api.usage.read`.
+
+```bash
+export OPENAI_ADMIN_KEY=sk-admin-...
+```
+
+## API endpoints used
+
+Base URL: `https://api.openai.com`
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /v1/organization/costs` | Billed cost, quantity, and project per day, grouped by `line_item` (plus `project_id` when tenancy is enabled). |
+
+It takes `start_time` (unix seconds, required) / `end_time`, `bucket_width=1d`,
+and is followed to completion via `has_more` / `next_page`.
+
+## FOCUS mapping
+
+The `line_item` string is split on the last `", "` into a model and a token
+type. Recognised token types map to a bucket:
+
+| `line_item` token type | FOCUS bucket (`SkuMeter`) |
+| --- | --- |
+| `input` | `input` |
+| `cached input` | `cache_read` |
+| `output` | `output` |
+
+A `line_item` that is not `"<model>, <known-token-type>"` (e.g. `"Image
+models"`, `"Web search"`, credits) does not parse to a bucket and falls back to
+a **cost-only** charge keyed on the raw line item.
+
+| FOCUS column | Source |
+| --- | --- |
+| `BilledCost` / `EffectiveCost` / `ListCost` | `amount.value` (dollars) |
+| `BillingCurrency` | `amount.currency`, uppercased (`usd` -> `USD`) |
+| `ConsumedQuantity` / `ConsumedUnit` | `quantity` / `tokens` (parsed token lines only) |
+| `ServiceName`, `ResourceId`, `SkuId` | model (e.g. `gpt-4o-2024-08-06`); the raw `line_item` on a fallback row |
+| `SkuMeter` | token bucket; the raw `line_item` on a fallback row |
+| `SkuPriceId` | `model\|bucket` |
+| `ChargeCategory` | `Usage`, or `Credit` when `amount` is negative |
+| `Provider`, `Publisher`, `InvoiceIssuer` | `OpenAI` |
+| `ServiceCategory` / `ServiceSubcategory` | `AI and Machine Learning` / `Generative AI` |
+| `BillingAccountId` | `OPENAI_ORG_ID` (required) |
+| `SubAccountId` / `SubAccountName` / `SubAccountType` | each row's `project_id` (only when `OPENAI_TENANT_GROUP=project_id`) |
+
+## Example
+
+```bash
+export OPENAI_ADMIN_KEY=sk-admin-...
+focus-exporter --provider openai --start 2026-07-01 --end 2026-08-01 --format json
+```
+
+## Notes and limitations
+
+- **The cost endpoint is the single source of truth.** Its `quantity` per
+  `(model, token-type)` matches the `usage/completions` billed token counts
+  exactly (`input` = uncached input, `cached input` = cache reads, `output` =
+  output), so nothing is fetched from the usage endpoint. Request counts
+  (`num_model_requests`) and text/audio/image sub-splits are the only fields that
+  live solely on `usage/completions`; they are telemetry, not billed quantities,
+  and are not exported.
+- **Fallback rows carry no quantity.** A `line_item` that does not resolve to a
+  known model+token-type (image/audio product lines, web search, credits) is
+  emitted as a cost-only charge - never mis-attributed to a token bucket.
+- **A window is required.** Pass `--start` and `--end` together (or `--month`);
+  the CLI rejects an open-ended export for this provider because the API
+  requires `start_time`.
+- **Granularity is daily** (`bucket_width=1d`).
+- The `line_item` vocabulary (`"<model>, input|cached input|output"`) is verified
+  against a live organization's cost data.

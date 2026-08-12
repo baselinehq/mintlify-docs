@@ -7,12 +7,6 @@ OpenAI bills API usage per model and token bucket, so model spend lands beside y
 
 CostGraph reads OpenAI as **FOCUS 1.2** records at a grain of day x model x token bucket (billed cost + quantity).
 
-<Card title="OpenAI reference" icon="book" href="https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/openai.md">
-  The credentials and permissions OpenAI needs, every environment variable, the API
-  endpoints called, and the full FOCUS field mapping. Kept with the exporter so it
-  never drifts from the code.
-</Card>
-
 ## Choose how the data reaches us
 
 <CardGroup cols={2}>
@@ -48,8 +42,7 @@ OpenAI at any time and the connection stops; nothing else is affected.
 1. Open **Settings -> Integrations** and pick **FOCUS push**.
 2. Create the connection and copy its **Connection ID**.
 3. Create a CostGraph API key with the `focus:write` scope.
-4. Run the exporter with `--provider openai`, following the
-   [OpenAI reference](https://github.com/baselinehq/focus-exporter/blob/main/docs/providers/openai.md) for the environment it needs.
+4. Run the exporter with `--provider openai`.
 5. Send the records to CostGraph, quoting the connection id and API key.
 
 ## What CostGraph does with it

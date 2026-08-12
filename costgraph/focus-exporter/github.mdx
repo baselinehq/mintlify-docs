@@ -190,6 +190,51 @@ Two constraints, by design:
   `UserMonths` line. If the roster can't be read or is empty, the aggregate line
   is emitted unchanged.
 
+## Per-model Copilot premium requests
+
+Since GitHub moved Copilot to usage-based billing (GitHub AI Credits, June 2026),
+the general usage report carries Copilot metered spend only as an aggregate line
+with no model dimension. The adapter also reads
+`GET /organizations/{org}/settings/billing/premium_request/usage` (one calendar
+month at a time), which breaks that same spend down **per model**, and emits one
+FOCUS row per `(month, model)`:
+
+| FOCUS column | Source |
+| --- | --- |
+| `ServiceName` / `ServiceCategory` | `GitHub Copilot` / `Developer Tools` (same as the seat and general Copilot rows) |
+| `BilledCost` / `EffectiveCost` | the item's `netAmount` |
+| `ListCost` | the item's `grossAmount` |
+| `ConsumedQuantity` / `ConsumedUnit` | `netQuantity` / `unitType` |
+| `ListUnitPrice` | `pricePerUnit` |
+| `ResourceId` / `ResourceName` / `ResourceType` | `model` / `model` / `Copilot Model` |
+| `SkuId` / `SkuMeter` | `sku` / `model` |
+| `x_DiscountAmount` | `discountAmount`, when non-zero |
+| `ChargePeriodStart` / `ChargePeriodEnd` | the calendar month |
+
+To avoid double-counting, the aggregate Copilot metered line from the general
+usage report is **dropped for any month the premium-request report covers** (the
+per-model rows carry that spend instead). When the premium-request report is
+empty or unavailable for a month (older billing, missing permission), the general
+aggregate is kept unchanged, so no spend is lost.
+
+**Per-developer attribution (current month).** The endpoint also accepts a `user`
+filter, so for the current month the adapter walks the Copilot seat roster
+(`/orgs/{org}/copilot/billing/seats`) and queries per user, emitting
+**(month, model, user)** rows with the developer's login in `SubAccountId`
+(`SubAccountType` `User`) - real per-developer AI chargeback across models. This
+is used **only when the per-user totals reconcile exactly to the month's
+aggregate**; otherwise the aggregate per-model rows are emitted unchanged. Two
+things fall back to the aggregate automatically:
+
+- **Enterprise-owned organizations.** GitHub returns `403` for `?user=` on these
+  orgs ("Organization admins for enterprise owned organizations cannot filter
+  usage by user"), so per-developer attribution is unavailable and the aggregate
+  per-model rows are used.
+- **Past months / incomplete roster.** The seat roster is a live snapshot, so
+  only the current month is expanded; if the per-user sum does not match the
+  aggregate (a departed seat holder with spend), the aggregate is kept rather
+  than under-counting.
+
 ## Notes and limitations
 
 - **Granularity is daily.** The usage report has no finer grain than a day, so

@@ -81,6 +81,7 @@
               "costgraph/integrations/ovhcloud",
               "costgraph/integrations/planetscale",
               "costgraph/integrations/respanai",
+              "costgraph/integrations/scaleway",
               "costgraph/integrations/stackit",
               "costgraph/integrations/vercel"
             ]
@@ -286,6 +287,10 @@
     {
       "source": "/costgraph/focus-exporter/respanai",
       "destination": "/costgraph/integrations/respanai"
+    },
+    {
+      "source": "/costgraph/focus-exporter/scaleway",
+      "destination": "/costgraph/integrations/scaleway"
     },
     {
       "source": "/costgraph/focus-exporter/stackit",

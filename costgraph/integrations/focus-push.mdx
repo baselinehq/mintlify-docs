@@ -46,32 +46,94 @@ curl -X POST https://api.costgraph.ai/api/v1/tenant/billing/focus \
     "rows": [
       {
         "BillingAccountId": "acct-1",
+        "BillingCurrency": "USD",
+        "BillingPeriodStart": "2026-07-01T00:00:00Z",
+        "BillingPeriodEnd": "2026-08-01T00:00:00Z",
         "ChargePeriodStart": "2026-07-01T00:00:00Z",
         "ChargePeriodEnd": "2026-07-02T00:00:00Z",
         "ChargeCategory": "Usage",
-        "BilledCost": 12.5,
-        "EffectiveCost": 12.5,
-        "BillingCurrency": "USD",
+        "ChargeDescription": "Internal platform, shared cluster",
+        "Provider": "acme",
         "ServiceName": "Internal Platform",
-        "ProviderName": "acme",
-        "ResourceId": "svc-42"
+        "BilledCost": "12.50",
+        "EffectiveCost": "12.50",
+        "ListCost": "15.00"
       }
     ]
   }'
 ```
 
-Rows are FOCUS 1.2 records. Every row is validated, and a row that fails validation
-rejects the whole batch, so nothing lands half-applied.
+Every row is validated, and a row that fails validation rejects the whole batch, so
+nothing lands half-applied. The `422` response names the offending row index.
+
+## Request body
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `connection_id` | **yes** | The `fpc_...` id of the push connection. |
+| `charge_period_start` | **yes** | Start of the window this batch describes, RFC 3339. |
+| `charge_period_end` | **yes** | End of the window. Must be after the start, and no more than 366 days later. |
+| `rows` | **yes** | The FOCUS records. |
+| `complete` | no | `true` replaces the window. Omitted or `false` appends. |
+| `focus_version` | no | The FOCUS version the rows conform to, for example `1.2`. Recorded against the batch. |
+
+## Row fields
+
+Costs and quantities are **strings**, not numbers, so no precision is lost in JSON.
+Timestamps are RFC 3339.
+
+### Required on every row
+
+| Field | Notes |
+|-------|-------|
+| `BillingAccountId` | Non-empty. Becomes the account the spend is attributed to. |
+| `BillingCurrency` | Uppercase ISO 4217, for example `USD`. Lowercase is rejected. |
+| `BillingPeriodStart` / `BillingPeriodEnd` | End must be after start. The invoice period the charge belongs to. |
+| `ChargePeriodStart` / `ChargePeriodEnd` | End must be after start. Start must fall inside the window the batch declares. |
+| `ChargeCategory` | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
+| `ChargeDescription` | Non-empty. |
+| `Provider` | Non-empty. Every row in a batch must agree, and must match the connection. |
+| `ServiceName` | Non-empty. |
+| `BilledCost` | Decimal string. |
+| `EffectiveCost` | Decimal string. Amortised cost; this is what CostGraph reports on. |
+| `ListCost` | Decimal string. |
+
+### Constrained when present
+
+| Field | Constraint |
+|-------|-----------|
+| `ChargeClass` | Only `Correction` is accepted. |
+| `ServiceCategory` | One of `AI and Machine Learning`, `Analytics`, `Business Applications`, `Compute`, `Databases`, `Developer Tools`, `Identity`, `Integration`, `Internet of Things`, `Management and Governance`, `Media`, `Migration`, `Mobile`, `Multicloud`, `Networking`, `Security`, `Storage`, `Web`, `Other`. |
+| `ContractedCost` | Must parse as a decimal. |
+| `SubAccountName`, `SubAccountType` | Require `SubAccountId` to be set too. |
+
+### Optional
+
+Everything else in FOCUS 1.2 is accepted and stored, and omitting it is fine:
+
+`AvailabilityZone`, `BillingAccountName`, `BillingAccountType`, `CapacityReservationId`,
+`CapacityReservationStatus`, `ChargeFrequency`, `CommitmentDiscountCategory`,
+`CommitmentDiscountId`, `CommitmentDiscountName`, `CommitmentDiscountQuantity`,
+`CommitmentDiscountStatus`, `CommitmentDiscountType`, `CommitmentDiscountUnit`,
+`ConsumedQuantity`, `ConsumedUnit`, `ContractedUnitPrice`, `InvoiceId`, `InvoiceIssuer`,
+`ListUnitPrice`, `PricingCategory`, `PricingCurrency`,
+`PricingCurrencyContractedUnitPrice`, `PricingCurrencyEffectiveCost`,
+`PricingCurrencyListUnitPrice`, `PricingQuantity`, `PricingUnit`, `Publisher`,
+`RegionId`, `RegionName`, `ResourceId`, `ResourceName`, `ResourceType`,
+`ServiceSubcategory`, `SkuId`, `SkuMeter`, `SkuPriceId`, `SkuPriceDetails`,
+`SubAccountId`, `Tags`.
+
+<Note>
+Send `ResourceId` wherever you have one. Without it a charge can be totalled but not
+attributed to a thing, so it will not appear in resource-level breakdowns.
+</Note>
+
+Any key CostGraph does not recognise is kept as a provider extension rather than
+rejected, so a dialect that carries extra columns round-trips.
 
 ## The window and the `complete` flag
 
 Each push declares the charge period it covers, and what you are claiming about it.
-
-| Field | Meaning |
-|-------|---------|
-| `charge_period_start` / `charge_period_end` | The window this batch describes. End must be after start, and the window must not exceed 366 days. |
-| `complete` | `true` replaces the window. `false` (or omitted) appends to it. |
-| `focus_version` | The FOCUS version the rows conform to, for example `1.2`. |
 
 `complete: true` deletes everything previously ingested for that connection inside
 the window and replaces it with this batch. That is what makes re-sending a month

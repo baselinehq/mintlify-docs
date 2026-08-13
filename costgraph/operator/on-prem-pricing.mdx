@@ -21,8 +21,8 @@ costgraph.ai/pricing-id.storage = <uuid>
 |--------|-------------------|---------------|
 | `.compute` | compute rate | [`POST /marketplace/providers/compute`](https://docs.costgraph.ai/api-reference/register-a-custom-provider) |
 | `.storage` | disk rate | [`POST /marketplace/providers/disks`](https://docs.costgraph.ai/api-reference/register-a-custom-disk-provider) |
-| `.database` | managed database rate | `POST /marketplace/providers/databases` |
-| `.model` | model token rate | `POST /marketplace/providers/models` |
+| `.database` | managed database rate | [`POST /marketplace/providers/databases`](https://docs.costgraph.ai/api-reference/register-custom-database-pricing) |
+| `.model` | model token rate | [`POST /marketplace/providers/models`](https://docs.costgraph.ai/api-reference/register-custom-model-pricing) |
 
 A key with no suffix is read as `.compute` on a node and `.storage` on a volume.
 Prefer the explicit suffix.

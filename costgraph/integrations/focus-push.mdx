@@ -1,0 +1,126 @@
+---
+title: Push FOCUS data
+description: "Send your own FOCUS billing records to CostGraph over the API"
+---
+
+Most integrations are **pull**: you hand CostGraph a read-only credential and it
+fetches your bill once a day. **Push** is the other direction. You send
+[FOCUS 1.2](https://focus.finops.org) records to our API yourself, and no vendor
+credential ever leaves your infrastructure.
+
+Use it for billing data CostGraph cannot reach: an internal chargeback system, a
+data warehouse job, a vendor whose export you already normalise, or a private cloud
+nobody else bills for. Whatever you send lands beside every other provider in Cost
+Overview, anomaly detection, and the MCP tools.
+
+## Create the connection
+
+1. Open **Settings -> Integrations** and choose **FOCUS push**.
+2. Pick the tenant the charges belong to and name the connection.
+3. Copy the **connection id**. It looks like `fpc_...` and identifies this stream.
+
+A connection is created in push mode and stays that way. Posting to a connection
+CostGraph syncs itself is refused with a `409`.
+
+## Create the API key
+
+1. Open **Settings -> API keys** and create a key.
+2. Grant it the **`focus:write`** scope. Nothing else is required.
+
+<Warning>
+Install tokens are rejected on this endpoint. Use an ordinary API key.
+</Warning>
+
+## Send the records
+
+```bash
+curl -X POST https://api.costgraph.ai/api/v1/tenant/billing/focus \
+  -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "fpc_...",
+    "complete": true,
+    "focus_version": "1.2",
+    "charge_period_start": "2026-07-01T00:00:00Z",
+    "charge_period_end": "2026-08-01T00:00:00Z",
+    "rows": [
+      {
+        "BillingAccountId": "acct-1",
+        "ChargePeriodStart": "2026-07-01T00:00:00Z",
+        "ChargePeriodEnd": "2026-07-02T00:00:00Z",
+        "ChargeCategory": "Usage",
+        "BilledCost": 12.5,
+        "EffectiveCost": 12.5,
+        "BillingCurrency": "USD",
+        "ServiceName": "Internal Platform",
+        "ProviderName": "acme",
+        "ResourceId": "svc-42"
+      }
+    ]
+  }'
+```
+
+Rows are FOCUS 1.2 records. Every row is validated, and a row that fails validation
+rejects the whole batch, so nothing lands half-applied.
+
+## The window and the `complete` flag
+
+Each push declares the charge period it covers, and what you are claiming about it.
+
+| Field | Meaning |
+|-------|---------|
+| `charge_period_start` / `charge_period_end` | The window this batch describes. End must be after start, and the window must not exceed 366 days. |
+| `complete` | `true` replaces the window. `false` (or omitted) appends to it. |
+| `focus_version` | The FOCUS version the rows conform to, for example `1.2`. |
+
+`complete: true` deletes everything previously ingested for that connection inside
+the window and replaces it with this batch. That is what makes re-sending a month
+idempotent, and it is how you correct a restatement: send the corrected month again.
+
+<Warning>
+`complete: true` with an empty `rows` array is refused, because it would silently
+delete the window. Omit `complete` if you mean to append nothing.
+</Warning>
+
+Every row's `ChargePeriodStart` must fall inside the declared window, and all rows in
+a batch must carry the same provider. The first push sets the connection's provider;
+later pushes must agree with it.
+
+## Batch size
+
+The endpoint accepts **32 MB** per request by default. A larger payload is rejected
+with a `413` telling you to split the batch. Narrow the window rather than dropping
+rows - a month is usually the natural unit.
+
+Only one ingest runs per connection at a time. A concurrent push gets a `409`, so
+retry rather than posting two batches to one connection in parallel.
+
+## A daily loop
+
+Send yesterday once the day closes, with `complete: true` so a re-run is harmless:
+
+```
+POST window [yesterday 00:00Z, today 00:00Z)  complete: true
+```
+
+Then re-send the whole month after your own books close, again with `complete: true`.
+The month replaces the days it covers, so late charges and restatements correct
+themselves without any deletion on your side.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, then roll up into
+daily cost and reconcile against the invoice totals for each month the window
+touches.
+
+## Responses
+
+| Status | Meaning |
+|--------|---------|
+| `200` | Ingested. The body echoes the connection id, provider, row count, and whether the batch was complete. |
+| `400` | Malformed payload, or the window or rows failed validation. |
+| `403` | The key is missing the `focus:write` scope. |
+| `404` | No such connection for this organization and tenant. |
+| `409` | The connection is pull-mode, or another ingest is already running. |
+| `413` | Payload above the size limit. Split the batch. |
+| `422` | A row is not valid FOCUS. The message names the row index. |

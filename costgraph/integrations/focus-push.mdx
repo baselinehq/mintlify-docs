@@ -270,33 +270,69 @@ A successful push returns what was stored, so you can assert on it in a job:
 }
 ```
 
-## What every row must carry
+## The record fields
 
 Rows are validated one at a time and the first bad row rejects the whole batch,
-naming its index. Required on every row:
+naming its index. CostGraph accepts the 57 FOCUS 1.2 columns below.
 
-| Field | Notes |
+### Required on every row
+
+Omit any of these and the row is rejected with `422`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `Provider` | string | Who the charges come from. Must agree with the connection's provider and with every other row in the batch. |
+| `ServiceName` | string | What was bought. |
+| `ChargeCategory` | string | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
+| `ChargeDescription` | string | Free text, but it cannot be empty. |
+| `BillingAccountId` | string | The account the charge belongs to. |
+| `BillingCurrency` | string | ISO 4217, uppercase. |
+| `BilledCost` | decimal | What was invoiced. |
+| `EffectiveCost` | decimal | Amortized cost after discounts. |
+| `ListCost` | decimal | Cost at public rates. |
+| `BillingPeriodStart` | datetime | End must be after start. |
+| `BillingPeriodEnd` | datetime | |
+| `ChargePeriodStart` | datetime | Must fall inside the window the batch declares. |
+| `ChargePeriodEnd` | datetime | Must be after `ChargePeriodStart`. |
+
+### Required only in certain cases
+
+| Field | Type | Required when |
+| --- | --- | --- |
+| `SubAccountId` | string | You send `SubAccountName` or `SubAccountType`. Either one without the id is rejected. |
+| `ContractedCost` | decimal | Optional, but if present it must parse as a finite decimal. |
+| `ChargeClass` | string | Optional, but the only accepted value is `Correction`. Leave it out for ordinary charges. |
+| `ServiceCategory` | string | Optional, but if present it must be one of the FOCUS categories, such as `Compute`, `Databases`, `Storage` or `AI and Machine Learning`. |
+
+### Optional
+
+Everything else is accepted and stored, and nothing else is validated beyond its type.
+
+| Group | Fields |
 | --- | --- |
-| `Provider` | Who the charges come from. Must agree with the connection's provider and with every other row in the batch. |
-| `ServiceName` | What was bought. |
-| `ChargeCategory` | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
-| `ChargeDescription` | Free text, but it cannot be empty. |
-| `BillingAccountId` | The account the charge belongs to. |
-| `BillingCurrency` | ISO 4217, uppercase. |
-| `BillingPeriodStart` / `BillingPeriodEnd` | End must be after start. |
-| `ChargePeriodStart` / `ChargePeriodEnd` | End must be after start, and the start must fall inside the declared window. |
-| `BilledCost`, `EffectiveCost`, `ListCost` | Decimal strings, not numbers. Send `"0"`, never an empty string. |
-
-Anything else in the FOCUS 1.2 column set is optional. `SubAccountName` and
-`SubAccountType` are the exception to that: either one requires `SubAccountId`.
+| Account | `BillingAccountName`, `BillingAccountType`, `SubAccountId` |
+| Resource | `ResourceId`, `ResourceName`, `ResourceType`, `Tags` |
+| Location | `RegionId`, `RegionName`, `AvailabilityZone` |
+| Service | `ServiceSubcategory`, `Publisher`, `InvoiceIssuer`, `InvoiceId` |
+| SKU | `SkuId`, `SkuMeter`, `SkuPriceId`, `SkuPriceDetails` |
+| Quantity | `ConsumedQuantity`, `ConsumedUnit`, `PricingQuantity`, `PricingUnit` |
+| Pricing | `PricingCategory`, `PricingCurrency`, `ListUnitPrice`, `ContractedUnitPrice`, `ChargeFrequency` |
+| Pricing currency | `PricingCurrencyEffectiveCost`, `PricingCurrencyListUnitPrice`, `PricingCurrencyContractedUnitPrice` |
+| Commitments | `CommitmentDiscountId`, `CommitmentDiscountName`, `CommitmentDiscountCategory`, `CommitmentDiscountType`, `CommitmentDiscountStatus`, `CommitmentDiscountQuantity`, `CommitmentDiscountUnit` |
+| Reservations | `CapacityReservationId`, `CapacityReservationStatus` |
 
 <Note>
-Costs are strings so that a fraction of a cent survives the trip. Sending them as
-JSON numbers risks a float rounding your bill.
+Every `decimal` field is a JSON **string**, not a number, so a fraction of a cent
+survives the trip. Send `"0"` rather than an empty string; sending costs as JSON
+numbers risks a float rounding your bill. Every `datetime` is RFC 3339 with an
+explicit zone, such as `2026-08-01T00:00:00Z`.
 </Note>
 
-Columns outside the spec are kept if you prefix them with `x_`, so
+### Your own columns
+
+Anything outside the spec is kept if you prefix it with `x_`, so
 `"x_CostCenter": "rnd-4471"` rides along with the record and stays queryable.
+Unprefixed fields we do not recognise are dropped.
 
 ## Size and window limits
 

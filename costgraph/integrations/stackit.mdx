@@ -26,10 +26,12 @@ CostGraph reads STACKIT as **FOCUS 1.2** records at a grain of day x project x s
    needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
-The service account key is offered as a value or a file path, and the private key
-only when the key JSON carries no embedded one, so both pairs are marked optional.
-Supply one of each pair: a connection with neither key fails verification. The
-service account needs the `cost-management.cost.reader` role on the customer
+The service account key JSON is always required, as a value or a file path. Whether
+you also need the private key depends on how the key was made: a key STACKIT
+generated carries `credentials.privateKey` inside the JSON and needs nothing more,
+while a key created from a public key you uploaded has no embedded private key, so
+supply the PEM-encoded one alongside it. Given both, the separate private key wins.
+The service account needs the `cost-management.cost.reader` role on the customer
 account you export.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

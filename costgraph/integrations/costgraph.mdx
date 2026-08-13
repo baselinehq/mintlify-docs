@@ -30,7 +30,7 @@ server-side and reconciled against the invoice.
 ## Create the API key
 
 1. Open **Settings -> API keys** and create a key.
-2. Grant it the **`focus:read`** scope. Nothing else is required.
+2. Grant it the **`focus:read`** scope. No additional scopes are required.
 
 <Warning>
 The key must belong to an organization owner or billing admin. A key created by a
@@ -52,7 +52,9 @@ missing scope fails while you are still on the form.
 1. Open **Settings -> Integrations** and pick **FOCUS push**.
 2. Create the connection and copy its **Connection ID**.
 3. Create a second CostGraph API key with the `focus:write` scope.
-4. Run the exporter with `--provider costgraph`, exporting `COSTGRAPH_API_KEY`.
+4. Run the exporter with `--provider costgraph`, exporting the `focus:read` key as
+   `COSTGRAPH_API_KEY`. Pushing needs both keys: the read key to fetch your billing,
+   the write key to send it back.
 5. Send the records to CostGraph, quoting the connection id and API key.
 
 ## What CostGraph does with it

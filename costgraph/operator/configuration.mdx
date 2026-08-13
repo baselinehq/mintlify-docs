@@ -83,6 +83,12 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 `flowtrace` scrapes per-container network metrics and, optionally, host-process network metrics, then remote-writes them to Costgraph.
 
+<Note>
+  The DaemonSet mounts the host filesystems at:
+  - **cgroupfs** — `/host/sys/fs/cgroup`.
+  - **procfs** — `/host/proc`.
+</Note>
+
 <ParamField body="flowtrace.enabled" type="boolean" default="true">
   Deploy the network metrics scraper.
 </ParamField>

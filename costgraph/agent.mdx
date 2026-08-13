@@ -201,6 +201,12 @@ costgraph-agent
   When you install with the script or Ansible, your API key is written to `/etc/default/costgraph-agent` and loaded by the service automatically.
 </Note>
 
+<Note>
+  The agent automatically detects the host filesystems:
+  - **cgroupfs** — by checking `/host/sys/fs/cgroup` first, then `/sys/fs/cgroup`.
+  - **procfs** — by checking `/host/proc` first, then `/proc`.
+</Note>
+
 <ParamField body="--api-key" type="string" required>
   API key used to authenticate with CostGraph. Can also be set with the `COSTGRAPH_API_KEY` environment variable, which takes precedence over the flag.
 </ParamField>

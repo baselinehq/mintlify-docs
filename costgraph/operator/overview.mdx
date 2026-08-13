@@ -3,7 +3,7 @@ title: Overview
 description: "Monitor Kubernetes cost, usage, and rightsizing with the CostGraph Operator"
 ---
 
-The CostGraph Operator runs in your Kubernetes cluster and continuously reports its state to CostGraph. It deploys two components:
+The CostGraph Operator runs in your Kubernetes cluster and continuously reports its state to CostGraph. It deploys three components:
 
 - **Resource exporter** — watches every Kubernetes resource (workloads, nodes, namespaces, and more) and exports their definitions to CostGraph.
 - **Operational/Compute Metrics scraper** — scrapes cluster, host, and container metrics and remote-writes them to CostGraph.
@@ -27,10 +27,10 @@ On the CostGraph platform, this data powers:
 
 ## Prerequisites
 
-- A running Kubernetes cluster
-- [Helm 3+](https://helm.sh/docs/intro/install/)
-- An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys)
-- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem
+- A running Kubernetes cluster.
+- [Helm 3+](https://helm.sh/docs/intro/install/).
+- An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys).
+- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem.
 
 ## Install
 

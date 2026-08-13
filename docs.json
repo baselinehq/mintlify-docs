@@ -68,6 +68,7 @@
               "costgraph/integrations/aws",
               "costgraph/integrations/cloudflare",
               "costgraph/integrations/confluent",
+              "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
               "costgraph/integrations/digitalocean",
               "costgraph/integrations/gcp",
@@ -225,6 +226,10 @@
     {
       "source": "/costgraph/recommendations",
       "destination": "/costgraph/agent/recommendations"
+    },
+    {
+      "source": "/costgraph/focus-exporter/:slug",
+      "destination": "/costgraph/integrations/:slug"
     }
   ],
   "contextual": {

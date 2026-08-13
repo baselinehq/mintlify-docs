@@ -1,0 +1,63 @@
+---
+title: CostGraph
+description: "Fold your own CostGraph invoice into the dataset it watches"
+---
+
+CostGraph bills per billing period, tenant and meter, plus the account-level fees,
+taxes and credits on the invoice. Exporting it puts what your FinOps tooling costs
+into the same dataset as the infrastructure it monitors.
+
+CostGraph reads its own billing as **FOCUS 1.2** records at a grain of billing period
+x tenant x meter, each row carrying its tenant as the FOCUS sub-account.
+
+<Note>
+The billing API already returns FOCUS records, so this adapter maps rather than
+derives. Costs, charge categories and the usage-versus-fee split are computed
+server-side and reconciled against the invoice.
+</Note>
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply a read-only API key and we call the billing API once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
+    Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Create the API key
+
+1. Open **Settings -> API keys** and create a key.
+2. Grant it the **`focus:read`** scope. Nothing else is required.
+
+<Warning>
+The key must belong to an organization owner or billing admin. A key created by a
+member carries that member's role and cannot read billing data.
+</Warning>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **CostGraph**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Paste the API key. The base URL is optional and defaults to `https://api.costgraph.ai`.
+4. Select **Connect**.
+
+CostGraph verifies the key with a short fetch before saving, so a wrong value or a
+missing scope fails while you are still on the form.
+
+## Push it yourself
+
+1. Open **Settings -> Integrations** and pick **FOCUS push**.
+2. Create the connection and copy its **Connection ID**.
+3. Create a second CostGraph API key with the `focus:write` scope.
+4. Run the exporter with `--provider costgraph`, exporting `COSTGRAPH_API_KEY`.
+5. Send the records to CostGraph, quoting the connection id and API key.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there your CostGraph subscription appears in Cost Overview and in
+anomaly detection alongside every other provider.

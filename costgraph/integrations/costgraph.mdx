@@ -3,17 +3,16 @@ title: CostGraph
 description: "Fold your own CostGraph invoice into the dataset it watches"
 ---
 
-CostGraph bills per billing period, tenant and meter, plus the account-level fees,
-taxes and credits on the invoice. Exporting it puts what your FinOps tooling costs
-into the same dataset as the infrastructure it monitors.
+Exporting your CostGraph invoice puts what your FinOps tooling costs into the same
+dataset as the infrastructure it monitors, including the account-level fees, taxes
+and credits on the invoice.
 
 CostGraph reads its own billing as **FOCUS 1.2** records at a grain of billing period
 x tenant x meter, each row carrying its tenant as the FOCUS sub-account.
 
 <Note>
-The billing API already returns FOCUS records, so this adapter maps rather than
-derives. Costs, charge categories and the usage-versus-fee split are computed
-server-side and reconciled against the invoice.
+Costs and charge categories come straight from the billing API and are reconciled
+against your invoice.
 </Note>
 
 ## Choose how the data reaches us
@@ -30,11 +29,11 @@ server-side and reconciled against the invoice.
 ## Create the API key
 
 1. Open **Settings -> API keys** and create a key.
-2. Grant it the **`focus:read`** scope. No additional scopes are required.
+2. Grant it the **`focus:read`** scope.
 
 <Warning>
-The key must belong to an organization owner or billing admin. A key created by a
-member carries that member's role and cannot read billing data.
+The key must belong to an organization owner or billing admin; a member's key cannot
+read billing data.
 </Warning>
 
 ## Let CostGraph pull
@@ -47,15 +46,20 @@ member carries that member's role and cannot read billing data.
 CostGraph verifies the key with a short fetch before saving, so a wrong value or a
 missing scope fails while you are still on the form.
 
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke the key
+in **Settings -> API keys** at any time and the connection stops; nothing else is
+affected.
+</Note>
+
 ## Push it yourself
 
 1. Open **Settings -> Integrations** and pick **FOCUS push**.
 2. Create the connection and copy its **Connection ID**.
 3. Create a second CostGraph API key with the `focus:write` scope.
 4. Run the exporter with `--provider costgraph`, exporting the `focus:read` key as
-   `COSTGRAPH_API_KEY`. Pushing needs both keys: the read key to fetch your billing,
-   the write key to send it back.
-5. Send the records to CostGraph, quoting the connection id and API key.
+   `COSTGRAPH_API_KEY`.
+5. Send the records to CostGraph, quoting the connection id and the `focus:write` key.
 
 ## What CostGraph does with it
 

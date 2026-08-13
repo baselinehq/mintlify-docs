@@ -240,6 +240,14 @@
       "destination": "/costgraph/integrations/confluent"
     },
     {
+      "source": "/costgraph/focus-exporter/costgraph",
+      "destination": "/costgraph/integrations/costgraph"
+    },
+    {
+      "source": "/costgraph/focus-exporter/cursor",
+      "destination": "/costgraph/integrations/cursor"
+    },
+    {
       "source": "/costgraph/focus-exporter/digitalocean",
       "destination": "/costgraph/integrations/digitalocean"
     },

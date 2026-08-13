@@ -3,13 +3,17 @@ title: Changelogs
 description: "Release history for the CostGraph Agent"
 ---
 
-<Update label="2026-08-11" description="costgraph-operator v1.2.2">
-    ### Breaking Changes
-    - N/A
+<Update label="2026-08-13" description="v1.3.1">
+  - Auto-detect host cgroup filesystem path, no longer configurable via cli flag.
+</Update>
 
-    ### Updates
-    - Extended the agent to include root-priveleged BPF network-flow tracing that runs on compatible nodes across the fleet. Compatible nodes must expose a host-mounted cgroup v2 filesystem and run a BTF-enabled kernel for the fentry programs.
-    - Added default host filesystem mounts for `/proc` (`/host/proc`) and the host cgroup v2 filesystem `/sys/fs/cgroup`(`/host/sys/fs/cgroup`)
+<Update label="2026-08-13" description="v1.3.0">
+  Hosts without cloud provider metadata simply log a warning, instead of exit on boot. Registration fills the unresolved fields with fallbacks.
+</Update>
+
+<Update label="2026-08-11" description="v1.2.2">
+  - Extended the agent to include root-priveleged BPF network-flow tracing that runs on compatible nodes across the fleet. Compatible nodes must expose a host-mounted cgroup v2 filesystem and run a BTF-enabled kernel for the fentry programs.
+  - Added default host filesystem mounts for `/proc` (`/host/proc`) and the host cgroup v2 filesystem `/sys/fs/cgroup`(`/host/sys/fs/cgroup`).
 </Update>
 
 <Update label="2026-06-29" description="v1.0.0">

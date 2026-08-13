@@ -276,12 +276,24 @@
       "destination": "/costgraph/integrations/openrouter"
     },
     {
+      "source": "/costgraph/focus-exporter/ovhcloud",
+      "destination": "/costgraph/integrations/ovhcloud"
+    },
+    {
       "source": "/costgraph/focus-exporter/planetscale",
       "destination": "/costgraph/integrations/planetscale"
     },
     {
       "source": "/costgraph/focus-exporter/respanai",
       "destination": "/costgraph/integrations/respanai"
+    },
+    {
+      "source": "/costgraph/focus-exporter/stackit",
+      "destination": "/costgraph/integrations/stackit"
+    },
+    {
+      "source": "/costgraph/focus-exporter/vercel",
+      "destination": "/costgraph/integrations/vercel"
     }
   ],
   "contextual": {

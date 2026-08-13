@@ -8,7 +8,8 @@ dataset as the infrastructure it monitors, including the account-level fees, tax
 and credits on the invoice.
 
 CostGraph reads its own billing as **FOCUS 1.2** records at a grain of billing period
-x tenant x meter, each row carrying its tenant as the FOCUS sub-account.
+x tenant x meter, each metered row carrying its tenant as the FOCUS sub-account.
+Account-level fees, taxes and credits carry none.
 
 <Note>
 Costs and charge categories come straight from the billing API and are reconciled
@@ -56,10 +57,11 @@ affected.
 
 1. Open **Settings -> Integrations** and pick **FOCUS push**.
 2. Create the connection and copy its **Connection ID**.
-3. Create a second CostGraph API key with the `focus:write` scope.
-4. Run the exporter with `--provider costgraph`, exporting the `focus:read` key as
+3. Grant that same API key the `focus:write` scope alongside `focus:read`. Reading your
+   billing and pushing it back use one key, so it needs both scopes.
+4. Run the exporter with `--provider costgraph`, exporting the key as
    `COSTGRAPH_API_KEY`.
-5. Send the records to CostGraph, quoting the connection id and the `focus:write` key.
+5. Send the records to CostGraph, quoting the connection id and API key.
 
 ## What CostGraph does with it
 

@@ -1,0 +1,330 @@
+---
+title: FOCUS push
+description: "Send FOCUS 1.2 records to CostGraph from any application"
+---
+
+FOCUS push is the ingestion gateway for cost data CostGraph does not collect itself.
+Your application sends **FOCUS 1.2** records over HTTPS and they land in the same
+pipeline as every managed integration, so internal chargeback, a provider we have no
+adapter for, or a bill you assemble yourself all appear in Cost Overview and anomaly
+detection alongside the rest of your spend.
+
+<Note>
+Push is for data you produce. If CostGraph already has an integration for the
+provider, connect it instead and let us do the collecting.
+</Note>
+
+## Create the connection
+
+Every push is tied to one connection, and the connection is what gives you the
+**Connection ID** you quote on each request.
+
+<Steps>
+  <Step title="Open the connection form">
+    Go to **Settings -> Integrations** and choose **FOCUS push**.
+  </Step>
+  <Step title="Name it and pick a tenant">
+    The name is your label; it only shows up in CostGraph. The tenant is who the
+    charges are attributed to.
+  </Step>
+  <Step title="Say who the charges come from">
+    Pick the provider, or **Other** for anything we have no integration for. Leave it
+    on detect and we read the provider from the `Provider` field in your records.
+  </Step>
+  <Step title="Copy the Connection ID">
+    It looks like `fpc_9f2c41ab7d6e4a0b8c15d3e27a604f9b`. It is not a secret, but it
+    is the only way to address this connection.
+  </Step>
+</Steps>
+
+## Create the API key
+
+Open **Settings -> API keys**, create a key, and grant it the **`focus:write`** scope.
+
+<Warning>
+The key must be scoped to a tenant. A key with no tenant is rejected with
+`API key is missing tenant scope`, because CostGraph cannot tell who the charges
+belong to.
+</Warning>
+
+## Send the records
+
+```
+POST https://api.costgraph.ai/api/v1/tenant/billing/focus
+```
+
+| Header | Required | Value |
+| --- | --- | --- |
+| `X-API-Key` | yes | Your `focus:write` key. |
+| `Content-Type` | yes | `application/json` |
+| `X-Tenant-ID` | no | Overrides the key's own tenant. Only useful for a key that spans tenants. |
+
+### Request body
+
+<ParamField body="connection_id" type="string" required>
+  The Connection ID from the form, such as `fpc_9f2c41ab...`.
+</ParamField>
+
+<ParamField body="charge_period_start" type="string" required>
+  RFC 3339 timestamp. Start of the window this batch declares.
+</ParamField>
+
+<ParamField body="charge_period_end" type="string" required>
+  RFC 3339 timestamp, after the start and no more than 366 days later.
+</ParamField>
+
+<ParamField body="rows" type="array" required>
+  The FOCUS 1.2 records. Every row's `ChargePeriodStart` must fall inside the
+  declared window.
+</ParamField>
+
+<ParamField body="complete" type="boolean" default="false">
+  Whether this batch is the whole window. See below.
+</ParamField>
+
+<ParamField body="focus_version" type="string">
+  The spec version the rows follow, such as `1.2`.
+</ParamField>
+
+### Complete batches replace, partial batches append
+
+`complete: true` deletes everything already stored for the declared window and
+replaces it with this batch. That is what makes a resend safe: send the same window
+twice and you get one copy, not two. Restating a month after a correction is the
+normal way to fix data.
+
+Omit it, or send `false`, and the rows are appended to whatever is already there.
+Use that for streaming a window in pieces.
+
+<Warning>
+A complete batch with no rows is rejected rather than obeyed, because it would erase
+the window. To genuinely empty a window, delete the connection.
+</Warning>
+
+## Examples
+
+A single day of internal GPU chargeback, sent as the complete window:
+
+<Tabs>
+  <Tab title="curl">
+    ```bash
+    curl -X POST https://api.costgraph.ai/api/v1/tenant/billing/focus \
+      -H "X-API-Key: $COSTGRAPH_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "connection_id": "fpc_9f2c41ab7d6e4a0b8c15d3e27a604f9b",
+        "complete": true,
+        "focus_version": "1.2",
+        "charge_period_start": "2026-08-01T00:00:00Z",
+        "charge_period_end": "2026-08-02T00:00:00Z",
+        "rows": [
+          {
+            "Provider": "internal-gpu",
+            "ServiceName": "Training cluster",
+            "ServiceCategory": "AI and Machine Learning",
+            "ChargeCategory": "Usage",
+            "ChargeDescription": "A100 node hours, team-vision",
+            "BillingAccountId": "research",
+            "BillingCurrency": "USD",
+            "BillingPeriodStart": "2026-08-01T00:00:00Z",
+            "BillingPeriodEnd": "2026-09-01T00:00:00Z",
+            "ChargePeriodStart": "2026-08-01T00:00:00Z",
+            "ChargePeriodEnd": "2026-08-02T00:00:00Z",
+            "BilledCost": "412.80",
+            "EffectiveCost": "412.80",
+            "ListCost": "480.00",
+            "ConsumedQuantity": "24",
+            "ConsumedUnit": "Hours",
+            "SubAccountId": "team-vision",
+            "SubAccountName": "Vision",
+            "SubAccountType": "Team"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```python
+    import os
+    from datetime import datetime, timedelta, timezone
+
+    import requests
+
+    day = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    month_start = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    month_end = datetime(2026, 9, 1, tzinfo=timezone.utc)
+
+
+    def stamp(value: datetime) -> str:
+        return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+    def row(team: str, hours: int, billed: str, list_cost: str) -> dict:
+        return {
+            "Provider": "internal-gpu",
+            "ServiceName": "Training cluster",
+            "ServiceCategory": "AI and Machine Learning",
+            "ChargeCategory": "Usage",
+            "ChargeDescription": f"A100 node hours, {team}",
+            "BillingAccountId": "research",
+            "BillingCurrency": "USD",
+            "BillingPeriodStart": stamp(month_start),
+            "BillingPeriodEnd": stamp(month_end),
+            "ChargePeriodStart": stamp(day),
+            "ChargePeriodEnd": stamp(day + timedelta(days=1)),
+            "BilledCost": billed,
+            "EffectiveCost": billed,
+            "ListCost": list_cost,
+            "ConsumedQuantity": str(hours),
+            "ConsumedUnit": "Hours",
+            "SubAccountId": team,
+            "SubAccountName": team.replace("team-", "").title(),
+            "SubAccountType": "Team",
+        }
+
+
+    response = requests.post(
+        "https://api.costgraph.ai/api/v1/tenant/billing/focus",
+        headers={"X-API-Key": os.environ["COSTGRAPH_API_KEY"]},
+        json={
+            "connection_id": os.environ["COSTGRAPH_CONNECTION_ID"],
+            "complete": True,
+            "focus_version": "1.2",
+            "charge_period_start": stamp(day),
+            "charge_period_end": stamp(day + timedelta(days=1)),
+            "rows": [
+                row("team-vision", 24, "412.80", "480.00"),
+                row("team-speech", 12, "206.40", "240.00"),
+            ],
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    print(response.json()["data"]["rows_ingested"])
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```ts
+    const day = new Date('2026-08-01T00:00:00Z');
+    const nextDay = new Date(day.getTime() + 86_400_000);
+
+    const row = (team: string, hours: number, billed: string, list: string) => ({
+      Provider: 'internal-gpu',
+      ServiceName: 'Training cluster',
+      ServiceCategory: 'AI and Machine Learning',
+      ChargeCategory: 'Usage',
+      ChargeDescription: `A100 node hours, ${team}`,
+      BillingAccountId: 'research',
+      BillingCurrency: 'USD',
+      BillingPeriodStart: '2026-08-01T00:00:00Z',
+      BillingPeriodEnd: '2026-09-01T00:00:00Z',
+      ChargePeriodStart: day.toISOString(),
+      ChargePeriodEnd: nextDay.toISOString(),
+      BilledCost: billed,
+      EffectiveCost: billed,
+      ListCost: list,
+      ConsumedQuantity: String(hours),
+      ConsumedUnit: 'Hours',
+      SubAccountId: team,
+      SubAccountType: 'Team',
+    });
+
+    const response = await fetch(
+      'https://api.costgraph.ai/api/v1/tenant/billing/focus',
+      {
+        method: 'POST',
+        headers: {
+          'X-API-Key': process.env.COSTGRAPH_API_KEY!,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          connection_id: process.env.COSTGRAPH_CONNECTION_ID,
+          complete: true,
+          focus_version: '1.2',
+          charge_period_start: day.toISOString(),
+          charge_period_end: nextDay.toISOString(),
+          rows: [row('team-vision', 24, '412.80', '480.00')],
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`push failed: ${response.status} ${await response.text()}`);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+A successful push returns what was stored, so you can assert on it in a job:
+
+```json
+{
+  "message": "FOCUS data ingested",
+  "status": "success",
+  "data": {
+    "connection_id": "fpc_9f2c41ab7d6e4a0b8c15d3e27a604f9b",
+    "provider": "internal-gpu",
+    "rows_ingested": 2,
+    "complete": true
+  }
+}
+```
+
+## What every row must carry
+
+Rows are validated one at a time and the first bad row rejects the whole batch,
+naming its index. Required on every row:
+
+| Field | Notes |
+| --- | --- |
+| `Provider` | Who the charges come from. Must agree with the connection's provider and with every other row in the batch. |
+| `ServiceName` | What was bought. |
+| `ChargeCategory` | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
+| `ChargeDescription` | Free text, but it cannot be empty. |
+| `BillingAccountId` | The account the charge belongs to. |
+| `BillingCurrency` | ISO 4217, uppercase. |
+| `BillingPeriodStart` / `BillingPeriodEnd` | End must be after start. |
+| `ChargePeriodStart` / `ChargePeriodEnd` | End must be after start, and the start must fall inside the declared window. |
+| `BilledCost`, `EffectiveCost`, `ListCost` | Decimal strings, not numbers. Send `"0"`, never an empty string. |
+
+Anything else in the FOCUS 1.2 column set is optional. `SubAccountName` and
+`SubAccountType` are the exception to that: either one requires `SubAccountId`.
+
+<Note>
+Costs are strings so that a fraction of a cent survives the trip. Sending them as
+JSON numbers risks a float rounding your bill.
+</Note>
+
+Columns outside the spec are kept if you prefix them with `x_`, so
+`"x_CostCenter": "rnd-4471"` rides along with the record and stays queryable.
+
+## Size and window limits
+
+| Limit | Value | On breach |
+| --- | --- | --- |
+| Payload | 32 MB | `413`, split the batch |
+| Declared window | 366 days | `400` |
+| Concurrent pushes per connection | 1 | `409`, retry after the running ingest finishes |
+
+For a large backfill, send one month per request with `complete: true`. Each month is
+independent, so a failure only costs you that month.
+
+## When a push is refused
+
+| Status | Meaning |
+| --- | --- |
+| `400` | The envelope is wrong: bad JSON, a window that does not move forward or exceeds 366 days, a row outside the window, or a row whose provider disagrees with the batch. |
+| `403` | The key lacks `focus:write`, or it has no tenant. |
+| `404` | No such connection for this tenant. A connection belongs to one tenant, and quoting it from another looks identical to it not existing. |
+| `409` | Either another ingest is running for this connection, or the connection is a pull connection and does not accept pushed data. |
+| `413` | Payload above the limit. |
+| `422` | A row failed FOCUS validation. The message names the row index and what was wrong. |
+
+Nothing is stored unless the whole batch validates, so a rejected push leaves the
+previous state intact and is always safe to retry.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost, the same path every other provider takes. From there the spend appears in
+Cost Overview and in anomaly detection next to your infrastructure.

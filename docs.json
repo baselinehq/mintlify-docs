@@ -71,6 +71,7 @@
               "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
               "costgraph/integrations/digitalocean",
+              "costgraph/integrations/focus-push",
               "costgraph/integrations/gcp",
               "costgraph/integrations/github",
               "costgraph/integrations/grafanacloud",

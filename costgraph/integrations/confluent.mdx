@@ -14,7 +14,7 @@ CostGraph reads Confluent Cloud as **FOCUS 1.2** records at a grain of billing l
     You supply read-only credentials and we call Confluent Cloud once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
-    You run the CostGraph exporter yourself. Credentials never leave your infrastructure.
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
   </Card>
 </CardGroup>
 
@@ -36,11 +36,8 @@ Confluent Cloud at any time and the connection stops; nothing else is affected.
 
 ## Push it yourself
 
-1. Open **Settings -> Integrations** and pick **FOCUS push**.
-2. Create the connection and copy its **Connection ID**.
-3. Create a CostGraph API key with the `focus:write` scope.
-4. Run the exporter with `--provider confluent`.
-5. Send the records to CostGraph, quoting the connection id and API key.
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
 
 ## What CostGraph does with it
 

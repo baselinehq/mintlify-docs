@@ -23,7 +23,7 @@ against your invoice.
     You supply a read-only API key and we call the billing API once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
-    You run the CostGraph exporter yourself. Credentials never leave your infrastructure.
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
   </Card>
 </CardGroup>
 
@@ -55,13 +55,8 @@ affected.
 
 ## Push it yourself
 
-1. Open **Settings -> Integrations** and pick **FOCUS push**.
-2. Create the connection and copy its **Connection ID**.
-3. Grant that same API key the `focus:write` scope alongside `focus:read`. Reading your
-   billing and pushing it back use one key, so it needs both scopes.
-4. Run the exporter with `--provider costgraph`, exporting the key as
-   `COSTGRAPH_API_KEY`.
-5. Send the records to CostGraph, quoting the connection id and API key.
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
 
 ## What CostGraph does with it
 

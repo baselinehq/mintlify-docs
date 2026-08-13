@@ -64,6 +64,7 @@
             "group": "Integrations",
             "icon": "plug",
             "pages": [
+              "costgraph/integrations/focus-push",
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
               "costgraph/integrations/cloudflare",

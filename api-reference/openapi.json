@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "CostGraph Pricing API",
-    "description": "Provides API level access to the CostGraph Services.",
+    "description": "Provides API level access to the Costgraph Services.",
     "termsOfService": "https://costgraph.baselinehq.cloud/terms-of-use",
     "contact": {
       "name": "Customer Support",
@@ -24,7 +24,57 @@
     "/marketplace/providers/compute": {
       "get": {
         "summary": "Get your custom pricing entries",
-        "description": "Get your custom pricing entries",
+        "description": "List the compute rates your organization has registered. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and offset.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum entries to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Entries to skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance_type",
+            "in": "query",
+            "description": "Filter by instance type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Pricing response for custom pricing",
@@ -68,7 +118,7 @@
       },
       "post": {
         "summary": "Register a custom provider",
-        "description": "Register a custom provider",
+        "description": "Register your own compute rates so CostGraph can price machines it has no public price for, such as bare metal or a private cloud.\nAn entry is upserted on its natural key (provider, service, region, availability zone, usage type, instance type, operating system and period billing hours), so re-posting the same entry with a new cost keeps its id and reprices everything already using it. Changing any key field mints a new id, because it describes a different SKU.\nThe returned id is what you attach to a resource with the `costgraph.ai/pricing-id.compute` label or tag. Treat it as a secret you hand out deliberately: anyone holding it can pin to the rate, which is how a provider prices clusters it sells on.",
         "requestBody": {
           "description": "Custom pricing request",
           "content": {
@@ -134,7 +184,7 @@
       },
       "delete": {
         "summary": "Delete a custom provider instance",
-        "description": "Delete a custom provider instance",
+        "description": "Delete one of your compute rates by id.\nResources still pinned to it stop resolving a price rather than falling back to attribute matching, so re-pin them before deleting.",
         "parameters": [
           {
             "name": "id",
@@ -208,10 +258,313 @@
         ]
       }
     },
+    "/marketplace/providers/databases": {
+      "get": {
+        "summary": "Get your custom database pricing entries",
+        "description": "List the managed database rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum entries to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Entries to skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "engine",
+            "in": "query",
+            "description": "Filter by engine",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "edition",
+            "in": "query",
+            "description": "Filter by edition",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance_type",
+            "in": "query",
+            "description": "Filter by instance type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom database pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.MarketplaceDatabaseProvidersResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Register custom database pricing",
+        "description": "Register your own managed database rates, keyed by engine, edition, deployment option, storage type and instance type alongside the usual provider, service and region.\nAn entry is upserted on that full natural key, so re-posting with a new cost keeps its id; changing any key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.database` label or tag.",
+        "requestBody": {
+          "description": "Custom database pricing request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/types.CustomDatabasePriceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom database pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomDatabasePricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      },
+      "delete": {
+        "summary": "Delete a custom database pricing entry",
+        "description": "Delete one of your managed database rates by id.\nDatabases still pinned to it stop resolving a price, so re-pin them before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Database pricing ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom database pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/types.CustomDatabasePricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Provider and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Database pricing entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/marketplace/providers/disks": {
       "get": {
         "summary": "Get your custom disk pricing entries",
-        "description": "Get your custom disk pricing entries",
+        "description": "List the storage rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum entries to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Entries to skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by disk type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Pricing response for custom disk pricing",
@@ -255,7 +608,7 @@
       },
       "post": {
         "summary": "Register a custom disk provider",
-        "description": "Register a custom disk provider",
+        "description": "Register your own storage rates, priced per GB hour with optional IOPS and throughput components and the capacity band they apply to.\nAn entry is upserted on its natural key (provider, service, region, availability zone, disk type, usage type and period billing hours), so re-posting with a new cost keeps its id; changing a key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.storage` label or tag.",
         "requestBody": {
           "description": "Custom disk pricing request",
           "content": {
@@ -321,7 +674,7 @@
       },
       "delete": {
         "summary": "Delete a custom disk provider entry",
-        "description": "Delete a custom disk provider entry",
+        "description": "Delete one of your storage rates by id.\nVolumes still pinned to it stop resolving a price, so re-pin them before deleting.",
         "parameters": [
           {
             "name": "id",
@@ -366,6 +719,243 @@
           },
           "404": {
             "description": "Disk pricing entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/marketplace/providers/models": {
+      "get": {
+        "summary": "Get your custom model pricing entries",
+        "description": "List the live version of each model rate your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum entries to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Entries to skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "description": "Filter by model",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "Filter by model provider",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token_bucket",
+            "in": "query",
+            "description": "Filter by token bucket",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom model pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.MarketplaceModelProvidersResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Register custom model pricing",
+        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag.",
+        "requestBody": {
+          "description": "Custom model pricing request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/handler.CustomModelPriceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom model pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.CustomModelPricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Host and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      },
+      "delete": {
+        "summary": "Delete a custom model pricing entry",
+        "description": "Delete one of your model rates by id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Model pricing ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing response for custom model pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.CustomModelPricingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Host and organization do not match",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model pricing entry not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -911,6 +1501,9 @@
   },
   "components": {
     "schemas": {
+      "datatypes.JSON": {
+        "type": "object"
+      },
       "github_com_baselinehq_golang-shared_types.Instance": {
         "type": "object",
         "properties": {
@@ -936,7 +1529,7 @@
             "type": "string"
           },
           "service": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
+            "$ref": "#/components/schemas/types.Service"
           },
           "usage_type": {
             "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
@@ -955,20 +1548,13 @@
           "Azure",
           "Hetzner",
           "OVHCloud",
+          "PlanetScale",
+          "STACKIT",
           "Base"
         ],
         "x-enum-comments": {
           "Base": "Base provider for default pricing, no specific cloud provider"
         },
-        "x-enum-descriptions": [
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "Base provider for default pricing, no specific cloud provider"
-        ],
         "x-enum-varnames": [
           "GCP",
           "AWS",
@@ -976,36 +1562,9 @@
           "Azure",
           "Hetzner",
           "OVHCloud",
+          "PlanetScale",
+          "STACKIT",
           "Base"
-        ]
-      },
-      "github_com_baselinehq_golang-shared_types.Service": {
-        "type": "string",
-        "enum": [
-          "ComputeEngine",
-          "AmazonEC2",
-          "Droplet",
-          "AzureCompute",
-          "AzureManagedDisks",
-          "HetznerCompute",
-          "OVHPublicCloud",
-          "BaseCompute",
-          "BaseDisks",
-          "AmazonEBS",
-          "ComputeEnginePersistentDisk"
-        ],
-        "x-enum-varnames": [
-          "ComputeEngine",
-          "AmazonEC2",
-          "Droplet",
-          "AzureCompute",
-          "AzureManagedDisks",
-          "HetznerCompute",
-          "OVHPublicCloud",
-          "BaseCompute",
-          "BaseDisks",
-          "AmazonEBS",
-          "ComputeEnginePersistentDisk"
         ]
       },
       "github_com_baselinehq_golang-shared_types.UsageType": {
@@ -1055,11 +1614,140 @@
           "Deleted"
         ]
       },
+      "handler.CustomModelPriceRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/models.ModelPricing"
+            }
+          }
+        }
+      },
+      "handler.CustomModelPricingResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/models.ModelPricing"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+          }
+        }
+      },
       "handler.ErrorResponse": {
         "type": "object",
         "properties": {
           "error": {
             "type": "string"
+          }
+        }
+      },
+      "handler.MarketplaceModelProvidersResponse": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/models.ModelPricing"
+            }
+          }
+        }
+      },
+      "models.ModelPricing": {
+        "type": "object",
+        "properties": {
+          "context_limit": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "effective_from": {
+            "type": "string"
+          },
+          "effective_to": {
+            "type": "string"
+          },
+          "fetched_at": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "modalities_input": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "modalities_output": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "open_weights": {
+            "type": "boolean"
+          },
+          "output_limit": {
+            "type": "integer"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "raw_pricing_data": {
+            "$ref": "#/components/schemas/datatypes.JSON"
+          },
+          "reasoning": {
+            "type": "boolean"
+          },
+          "region": {
+            "type": "string"
+          },
+          "sku_price_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "structured_output": {
+            "type": "boolean"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/datatypes.JSON"
+          },
+          "token_bucket": {
+            "type": "string"
+          },
+          "tool_call": {
+            "type": "boolean"
+          },
+          "unit_price_per_mtok": {
+            "type": "number"
           }
         }
       },
@@ -1078,6 +1766,28 @@
         "type": "object",
         "additionalProperties": {
           "$ref": "#/components/schemas/provider.Config"
+        }
+      },
+      "recommendations.ComputeRecommendationResult": {
+        "type": "object",
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/schema.ComputePricingsRow"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
+          }
+        }
+      },
+      "recommendations.DiskRecommendationResult": {
+        "type": "object",
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/schema.DiskPricingsRow"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
+          }
         }
       },
       "schema.ComputePricingsRow": {
@@ -1101,11 +1811,26 @@
           "created_at": {
             "type": "string"
           },
+          "currency": {
+            "type": "string"
+          },
+          "gpu_cost_per_hour": {
+            "type": "number"
+          },
+          "gpu_count": {
+            "type": "number"
+          },
+          "gpu_type": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
           "instance_type": {
             "type": "string"
+          },
+          "native_cost_per_hour": {
+            "type": "number"
           },
           "operating_system": {
             "type": "string"
@@ -1144,6 +1869,130 @@
           }
         }
       },
+      "schema.DatabasePricingsRow": {
+        "type": "object",
+        "properties": {
+          "architecture": {
+            "type": "string"
+          },
+          "availability_zone": {
+            "type": "string"
+          },
+          "billing_config": {
+            "type": "string"
+          },
+          "capacity_unit": {
+            "type": "string"
+          },
+          "cost_per_capacity_unit": {
+            "type": "number"
+          },
+          "cost_per_hour": {
+            "type": "number"
+          },
+          "cost_per_io_request": {
+            "type": "number"
+          },
+          "cost_per_iops_hour": {
+            "type": "number"
+          },
+          "cost_per_storage_gb_hour": {
+            "type": "number"
+          },
+          "cost_per_throughput_mbps_hour": {
+            "type": "number"
+          },
+          "cost_per_vcpu_license_hour": {
+            "type": "number"
+          },
+          "cpu_cores": {
+            "type": "number"
+          },
+          "cpu_cores_cost_per_hour": {
+            "type": "number"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "deployment_option": {
+            "type": "string"
+          },
+          "edition": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instance_type": {
+            "type": "string"
+          },
+          "max_iops": {
+            "type": "number"
+          },
+          "max_storage_gb": {
+            "type": "number"
+          },
+          "max_throughput_mbps": {
+            "type": "number"
+          },
+          "min_iops": {
+            "type": "number"
+          },
+          "min_storage_gb": {
+            "type": "number"
+          },
+          "min_throughput_mbps": {
+            "type": "number"
+          },
+          "native_cost_per_hour": {
+            "type": "number"
+          },
+          "native_cost_per_storage_gb_hour": {
+            "type": "number"
+          },
+          "period_billing_hours": {
+            "type": "number"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "ram_gb": {
+            "type": "number"
+          },
+          "ram_gb_cost_per_hour": {
+            "type": "number"
+          },
+          "raw_pricing_data": {
+            "type": "object",
+            "properties": {}
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "storage_type": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {}
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "usage_type": {
+            "type": "string"
+          }
+        }
+      },
       "schema.DiskPricingsRow": {
         "type": "object",
         "properties": {
@@ -1160,6 +2009,9 @@
             "type": "number"
           },
           "created_at": {
+            "type": "string"
+          },
+          "currency": {
             "type": "string"
           },
           "id": {
@@ -1181,6 +2033,15 @@
             "type": "number"
           },
           "min_throughput_mbps": {
+            "type": "number"
+          },
+          "native_cost_per_gb_hour": {
+            "type": "number"
+          },
+          "native_cost_per_iops_hour": {
+            "type": "number"
+          },
+          "native_cost_per_throughput_mbps_hour": {
             "type": "number"
           },
           "period_billing_hours": {
@@ -1231,14 +2092,32 @@
           }
         }
       },
-      "recommendations.ComputeRecommendationResult": {
+      "types.CustomDatabasePriceRequest": {
+        "required": [
+          "entries"
+        ],
         "type": "object",
         "properties": {
-          "pricing": {
-            "$ref": "#/components/schemas/schema.ComputePricingsRow"
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
+            }
+          }
+        }
+      },
+      "types.CustomDatabasePricingResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
+            }
           },
-          "savings": {
-            "$ref": "#/components/schemas/types.Savings"
+          "status": {
+            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
           }
         }
       },
@@ -1325,7 +2204,7 @@
             "type": "string"
           },
           "service": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Service"
+            "$ref": "#/components/schemas/types.Service"
           },
           "throughput_mbps": {
             "type": "number"
@@ -1355,14 +2234,14 @@
           }
         }
       },
-      "recommendations.DiskRecommendationResult": {
+      "types.MarketplaceDatabaseProvidersResponse": {
         "type": "object",
         "properties": {
-          "pricing": {
-            "$ref": "#/components/schemas/schema.DiskPricingsRow"
-          },
-          "savings": {
-            "$ref": "#/components/schemas/types.Savings"
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
+            }
           }
         }
       },
@@ -1457,6 +2336,61 @@
             "type": "number"
           }
         }
+      },
+      "types.Service": {
+        "type": "string",
+        "enum": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "AmazonRDS",
+          "AuroraDSQL",
+          "CloudSQL",
+          "AlloyDB",
+          "CloudSpanner",
+          "AzureDatabaseForPostgreSQL",
+          "AzureDatabaseForMySQL",
+          "AzureSQLDatabase",
+          "AzureSQLManagedInstance",
+          "PlanetScale",
+          "ComputeEnginePersistentDisk",
+          "STACKITCompute",
+          "STACKITBlockStorage",
+          "STACKITDatabase"
+        ],
+        "x-enum-varnames": [
+          "ComputeEngine",
+          "AmazonEC2",
+          "Droplet",
+          "AzureCompute",
+          "AzureManagedDisks",
+          "HetznerCompute",
+          "OVHPublicCloud",
+          "BaseCompute",
+          "BaseDisks",
+          "AmazonEBS",
+          "AmazonRDS",
+          "AuroraDSQL",
+          "CloudSQL",
+          "AlloyDB",
+          "CloudSpanner",
+          "AzureDatabaseForPostgreSQL",
+          "AzureDatabaseForMySQL",
+          "AzureSQLDatabase",
+          "AzureSQLManagedInstance",
+          "PlanetScaleDB",
+          "ComputeEnginePersistentDisk",
+          "STACKITCompute",
+          "STACKITBlockStorage",
+          "STACKITDatabase"
+        ]
       }
     },
     "securitySchemes": {

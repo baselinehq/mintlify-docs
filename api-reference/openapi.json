@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "CostGraph Pricing API",
-    "description": "Provides API level access to the CostGraph Services.",
+    "description": "Provides API level access to the Costgraph Services.",
     "termsOfService": "https://costgraph.baselinehq.cloud/terms-of-use",
     "contact": {
       "name": "Customer Support",

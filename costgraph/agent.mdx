@@ -20,7 +20,7 @@ These stream to CostGraph, where they power:
 
 - A Linux host e.g Debian, Ubuntu, RHEL, Amazon Linux, Alpine etc (`amd64` or `arm64`).
 - An API key from the [CostGraph platform](https://app.costgraph.ai/settings/account/api-keys).
-- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem
+- For network flow tracing, a root-privileged BTF-enabled kernel and a host-mounted cgroup v2 filesystem.
 
 ## Installation
 
@@ -227,6 +227,14 @@ costgraph-agent
 
 <ParamField body="--version" type="boolean">
   Prints the agent version and exits.
+</ParamField>
+
+<ParamField body="--flowtrace-host-cgroup-fs" type="string" default="/host/sys/fs/cgroup">
+  Directory for host cgroup filesystem. If `/host/sys/fs/cgroup` does not exist, `/sys/fs/cgroup` is used instead.
+</ParamField>
+
+<ParamField body="--flowtrace-include-host-flows", type="boolean" default="false">
+  Container network flows are collected by default. Host-process network flows are collected only when this is enabled.
 </ParamField>
 
 ### Changing flags for the managed service

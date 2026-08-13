@@ -131,6 +131,40 @@ attributed to a thing, so it will not appear in resource-level breakdowns.
 Any key CostGraph does not recognise is kept as a provider extension rather than
 rejected, so a dialect that carries extra columns round-trips.
 
+## Multi-tenancy with `SubAccountId`
+
+One connection can carry charges for many of your own customers. Set
+`SubAccountId` on each row to the identifier of the customer the charge belongs
+to, and optionally `SubAccountName` for a human label and `SubAccountType` to say
+what kind of thing that identifier names.
+
+```json
+{
+  "BillingAccountId": "acct-1",
+  "SubAccountId": "cust-4711",
+  "SubAccountName": "Northwind Traders",
+  "SubAccountType": "Customer",
+  "ChargeDescription": "Shared cluster, allocated",
+  "BilledCost": "12.50",
+  "EffectiveCost": "12.50",
+  "ListCost": "15.00"
+}
+```
+
+`SubAccountId` is part of the identity of a row, alongside the billing account,
+provider, resource and charge period. Two customers billed for the same SKU over
+the same period stay separate records rather than collapsing into one, and a
+replayed window updates each customer's rows in place.
+
+<Note>
+`SubAccountName` and `SubAccountType` are only accepted when `SubAccountId` is
+set. A name without an id has nothing to attach to and the batch is rejected.
+</Note>
+
+Send the same `SubAccountId` values on every push. Changing the identifier for a
+customer starts a new sub account rather than renaming the old one; the name is
+free to change.
+
 ## The window and the `complete` flag
 
 Each push declares the charge period it covers, and what you are claiming about it.

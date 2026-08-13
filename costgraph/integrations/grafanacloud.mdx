@@ -18,16 +18,15 @@ organization-level row.
     You supply a read-only token and we call Grafana Cloud once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
-    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
-    Credentials never leave your infrastructure.
+    You run the CostGraph exporter yourself. Credentials never leave your infrastructure.
   </Card>
 </CardGroup>
 
 ## Let CostGraph pull
 
 1. Open **Settings -> Integrations** and pick **Grafana Cloud**.
-2. Name the connection and enter your organization slug, the `{org}` in
-   `grafana.com/orgs/{org}`.
+2. Name the connection, pick the tenant these charges belong to, and enter your
+   organization slug, the `{org}` in `grafana.com/orgs/{org}`.
 3. Create an **Access Policy token** whose realm is the organization, carrying the
    billing read scopes: `billing-metrics:read`, `org-billing-info:read`,
    `org-billing-rate:read`, `invoices:read` and `orgs:read`. Paste it in.

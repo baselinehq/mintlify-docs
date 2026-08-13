@@ -14,19 +14,16 @@ CostGraph reads Cloudflare as **FOCUS 1.2** records at a grain of day x service 
     You supply read-only credentials and we call Cloudflare once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
-    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
-    Credentials never leave your infrastructure.
+    You run the CostGraph exporter yourself. Credentials never leave your infrastructure.
   </Card>
 </CardGroup>
 
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **FOCUS pull**.
-2. Choose **Cloudflare**, name the connection, and enter the billing account these
-   charges belong to.
+1. Open **Settings -> Integrations** and pick **Cloudflare**.
+2. Name the connection and pick the tenant these charges belong to.
 3. Fill in the values the form asks for. It lists exactly the variables Cloudflare
-   needs, marks which are optional, and links this provider's reference for the
-   permissions each one requires.
+   needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

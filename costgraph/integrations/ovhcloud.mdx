@@ -14,19 +14,17 @@ CostGraph reads OVHcloud as **FOCUS 1.2** records at a grain of bill line item.
     You supply read-only credentials and we call OVHcloud once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
-    You run [focus-exporter](https://github.com/baselinehq/focus-exporter) yourself.
-    Credentials never leave your infrastructure.
+    You run the CostGraph exporter yourself. Credentials never leave your infrastructure.
   </Card>
 </CardGroup>
 
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **FOCUS pull**.
-2. Choose **OVHcloud**, name the connection, and enter the billing account these
-   charges belong to.
+1. Open **Settings -> Integrations** and pick **OVHcloud**.
+2. Name the connection and pick the tenant these charges belong to.
 3. Fill in the values the form asks for. It lists exactly the variables OVHcloud
-   needs, marks which are optional, and links this provider's reference for the
-   permissions each one requires.
+   needs, marks which are optional, and explains the permission each one requires.
+   The client id carries the API region as its prefix (`EU.`, `CA.` or `US.`).
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

@@ -68,6 +68,7 @@
               "costgraph/integrations/aws",
               "costgraph/integrations/cloudflare",
               "costgraph/integrations/confluent",
+              "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
               "costgraph/integrations/digitalocean",
               "costgraph/integrations/gcp",
@@ -225,6 +226,74 @@
     {
       "source": "/costgraph/recommendations",
       "destination": "/costgraph/agent/recommendations"
+    },
+    {
+      "source": "/costgraph/focus-exporter/anthropic",
+      "destination": "/costgraph/integrations/anthropic"
+    },
+    {
+      "source": "/costgraph/focus-exporter/cloudflare",
+      "destination": "/costgraph/integrations/cloudflare"
+    },
+    {
+      "source": "/costgraph/focus-exporter/confluent",
+      "destination": "/costgraph/integrations/confluent"
+    },
+    {
+      "source": "/costgraph/focus-exporter/costgraph",
+      "destination": "/costgraph/integrations/costgraph"
+    },
+    {
+      "source": "/costgraph/focus-exporter/cursor",
+      "destination": "/costgraph/integrations/cursor"
+    },
+    {
+      "source": "/costgraph/focus-exporter/digitalocean",
+      "destination": "/costgraph/integrations/digitalocean"
+    },
+    {
+      "source": "/costgraph/focus-exporter/github",
+      "destination": "/costgraph/integrations/github"
+    },
+    {
+      "source": "/costgraph/focus-exporter/grafanacloud",
+      "destination": "/costgraph/integrations/grafanacloud"
+    },
+    {
+      "source": "/costgraph/focus-exporter/helicone",
+      "destination": "/costgraph/integrations/helicone"
+    },
+    {
+      "source": "/costgraph/focus-exporter/modal",
+      "destination": "/costgraph/integrations/modal"
+    },
+    {
+      "source": "/costgraph/focus-exporter/openai",
+      "destination": "/costgraph/integrations/openai"
+    },
+    {
+      "source": "/costgraph/focus-exporter/openrouter",
+      "destination": "/costgraph/integrations/openrouter"
+    },
+    {
+      "source": "/costgraph/focus-exporter/ovhcloud",
+      "destination": "/costgraph/integrations/ovhcloud"
+    },
+    {
+      "source": "/costgraph/focus-exporter/planetscale",
+      "destination": "/costgraph/integrations/planetscale"
+    },
+    {
+      "source": "/costgraph/focus-exporter/respanai",
+      "destination": "/costgraph/integrations/respanai"
+    },
+    {
+      "source": "/costgraph/focus-exporter/stackit",
+      "destination": "/costgraph/integrations/stackit"
+    },
+    {
+      "source": "/costgraph/focus-exporter/vercel",
+      "destination": "/costgraph/integrations/vercel"
     }
   ],
   "contextual": {

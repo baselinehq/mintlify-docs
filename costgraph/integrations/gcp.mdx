@@ -47,8 +47,36 @@ First new rows appear within a few hours either way.
 
 ## Step 2: Grant CostGraph read access
 
-Create a service account for the billing reads (or reuse one), and note the project
-that holds the export datasets. Grant it, least-privilege:
+The connect dialog shows a one-line command. Open **Cloud Shell** in the project holding
+the export datasets and run it:
+
+```sh
+curl -sSL https://setup.costgraph.ai/integrations/gcp.sh \
+  | COSTGRAPH_EXTERNAL_ID="org_..." COSTGRAPH_BILLING_ACCOUNT_ID="0X0X0X-0X0X0X-0X0X0X" sh
+```
+
+Cloud Shell already carries your console credentials, so no key is created or pasted
+anywhere. The script creates the reader service account, finds the FOCUS and detailed
+datasets for your billing account, applies the grants below, and authorizes CostGraph's
+federated principal to impersonate it. It is idempotent - rerun it safely. If the FOCUS
+export does not exist yet it stops and points you back at Step 1.
+
+It prints the values to paste into the connect form:
+
+```
+SERVICE_ACCOUNT=costgraph-billing-reader@my-project.iam.gserviceaccount.com
+PROJECT_ID=my-project
+BILLING_ACCOUNT_ID=0X0X0X-0X0X0X-0X0X0X
+FOCUS_DATASET=gcp_billing_immutable_0X0X0X_0X0X0X_0X0X0X_us
+DETAILED_DATASET=gcp_billing_export_resource_v1_0X0X0X_0X0X0X_0X0X0X
+```
+
+Set `COSTGRAPH_PROJECT_ID` when the export lives outside your active Cloud Shell
+project, or `COSTGRAPH_SA_NAME` to reuse an existing service account.
+
+### What it grants
+
+Doing it by hand instead? These are the exact, least-privilege grants:
 
 | Role | Scope | Why |
 |------|-------|-----|
@@ -76,9 +104,9 @@ service-account key) is the correct trust model.
 ## Step 3: Connect in CostGraph
 
 1. Open **Integrations** and choose **Google Cloud**.
-2. Choose **impersonation** (recommended - authorize CostGraph's identity on your
-   service account) or paste a **service-account key**, then enter the **billing
-   account ID**.
+2. Paste the values the Cloud Shell script printed. To set it up by hand instead, choose
+   **impersonation** (recommended - authorize CostGraph's identity on your service
+   account) or paste a **service-account key**, then enter the **billing account ID**.
 3. CostGraph validates it can run a query and read the FOCUS dataset, then starts the
    first sync. If a role is missing, the connect screen names the exact grant to add.
 
@@ -93,7 +121,8 @@ service-account key) is the correct trust model.
 
 ## Automating the setup
 
-Everything except the export toggle can be provisioned as code:
+The Cloud Shell script in Step 2 covers this for a single billing account. Across many
+projects, provision it as code instead:
 
 - `google_bigquery_dataset` for the Detailed destination
 - `google_bigquery_dataset_iam_member` / `google_project_iam_member` for the grants

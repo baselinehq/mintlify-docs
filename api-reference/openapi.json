@@ -86,6 +86,16 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid limit or offset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -184,7 +194,7 @@
       },
       "delete": {
         "summary": "Delete a custom provider instance",
-        "description": "Delete one of your compute rates by id.\nResources still pinned to it stop resolving a price rather than falling back to attribute matching, so re-pin them before deleting.",
+        "description": "Delete one of your compute rates by id.\nA rate a resource is already priced against cannot be deleted; the request fails while that link exists, so re-pin those resources first.\nOnce it is gone, a resource still carrying its id stops resolving a price rather than falling back to attribute matching.",
         "parameters": [
           {
             "name": "id",
@@ -339,6 +349,16 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid limit or offset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -371,7 +391,7 @@
       },
       "post": {
         "summary": "Register custom database pricing",
-        "description": "Register your own managed database rates, keyed by engine, edition, deployment option, storage type and instance type alongside the usual provider, service and region.\nAn entry is upserted on that full natural key, so re-posting with a new cost keeps its id; changing any key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.database` label or tag.",
+        "description": "Register your own managed database rates, keyed by engine, edition, deployment option, storage type and instance type alongside the usual provider, service and region.\nAn entry is upserted on the full natural key (provider, service, region, availability zone, usage type, engine, edition, deployment option, billing config, storage type, instance type, architecture and period billing hours), so re-posting with a new cost keeps its id; changing any key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.database` label or tag.",
         "requestBody": {
           "description": "Custom database pricing request",
           "content": {
@@ -437,7 +457,7 @@
       },
       "delete": {
         "summary": "Delete a custom database pricing entry",
-        "description": "Delete one of your managed database rates by id.\nDatabases still pinned to it stop resolving a price, so re-pin them before deleting.",
+        "description": "Delete one of your managed database rates by id.\nA rate a database or one of its reports still references cannot be deleted; the request fails while that reference exists, so re-pin first.\nOnce it is gone, a database still carrying its id stops resolving a price.",
         "parameters": [
           {
             "name": "id",
@@ -576,6 +596,16 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid limit or offset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -608,7 +638,7 @@
       },
       "post": {
         "summary": "Register a custom disk provider",
-        "description": "Register your own storage rates, priced per GB hour with optional IOPS and throughput components and the capacity band they apply to.\nAn entry is upserted on its natural key (provider, service, region, availability zone, disk type, usage type and period billing hours), so re-posting with a new cost keeps its id; changing a key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.storage` label or tag.",
+        "description": "Register your own storage rates, priced per GB hour with optional IOPS and throughput components and the capacity band they apply to.\nAn entry is upserted on its natural key (provider, service, region, availability zone, disk type, usage type and period billing hours), so re-posting with a new cost keeps its id; changing a key field mints a new one.\nCapacity, IOPS and throughput bands are not part of that key, so a second band for the same disk type replaces the first: give each band its own usage type.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.storage` label or tag.",
         "requestBody": {
           "description": "Custom disk pricing request",
           "content": {
@@ -674,7 +704,7 @@
       },
       "delete": {
         "summary": "Delete a custom disk provider entry",
-        "description": "Delete one of your storage rates by id.\nVolumes still pinned to it stop resolving a price, so re-pin them before deleting.",
+        "description": "Delete one of your storage rates by id.\nA rate a volume is already priced against cannot be deleted; the request fails while that link exists, so re-pin those volumes first.\nOnce it is gone, a volume still carrying its id stops resolving a price.",
         "parameters": [
           {
             "name": "id",
@@ -813,6 +843,16 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid limit or offset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -845,7 +885,7 @@
       },
       "post": {
         "summary": "Register custom model pricing",
-        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag.",
+        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change instead of holding on to an earlier one.",
         "requestBody": {
           "description": "Custom model pricing request",
           "content": {
@@ -911,7 +951,7 @@
       },
       "delete": {
         "summary": "Delete a custom model pricing entry",
-        "description": "Delete one of your model rates by id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "description": "Delete one of your model rates by id. The row is closed rather than removed, so spend already priced against it keeps that rate.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
         "parameters": [
           {
             "name": "id",

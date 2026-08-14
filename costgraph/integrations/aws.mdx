@@ -4,8 +4,8 @@ description: "Connect an AWS account to CostGraph for FOCUS-based cost, allocati
 ---
 
 CostGraph reads your AWS spend from a **FOCUS Data Export** delivered to S3. Unlike
-Google Cloud, AWS exposes a full API for this, so the entire setup can be automated -
-CostGraph (or a short Terraform module) creates the export and the read role for you.
+Google Cloud, AWS exposes a full API for this, so the entire setup is automated - one
+CloudShell command (or a short Terraform module) creates the export and the read role.
 
 ## What you enable
 
@@ -13,10 +13,41 @@ A single **FOCUS 1.2 Data Export** (`FOCUS_1_2_AWS`) written as Parquet to an S3
 bucket. It carries billed and effective cost, usage, credits, and commitment
 (Savings Plans / Reserved Instances) columns in the normalized FOCUS schema.
 
-## Automated setup (recommended)
+## Setup in CloudShell (recommended)
 
-CostGraph creates the export on your behalf when you connect with a role that allows
-`bcm-data-exports` and S3 bucket management, or you can apply the Terraform below. The
+The connect dialog shows a one-line command. Open **AWS CloudShell** in the management
+(payer) account and run it:
+
+```sh
+curl -sSL https://setup.costgraph.ai/integrations/aws.sh \
+  | COSTGRAPH_EXTERNAL_ID="org_..." sh
+```
+
+CloudShell already carries your console credentials, so nothing is stored or pasted
+anywhere else. The script creates the read role (trusting CostGraph's identity, locked
+to your external ID), the export bucket with public access blocked and encryption on,
+and the FOCUS 1.2 Data Export. It is idempotent - rerun it safely.
+
+It prints four values. Paste them into the connect form:
+
+```
+ROLE_ARN=arn:aws:iam::123456789012:role/CostGraph-Reader
+BUCKET=costgraph-focus-123456789012
+REGION=us-east-1
+PREFIX=focus-1-2
+```
+
+<Note>
+The external ID is issued by CostGraph and ties the role to your organization. It stops
+anyone else who learns your role ARN from assuming it. Never edit it out of the command.
+</Note>
+
+Set `COSTGRAPH_BUCKET` to use an existing bucket, or `COSTGRAPH_EXPORT_REGION` if you
+are in a different partition (GovCloud, China).
+
+## Setup with Terraform
+
+Prefer infrastructure as code? Apply the equivalent below instead of the script. The
 export is created in **us-east-1** (where AWS billing data lives), so
 `aws_bcmdataexports_export` must be managed by an AWS provider configured for that
 region. If your root provider targets another region, add an aliased one and point the
@@ -87,9 +118,11 @@ and external ID.
 ## Connect in CostGraph
 
 1. Open **Integrations** and choose **Amazon Web Services**.
-2. Provide the read role (and, for automated setup, the provisioning role), then connect.
-3. CostGraph creates or discovers the FOCUS export, validates access, and starts the
-   first sync.
+2. Run the CloudShell command shown there (or apply the Terraform above).
+3. Paste the `ROLE_ARN`, `BUCKET`, `REGION`, and `PREFIX` the script printed, then
+   connect.
+4. CostGraph assumes the role, validates it can read the export, and starts the first
+   sync.
 
 ## What CostGraph does with it
 

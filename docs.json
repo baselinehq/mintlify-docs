@@ -81,6 +81,7 @@
               "costgraph/integrations/openrouter",
               "costgraph/integrations/ovhcloud",
               "costgraph/integrations/planetscale",
+              "costgraph/integrations/rediscloud",
               "costgraph/integrations/respanai",
               "costgraph/integrations/scaleway",
               "costgraph/integrations/stackit",
@@ -290,6 +291,10 @@
     {
       "source": "/costgraph/focus-exporter/planetscale",
       "destination": "/costgraph/integrations/planetscale"
+    },
+    {
+      "source": "/costgraph/focus-exporter/rediscloud",
+      "destination": "/costgraph/integrations/rediscloud"
     },
     {
       "source": "/costgraph/focus-exporter/respanai",

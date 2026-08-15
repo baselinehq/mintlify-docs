@@ -15,6 +15,18 @@ costgraph.ai/pricing-id.compute = <uuid>
 costgraph.ai/pricing-id.storage = <uuid>
 ```
 
+Register a rate once, then tag every resource that bills at it:
+
+```mermaid
+flowchart LR
+  R["Rate you registered<br/>in the marketplace"] -->|returns an ID| ID(["pricing ID"])
+  ID -.->|pricing-id.compute| N["Node"]
+  ID -.->|pricing-id.storage| V["Volume"]
+```
+
+The same ID can be tagged onto as many resources as bill at that rate, and
+changing the rate reprices all of them at once.
+
 ## Dimensions
 
 | Suffix | Rate it points at | Register with |
@@ -96,10 +108,21 @@ Azure tag names reject `/`. GCP label keys allow only lowercase letters, digits,
 
 ## Inheritance
 
-A pin applies to the object that carries it and to everything under it that has
-no nearer pin of the same dimension. Tag a node and its pods inherit the compute
-rate; tag one namespace differently and only that namespace changes. The nearest
-pin wins.
+A pin applies to the object that carries it and to the objects that object owns.
+Tag a workload and its pods inherit the rate. An object carrying its own pin of
+the same dimension keeps its own: the nearest pin wins.
+
+```mermaid
+flowchart TD
+  D["Workload<br/>pricing-id.compute = A"] --> P1["Pod<br/>inherits A"]
+  D --> P2["Pod<br/>pricing-id.compute = B<br/>keeps B"]
+```
+
+<Note>
+  Nodes and volumes are priced by the pin they carry themselves. Tagging a
+  namespace does not price the nodes or volumes used inside it - tag those
+  directly.
+</Note>
 
 ## What a pin changes
 

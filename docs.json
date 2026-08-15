@@ -71,6 +71,7 @@
               "costgraph/integrations/confluent",
               "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
+              "costgraph/integrations/datadog",
               "costgraph/integrations/digitalocean",
               "costgraph/integrations/gcp",
               "costgraph/integrations/github",
@@ -255,6 +256,10 @@
     {
       "source": "/costgraph/focus-exporter/cursor",
       "destination": "/costgraph/integrations/cursor"
+    },
+    {
+      "source": "/costgraph/focus-exporter/datadog",
+      "destination": "/costgraph/integrations/datadog"
     },
     {
       "source": "/costgraph/focus-exporter/digitalocean",

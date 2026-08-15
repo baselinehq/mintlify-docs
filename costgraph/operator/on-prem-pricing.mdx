@@ -15,6 +15,18 @@ costgraph.ai/pricing-id.compute = <uuid>
 costgraph.ai/pricing-id.storage = <uuid>
 ```
 
+Register a rate once, then tag every resource that bills at it:
+
+```mermaid
+flowchart LR
+  R["Rate you registered<br/>in the marketplace"] -->|returns an ID| ID(["pricing ID"])
+  ID -.->|pricing-id.compute| N["Node"]
+  ID -.->|pricing-id.storage| V["Volume"]
+```
+
+The same ID can be tagged onto as many resources as bill at that rate, and
+changing the rate reprices all of them at once.
+
 ## Dimensions
 
 | Suffix | Rate it points at | Register with |
@@ -72,42 +84,76 @@ Review what is tagged with:
 kubectl get nodes -L costgraph.ai/pricing-id.compute
 ```
 
-Everywhere else, use the provider's resource tags with the same key and value.
+Pins are read from Kubernetes objects: nodes, volumes and volume claims.
 
 A tagged resource needs no other metadata. CPU and memory still come from the
 node's capacity, and volume size from the PV, because those are the billed
 quantities.
 
-## Tag keys on each provider
+## Key spellings
 
-Not every provider accepts the canonical key verbatim. CostGraph matches keys
-case-insensitively after replacing `/`, `.` and `-` with `_`, so the alias your
-provider allows resolves to the same pin.
+Some platforms reject the canonical key, and a label set on a cloud instance can
+reach the node in a rewritten form. CostGraph matches keys case-insensitively
+after replacing `/`, `.` and `-` with `_`, so every spelling below resolves to
+the same pin.
 
-| Target | Key to set |
-|--------|------------|
-| Kubernetes labels | `costgraph.ai/pricing-id.compute` |
-| AWS tags | `costgraph.ai/pricing-id.compute` |
-| Azure tags | `costgraph.ai_pricing-id.compute` |
-| GCP labels | `costgraph_ai_pricing_id_compute` |
+| Spelling | Where it comes from |
+|----------|---------------------|
+| `costgraph.ai/pricing-id.compute` | the canonical key |
+| `costgraph.ai_pricing-id.compute` | Azure, whose tag names reject `/` |
+| `costgraph_ai_pricing_id_compute` | GCP, whose label keys allow only lowercase letters, digits, `-` and `_` |
 
-Azure tag names reject `/`. GCP label keys allow only lowercase letters, digits,
-`-` and `_`, and must start with a letter.
+Set whichever your tooling accepts.
 
 ## Inheritance
 
-A pin applies to the object that carries it and to everything under it that has
-no nearer pin of the same dimension. Tag a node and its pods inherit the compute
-rate; tag one namespace differently and only that namespace changes. The nearest
-pin wins.
+Every object is priced in its own right. An object with no pin of its own takes
+the rate from the nearest scope above it, so tagging one node can price the
+volumes on it without tagging each one.
+
+```mermaid
+flowchart TD
+  N["Node<br/>pricing-id.storage = A"]
+  N -.->|default for| PV["Volume on that node<br/>inherits A"]
+  PV2["Volume<br/>pricing-id.storage = B<br/>keeps its own rate"]
+```
+
+The nearest pin wins, and each kind of object looks outward along its own path:
+
+```mermaid
+flowchart LR
+  subgraph V["Volume"]
+    direction TB
+    v1["own pin"] --> v2["the node it is attached to"] --> v3["attribute matching"]
+  end
+  subgraph C["Volume claim"]
+    direction TB
+    c1["own pin"] --> c2["its volume"] --> c3["its namespace"] --> c4["the node"]
+  end
+  subgraph NODE["Node"]
+    direction TB
+    n1["own pin"] --> n2["attribute matching"]
+  end
+```
+
+A volume and its claim are separate objects and can carry different rates. A
+volume with no consumer has no node above it, so with no pin of its own it falls
+straight to attribute matching.
+
+<Note>
+  A node is not in any namespace, so tagging a namespace never changes a node's
+  own rate. It reaches the claims in that namespace.
+</Note>
 
 ## What a pin changes
 
-A pin sets **ListCost**: the rate you would be charged at list. It never
-overwrites **BilledCost**, which comes from an ingested bill. On a resource with
-no bill behind it, such as a bare-metal node, ListCost is the only cost there is.
-On a resource that is also billed, you get both, and the difference is your
-discount. Pins never double-count against an invoice.
+A pin decides the rate CostGraph uses to cost that resource, replacing attribute
+matching for that dimension. Nothing else about the resource changes: CPU and
+memory still come from the node's capacity and size from the volume, because
+those are the billed quantities.
+
+A pin is how a resource gets a cost at all when CostGraph has nothing to match
+on, such as a bare-metal node with no cloud provider behind it.
 
 ## Change a rate
 

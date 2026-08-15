@@ -109,30 +109,17 @@ Azure tag names reject `/`. GCP label keys allow only lowercase letters, digits,
 ## Inheritance
 
 Every object is priced in its own right. An object with no pin of its own takes
-the rate from the nearest scope above it, so tagging one node can price what sits
-on it without tagging each thing individually.
+the rate from the nearest scope above it, so tagging one node can price the
+volumes on it without tagging each one.
 
 ```mermaid
 flowchart TD
-  N["Node<br/>pricing-id.compute = A<br/>pricing-id.storage = A"]
-  N -.->|default for| POD["Pod<br/>inherits A"]
-  N -.->|default for| PV["Volume<br/>inherits A"]
+  N["Node<br/>pricing-id.storage = A"]
+  N -.->|default for| PV["Volume on that node<br/>inherits A"]
   PV2["Volume<br/>pricing-id.storage = B<br/>keeps its own rate"]
 ```
 
-The nearest pin wins. Searching outward from the object, the first one found
-decides the rate:
-
-```mermaid
-flowchart TD
-  A["1. The object's own pin"] --> B["2. The workload that owns it"]
-  B --> C["3. Its namespace"]
-  C --> D["4. The node it runs on"]
-  D --> E["5. No pin: attribute matching"]
-```
-
-A volume and its claim are separate objects and can carry different rates, the
-same way a node and the pods on it can. Each looks outward along its own path:
+The nearest pin wins, and each kind of object looks outward along its own path:
 
 ```mermaid
 flowchart LR
@@ -144,10 +131,20 @@ flowchart LR
     direction TB
     c1["own pin"] --> c2["its volume"] --> c3["its namespace"] --> c4["the node"]
   end
+  subgraph NODE["Node"]
+    direction TB
+    n1["own pin"] --> n2["attribute matching"]
+  end
 ```
 
-A volume with no consumer has no node above it, so with no pin of its own it
-falls straight to attribute matching.
+A volume and its claim are separate objects and can carry different rates. A
+volume with no consumer has no node above it, so with no pin of its own it falls
+straight to attribute matching.
+
+<Note>
+  A node is not in any namespace, so tagging a namespace never changes a node's
+  own rate. It reaches the claims in that namespace.
+</Note>
 
 ## What a pin changes
 

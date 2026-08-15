@@ -132,8 +132,22 @@ flowchart TD
 ```
 
 A volume and its claim are separate objects and can carry different rates, the
-same way a node and the pods on it can. A volume with no consumer has no node
-above it, so with no pin of its own it falls straight to attribute matching.
+same way a node and the pods on it can. Each looks outward along its own path:
+
+```mermaid
+flowchart LR
+  subgraph V["Volume"]
+    direction TB
+    v1["own pin"] --> v2["the node it is attached to"] --> v3["attribute matching"]
+  end
+  subgraph C["Volume claim"]
+    direction TB
+    c1["own pin"] --> c2["its volume"] --> c3["its namespace"] --> c4["the node"]
+  end
+```
+
+A volume with no consumer has no node above it, so with no pin of its own it
+falls straight to attribute matching.
 
 ## What a pin changes
 

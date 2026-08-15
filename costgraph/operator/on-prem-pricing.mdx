@@ -108,21 +108,32 @@ Azure tag names reject `/`. GCP label keys allow only lowercase letters, digits,
 
 ## Inheritance
 
-A pin applies to the object that carries it and to the objects that object owns.
-Tag a workload and its pods inherit the rate. An object carrying its own pin of
-the same dimension keeps its own: the nearest pin wins.
+Every object is priced in its own right. An object with no pin of its own takes
+the rate from the nearest scope above it, so tagging one node can price what sits
+on it without tagging each thing individually.
 
 ```mermaid
 flowchart TD
-  D["Workload<br/>pricing-id.compute = A"] --> P1["Pod<br/>inherits A"]
-  D --> P2["Pod<br/>pricing-id.compute = B<br/>keeps B"]
+  N["Node<br/>pricing-id.compute = A<br/>pricing-id.storage = A"]
+  N -.->|default for| POD["Pod<br/>inherits A"]
+  N -.->|default for| PV["Volume<br/>inherits A"]
+  PV2["Volume<br/>pricing-id.storage = B<br/>keeps its own rate"]
 ```
 
-<Note>
-  Nodes and volumes are priced by the pin they carry themselves. Tagging a
-  namespace does not price the nodes or volumes used inside it - tag those
-  directly.
-</Note>
+The nearest pin wins. Searching outward from the object, the first one found
+decides the rate:
+
+```mermaid
+flowchart TD
+  A["1. The object's own pin"] --> B["2. The workload that owns it"]
+  B --> C["3. Its namespace"]
+  C --> D["4. The node it runs on"]
+  D --> E["5. No pin: attribute matching"]
+```
+
+A volume and its claim are separate objects and can carry different rates, the
+same way a node and the pods on it can. A volume with no consumer has no node
+above it, so with no pin of its own it falls straight to attribute matching.
 
 ## What a pin changes
 

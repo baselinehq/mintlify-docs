@@ -14,6 +14,20 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     Entries labelled `costgraph-operator vX.Y.Z` are releases of the current `costgraph-operator` chart, which deploys the domain-specific operators. Earlier entries labelled `vX.Y.Z` are releases of the deprecated single-binary `costgraph` chart. The two version series are independent, so the numbers do not run continuously.
 </Note>
 
+<Update label="2026-08-17" description="costgraph-operator v0.3.0">
+    ### Breaking Changes
+    - The operator's ClusterRole no longer grants `get`/`watch`/`list` on every resource in every API group. Built-in resources are now granted by name, and custom resources are granted per API group. Secrets, ConfigMaps and ServiceAccounts are not part of the grant at any version, so the API server refuses them outright rather than the operator choosing not to read them
+    - Resources in the new `rbac.deniedAPIGroups` list are no longer collected. These are API groups that carry credential material or references to it (cert-manager, External Secrets, Velero, Traefik, Flux notification providers, certificates and the authentication/authorization/RBAC groups), plus cluster machinery with no cost or topology signal (events, leases, admission and API registration, flow control, metrics, scheduling). If your dashboards referenced any of these, they will stop updating after upgrade
+    - Custom resource API groups are discovered when the chart is rendered, so a CRD installed after the upgrade is not collected until the next `helm upgrade`
+
+    ### Updates
+    - Workloads, nodes, namespaces, storage, networking and pod network identity are unaffected. Karpenter, Argo CD, Cilium, CNPG, cloud provider CRDs and other cost-relevant custom resources continue to be collected without configuration
+    - New `rbac.deniedAPIGroups` value controls which API groups CostGraph may never read. It is the single place to change what the operator collects
+    - New `rbac.grantCustomResources` value collects built-in resources only when set to `false`
+    - New `rbac.extraRules` value appends rules to the ClusterRole. Use it to grant named resources from a denied group, for example collecting Traefik `IngressRoute` topology while `Middleware`, which can hold inline credentials, stays unreadable. See the commented example in `values.yaml`
+    - Resources the operator is not permitted to read are skipped at startup rather than retried, so a narrower grant produces no errors and no restart loop
+</Update>
+
 <Update label="2026-08-11" description="costgraph-operator v0.2.3">
     ### Breaking Changes
     - N/A

@@ -16,15 +16,16 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-08-17" description="costgraph-operator v0.3.0">
     ### Breaking Changes
-    - The operator's ClusterRole no longer grants `get`/`watch`/`list` on every resource in every API group. Built-in resources are now granted by name, and custom resources are granted per API group. Secrets, ConfigMaps and ServiceAccounts are not part of the grant at any version, so the API server refuses them outright rather than the operator choosing not to read them
-    - Resources in the new `rbac.deniedAPIGroups` list are no longer collected. These are API groups that carry credential material or references to it (cert-manager, External Secrets, Velero, Traefik, Flux notification providers, certificates and the authentication/authorization/RBAC groups), plus cluster machinery with no cost or topology signal (events, leases, admission and API registration, flow control, metrics, scheduling). If your dashboards referenced any of these, they will stop updating after upgrade
-    - Custom resource API groups are discovered when the chart is rendered, so a CRD installed after the upgrade is not collected until the next `helm upgrade`
+    - The operator's ClusterRole no longer grants `get`/`watch`/`list` on every resource in every API group. Built-in resources are granted by name and custom resources per API group. Secrets, ConfigMaps and ServiceAccounts are not part of the grant at any version, so the API server refuses them outright rather than the operator choosing not to read them
+    - Resources in the new `rbac.excludeAPIGroups` list are no longer collected. These are API groups carrying credential material or references to it (cert-manager, External Secrets, Velero, Traefik, Flux notification providers, certificates and the authentication/authorization/RBAC groups), plus cluster machinery with no cost or topology signal (events, leases, admission and API registration, flow control, metrics, scheduling). Dashboards referencing any of these will stop updating after upgrade
+    - Installing now requires a renderer with cluster access, because the set of custom resource API groups is discovered from the cluster. `helm install`, `helm upgrade` and Argo CD v2.10 or newer qualify. A render without it fails with an explanatory error rather than installing an operator that silently collects nothing beyond core Kubernetes. Set `rbac.requireClusterDiscovery=false` for a cluster that genuinely runs no custom resources
 
     ### Updates
-    - Workloads, nodes, namespaces, storage, networking and pod network identity are unaffected. Karpenter, Argo CD, Cilium, CNPG, cloud provider CRDs and other cost-relevant custom resources continue to be collected without configuration
-    - New `rbac.deniedAPIGroups` value controls which API groups CostGraph may never read. It is the single place to change what the operator collects
+    - Workloads, nodes, namespaces, storage, networking and pod network identity are unaffected. Karpenter, Argo CD, Cilium, CNPG, cloud provider CRDs and every other custom resource the cluster serves continue to be collected without configuration
+    - New `rbac.excludeAPIGroups` value sets which API groups CostGraph may not read, applying to every version of a group rather than the specific versions named
     - New `rbac.grantCustomResources` value collects built-in resources only when set to `false`
-    - New `rbac.extraRules` value appends rules to the ClusterRole. Use it to grant named resources from a denied group, for example collecting Traefik `IngressRoute` topology while `Middleware`, which can hold inline credentials, stays unreadable. See the commented example in `values.yaml`
+    - New `rbac.extraRules` value appends rules to the ClusterRole verbatim. Use it to grant named resources from an excluded group, for example collecting Traefik `IngressRoute` topology while `Middleware`, which can hold inline credentials, stays unreadable
+    - The bundled kube-state-metrics no longer requests Secrets, ConfigMaps, certificate signing requests, leases or webhook configurations. Its upstream defaults granted read access to every Secret in the cluster to publish metadata CostGraph does not use
     - Resources the operator is not permitted to read are skipped at startup rather than retried, so a narrower grant produces no errors and no restart loop
 </Update>
 

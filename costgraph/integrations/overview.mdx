@@ -15,8 +15,8 @@ same whether the charge came from AWS, an LLM gateway, or a Kafka cluster.
   <Card title="Pull or push" icon="arrows-left-right">
     Give us a read-only credential, or send FOCUS records yourself and keep the credential.
   </Card>
-  <Card title="One FOCUS dataset" icon="layer-group">
-    No per-provider views to learn. Cross-provider comparison is a `GROUP BY`.
+  <Card title="One dataset" icon="layer-group">
+    No per-provider views to learn. Compare spend across providers in one place.
   </Card>
 </CardGroup>
 
@@ -38,19 +38,14 @@ Two directions, same destination.
 
 ```mermaid
 flowchart LR
-  subgraph Sources
-    A[Provider billing APIs]
-    B[FOCUS exports<br/>S3 / BigQuery]
-    C[Your own FOCUS records]
-    D[Kubernetes + host telemetry]
-  end
+  A[Provider billing APIs]
+  B[FOCUS exports<br/>S3 / BigQuery]
+  C[Your own FOCUS records]
+  D[Kubernetes + host telemetry]
 
-  A -->|daily pull| N[FOCUS 1.2 normaliser]
-  B -->|daily read| N
-  C -->|POST /tenant/billing/focus| N
-  N --> R[Raw billing rows]
-  R --> L[Cost line items]
-  L --> G[Daily cost by day x service x resource]
+  A -->|daily pull| G[CostGraph]
+  B -->|daily read| G
+  C -->|push| G
   D --> G
 
   G --> O[Cost Overview]
@@ -59,17 +54,14 @@ flowchart LR
   G --> MCP[MCP tools + agent]
 ```
 
-Every provider lands as raw records first, so a normalisation change is a replay, not
-a re-fetch. Records are then turned into line items and rolled up into daily cost.
-Kubernetes and host telemetry join the same rollup, which is what lets a node bill be
+Your bill and your telemetry land in the same place, which is what lets a node bill be
 split across namespaces and a pod be priced against a real SKU.
 
 ## Providers
 
 ### Hyperscalers
 
-Read from a native FOCUS export rather than a billing API, so the grain is whatever
-the export carries.
+Read from a native FOCUS export rather than a billing API.
 
 <CardGroup cols={2}>
   <Card title="Amazon Web Services" icon="aws" href="/costgraph/integrations/aws">
@@ -215,7 +207,7 @@ Once a connection syncs, that provider appears everywhere without further setup:
     Month-to-date and historical spend, sliced by provider, service, and tenant.
   </Card>
   <Card title="Anomaly detection" icon="triangle-exclamation">
-    Deterministic detectors run hourly over the same rollup, in and across providers.
+    Spikes, waste, and drift caught within a provider and across providers.
   </Card>
   <Card title="Recommendations" icon="wand-magic-sparkles" href="/costgraph/agent/recommendations">
     Rightsizing and placement priced against the [Pricing API](/api-reference/introduction).

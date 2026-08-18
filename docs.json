@@ -67,6 +67,7 @@
               "costgraph/integrations/focus-push",
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
+              "costgraph/integrations/cherryservers",
               "costgraph/integrations/cloudflare",
               "costgraph/integrations/confluent",
               "costgraph/integrations/costgraph",
@@ -77,6 +78,7 @@
               "costgraph/integrations/github",
               "costgraph/integrations/grafanacloud",
               "costgraph/integrations/helicone",
+              "costgraph/integrations/linode",
               "costgraph/integrations/modal",
               "costgraph/integrations/openai",
               "costgraph/integrations/openrouter",
@@ -242,6 +244,10 @@
       "destination": "/costgraph/integrations/anthropic"
     },
     {
+      "source": "/costgraph/focus-exporter/cherryservers",
+      "destination": "/costgraph/integrations/cherryservers"
+    },
+    {
       "source": "/costgraph/focus-exporter/cloudflare",
       "destination": "/costgraph/integrations/cloudflare"
     },
@@ -276,6 +282,10 @@
     {
       "source": "/costgraph/focus-exporter/helicone",
       "destination": "/costgraph/integrations/helicone"
+    },
+    {
+      "source": "/costgraph/focus-exporter/linode",
+      "destination": "/costgraph/integrations/linode"
     },
     {
       "source": "/costgraph/focus-exporter/modal",

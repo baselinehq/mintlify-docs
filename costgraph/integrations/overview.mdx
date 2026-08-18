@@ -23,29 +23,44 @@ you one view of what you spend, what it is spent on, and what to do about it.
 
 ```mermaid
 flowchart LR
-  subgraph Before["Today"]
-    direction TB
-    B1[Cloud console]
-    B2[Database vendor]
-    B3[AI provider]
-    B4[SaaS invoices]
-  end
+  P1(["Clouds"])
+  P2(["Databases"])
+  P3(["AI providers"])
+  P4(["Developer tools"])
+  P5(["Your own data"])
 
-  Before --> CG(("CostGraph"))
+  CG(("CostGraph"))
 
-  subgraph After["After"]
-    direction TB
-    A1[One spend view]
-    A2[Alerts on what moved]
-    A3[Savings you can act on]
-  end
+  O1["<b>One spend view</b><br/>provider, service, team"]
+  O2["<b>Alerts</b><br/>when spend moves"]
+  O3["<b>Savings</b><br/>you can act on"]
+  O4["<b>Answers</b><br/>in your editor or chat"]
 
-  CG --> After
+  P1 --> CG
+  P2 --> CG
+  P3 --> CG
+  P4 --> CG
+  P5 --> CG
+
+  CG --> O1
+  CG --> O2
+  CG --> O3
+  CG --> O4
+
+  classDef hub fill:#0F6DFF,stroke:#0E46A0,stroke-width:2px,color:#FFFFFF,font-weight:bold
+  classDef source fill:#EEF4FF,stroke:#5394FD,stroke-width:1px,color:#0E46A0
+  classDef outcome fill:#FFFFFF,stroke:#0F6DFF,stroke-width:1.5px,color:#0E46A0
+
+  class CG hub
+  class P1,P2,P3,P4,P5 source
+  class O1,O2,O3,O4 outcome
+
+  linkStyle default stroke:#5394FD,stroke-width:1.5px
 ```
 
-Before, answering "what did we spend last month, and why is it up?" means four consoles
-and a spreadsheet. After, it is one question in one place, and the answer covers every
-provider you connected.
+Every provider you connect feeds the same place, so "what did we spend last month, and
+why is it up?" stops being four consoles and a spreadsheet. It is one question, and the
+answer covers everything you connected.
 
 ## Two ways to connect
 
@@ -204,16 +219,6 @@ the provider and that connection stops. Nothing else is affected.
 <Frame caption="One total, one trend, every connected provider.">
   <img src="/images/cost-overview.png" alt="CostGraph Cost page showing month-to-date spend, prior period, daily average, and a daily cost chart" />
 </Frame>
-
-```mermaid
-flowchart TD
-  Q["What is this costing us?"]
-
-  Q --> V[See it<br/>spend by provider, service, team]
-  Q --> W[Catch it<br/>alerts when spend moves]
-  Q --> X[Fix it<br/>rightsizing and cheaper placements]
-  Q --> Y[Ask it<br/>the same answers from your editor or chat]
-```
 
 A connection is not a dashboard tile. Once a provider is connected it is part of every
 answer CostGraph gives:

@@ -1,73 +1,81 @@
 ---
 title: Integrations
-description: "Every provider CostGraph reads, how the data gets in, and what it becomes"
+description: "Connect the providers you pay and see all of your spend in one place"
 ---
 
-Connect the providers you pay and CostGraph puts all of that spend in one view. Cost
-Overview, anomaly detection, recommendations, and the MCP tools work the same whether
-the charge came from AWS, an LLM gateway, or a Kafka cluster.
+Your bill is spread across a dozen vendors, each with its own console, its own export,
+and its own idea of what a "resource" is. CostGraph connects to all of them and gives
+you one view of what you spend, what it is spent on, and what to do about it.
 
 <CardGroup cols={3}>
   <Card title="22 providers" icon="plug">
-    Hyperscalers, IaaS, databases, AI, and SaaS, side by side.
+    Clouds, databases, AI, and developer tools, side by side.
   </Card>
-  <Card title="Pull or push" icon="arrows-left-right">
-    Give us a read-only credential, or send FOCUS records yourself and keep the credential.
+  <Card title="Connect in minutes" icon="bolt">
+    A read-only credential per provider. Nothing to deploy, nothing to schedule.
   </Card>
-  <Card title="One dataset" icon="layer-group">
-    No per-provider views to learn. Compare spend across providers in one place.
-  </Card>
-</CardGroup>
-
-## How the data reaches us
-
-Two directions, same destination.
-
-<CardGroup cols={2}>
-  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
-    You supply a read-only credential and we call the provider once a day. Nothing to
-    run, nothing to schedule. This is how most integrations work.
-  </Card>
-  <Card title="You push it" icon="cloud-arrow-up" href="/costgraph/integrations/focus-push">
-    You POST FOCUS records to our API. Credentials never leave your infrastructure, and
-    it covers providers we cannot reach at all: internal chargeback, a warehouse job, a
-    private cloud.
+  <Card title="Same answers everywhere" icon="layer-group">
+    Every view, alert, and tool covers every connected provider.
   </Card>
 </CardGroup>
+
+## What connecting changes
 
 ```mermaid
 flowchart LR
-  A[Provider billing APIs]
-  B[FOCUS exports<br/>S3 / BigQuery]
-  C[Your own FOCUS records]
-  D[Kubernetes + host telemetry]
+  subgraph Before["Today"]
+    direction TB
+    B1[Cloud console]
+    B2[Database vendor]
+    B3[AI provider]
+    B4[SaaS invoices]
+  end
 
-  A -->|daily pull| G[CostGraph]
-  B -->|daily read| G
-  C -->|push| G
-  D --> G
+  Before --> CG(("CostGraph"))
 
-  G --> O[Cost Overview]
-  G --> AN[Anomaly detection]
-  G --> RE[Recommendations]
-  G --> MCP[MCP tools + agent]
+  subgraph After["After"]
+    direction TB
+    A1[One spend view]
+    A2[Alerts on what moved]
+    A3[Savings you can act on]
+  end
+
+  CG --> After
 ```
 
-Your bill and your telemetry land in the same place, which is what lets a node bill be
-split across namespaces and a pod be priced against a real SKU.
+Before, answering "what did we spend last month, and why is it up?" means four consoles
+and a spreadsheet. After, it is one question in one place, and the answer covers every
+provider you connected.
+
+## Two ways to connect
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    Give us a read-only credential and your spend keeps itself current. This is how most
+    providers work, and it is the fastest way to start.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up" href="/costgraph/integrations/focus-push">
+    Send your billing data to us instead. Your credentials stay in your infrastructure,
+    and it covers anything we cannot reach: an internal chargeback system, a warehouse
+    job, a private cloud.
+  </Card>
+</CardGroup>
+
+<Note>
+Not sure which you want? Start with a pull connection. You can add a pushed source later
+without changing anything that already works.
+</Note>
 
 ## Providers
 
 ### Hyperscalers
 
-Read from a native FOCUS export rather than a billing API.
-
 <CardGroup cols={2}>
   <Card title="Amazon Web Services" icon="aws" href="/costgraph/integrations/aws">
-    FOCUS Data Export delivered to S3.
+    Your AWS bill, down to the resource.
   </Card>
   <Card title="Google Cloud" icon="google" href="/costgraph/integrations/gcp">
-    FOCUS billing export in BigQuery.
+    Your Google Cloud bill, down to the resource.
   </Card>
 </CardGroup>
 
@@ -78,19 +86,19 @@ Read from a native FOCUS export rather than a billing API.
     Droplets, volumes, load balancers, databases, spaces.
   </Card>
   <Card title="OVHcloud" icon="cloud" href="/costgraph/integrations/ovhcloud">
-    Per bill line item, Public Cloud usage per project.
+    Every product on the bill, with Public Cloud usage per project.
   </Card>
   <Card title="STACKIT" icon="cloud" href="/costgraph/integrations/stackit">
-    Per project across managed services.
+    Managed services, attributed per project.
   </Card>
   <Card title="Scaleway" icon="cloud" href="/costgraph/integrations/scaleway">
-    Per project, SKU, and resource.
+    Per project and per resource.
   </Card>
   <Card title="Cloudflare" icon="cloudflare" href="/costgraph/integrations/cloudflare">
-    Billable usage per product.
+    Usage across every Cloudflare product.
   </Card>
   <Card title="Vercel" icon="vercel" href="/costgraph/integrations/vercel">
-    Charges per project across the team.
+    Team spend, split by project.
   </Card>
 </CardGroup>
 
@@ -98,10 +106,10 @@ Read from a native FOCUS export rather than a billing API.
 
 <CardGroup cols={3}>
   <Card title="PlanetScale" icon="database" href="/costgraph/integrations/planetscale">
-    Cost plus per-node rightsizing from live database metrics.
+    Database spend, plus rightsizing for the databases behind it.
   </Card>
   <Card title="Redis Cloud" icon="database" href="/costgraph/integrations/rediscloud">
-    FOCUS-native report per subscription and database.
+    Per subscription and per database.
   </Card>
   <Card title="Confluent Cloud" icon="wind" href="/costgraph/integrations/confluent">
     Kafka spend per cluster and environment.
@@ -110,27 +118,27 @@ Read from a native FOCUS export rather than a billing API.
 
 ### AI and LLM
 
-Model spend lands in the same dataset as infrastructure, which is what makes
-cross-model comparison possible.
+Model spend sits next to infrastructure spend, so the AI line stops being a separate
+argument at the end of the month.
 
 <CardGroup cols={3}>
   <Card title="Anthropic" icon="robot" href="/costgraph/integrations/anthropic">
-    Per model and token bucket.
+    Spend per model.
   </Card>
   <Card title="OpenAI" icon="robot" href="/costgraph/integrations/openai">
-    Per model and token bucket.
+    Spend per model.
   </Card>
   <Card title="OpenRouter" icon="shuffle" href="/costgraph/integrations/openrouter">
-    One connection covers every upstream model you route through.
+    One connection covers every model you route through it.
   </Card>
   <Card title="Helicone" icon="shuffle" href="/costgraph/integrations/helicone">
-    Gateway spend across every model and upstream provider.
+    Gateway spend across every upstream provider.
   </Card>
   <Card title="RespanAI" icon="shuffle" href="/costgraph/integrations/respanai">
     Request spend across every routed model.
   </Card>
   <Card title="Cursor" icon="code" href="/costgraph/integrations/cursor">
-    Team usage per model and per member.
+    Team usage, per model and per member.
   </Card>
 </CardGroup>
 
@@ -141,7 +149,7 @@ cross-model comparison possible.
     Actions minutes, Packages storage, Copilot seats.
   </Card>
   <Card title="Modal" icon="microchip" href="/costgraph/integrations/modal">
-    Serverless GPU, CPU, and memory per function.
+    Serverless GPU and compute, per function.
   </Card>
 </CardGroup>
 
@@ -149,29 +157,26 @@ cross-model comparison possible.
 
 <CardGroup cols={3}>
   <Card title="Datadog" icon="dog" href="/costgraph/integrations/datadog">
-    Your own Datadog bill by organization and product.
+    What Datadog itself costs you, by product.
   </Card>
   <Card title="Grafana Cloud" icon="chart-line" href="/costgraph/integrations/grafanacloud">
-    Metrics, logs, traces, profiles per stack.
+    Metrics, logs, traces, and profiles per stack.
   </Card>
   <Card title="CostGraph" icon="dollar-sign" href="/costgraph/integrations/costgraph">
-    Fold your CostGraph invoice into the dataset it watches.
+    Your CostGraph invoice, in the same view as everything else.
   </Card>
 </CardGroup>
 
 ### Anything else
 
-<Card title="Push FOCUS data" icon="cloud-arrow-up" href="/costgraph/integrations/focus-push">
-  A provider that is not listed, an internal chargeback system, a private cloud: send
-  the records yourself with a `focus:write` API key. They behave like any other source.
+<Card title="Send your own data" icon="cloud-arrow-up" href="/costgraph/integrations/focus-push">
+  A provider we do not list, an internal chargeback system, a private cloud. Send it
+  yourself and it behaves like any other connected source.
 </Card>
 
 ## Connecting one
 
-Every pull integration follows the same three steps, and the form tells you which
-credential each provider needs and what permission it requires.
-
-<Frame caption="Settings -> Integrations lists every provider with its setup guide.">
+<Frame caption="Settings -> Integrations. Every provider, with a setup guide next to it.">
   <img src="/images/integrations-catalogue.png" alt="The CostGraph integrations catalogue, with a Connect button and setup guide per provider" />
 </Frame>
 
@@ -180,36 +185,48 @@ credential each provider needs and what permission it requires.
     Open **Settings -> Integrations** and choose it from the catalogue.
   </Step>
   <Step title="Name the connection and pick the tenant">
-    The tenant decides which workspace the charges are attributed to.
+    The tenant decides which team or environment the charges belong to.
   </Step>
-  <Step title="Fill in the credential and connect">
-    We verify it with a short fetch before saving, so a wrong value or a missing
-    permission fails while you are still on the form, not silently at 3am.
+  <Step title="Enter the credential and connect">
+    The form asks for exactly what that provider needs and explains the permission each
+    value requires. We check the credential before saving, so a wrong value fails while
+    you are still on the form rather than silently at 3am.
   </Step>
 </Steps>
 
 <Note>
-Credentials are encrypted at rest and used only to read billing data. Revoking the
-key at the provider stops that connection and affects nothing else.
+Credentials are encrypted at rest and used only to read billing data. Revoke the key at
+the provider and that connection stops. Nothing else is affected.
 </Note>
 
-## Where the data shows up
+## What you get back
 
-<Frame caption="Cost, grouped by provider and resource, with every connected source in one total.">
+<Frame caption="One total, one trend, every connected provider.">
   <img src="/images/cost-overview.png" alt="CostGraph Cost page showing month-to-date spend, prior period, daily average, and a daily cost chart" />
 </Frame>
 
-Once a connection syncs, that provider appears everywhere without further setup:
+```mermaid
+flowchart TD
+  Q["What is this costing us?"]
+
+  Q --> V[See it<br/>spend by provider, service, team]
+  Q --> W[Catch it<br/>alerts when spend moves]
+  Q --> X[Fix it<br/>rightsizing and cheaper placements]
+  Q --> Y[Ask it<br/>the same answers from your editor or chat]
+```
+
+A connection is not a dashboard tile. Once a provider is connected it is part of every
+answer CostGraph gives:
 
 <CardGroup cols={2}>
   <Card title="Cost Overview" icon="chart-pie">
-    Month-to-date and historical spend, sliced by provider, service, and tenant.
+    Month-to-date and historical spend, sliced by provider, service, and team.
   </Card>
   <Card title="Anomaly detection" icon="triangle-exclamation">
-    Spikes, waste, and drift caught within a provider and across providers.
+    Spikes, waste, and drift, caught inside a provider and across providers.
   </Card>
   <Card title="Recommendations" icon="wand-magic-sparkles" href="/costgraph/agent/recommendations">
-    Rightsizing and placement priced against the [Pricing API](/api-reference/introduction).
+    Rightsizing and cheaper placements, priced before you commit to them.
   </Card>
   <Card title="MCP and the agent" icon="plug" href="/costgraph/mcp/install">
     Ask about any connected provider from your editor or from chat.

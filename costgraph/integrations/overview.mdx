@@ -15,7 +15,7 @@ you one view of what you spend, what it is spent on, and what to do about it.
     A read-only credential per provider. Nothing to deploy, nothing to schedule.
   </Card>
   <Card title="Same answers everywhere" icon="layer-group">
-    Every view, alert, and tool covers every connected provider.
+    Every view, insight, and tool covers every connected provider.
   </Card>
 </CardGroup>
 
@@ -32,9 +32,13 @@ flowchart LR
   CG(("CostGraph"))
 
   O1["<b>One spend view</b><br/>provider, service, team"]
-  O2["<b>Alerts</b><br/>when spend moves"]
+  O2["<b>Insights</b><br/>what moved, and why"]
   O3["<b>Savings</b><br/>you can act on"]
-  O4["<b>Answers</b><br/>in your editor or chat"]
+  O4["<b>MCP</b><br/>ask in your own tools"]
+
+  M1(["Your editor"])
+  M2(["Chat"])
+  M3(["Your agents"])
 
   P1 --> CG
   P2 --> CG
@@ -47,12 +51,16 @@ flowchart LR
   CG --> O3
   CG --> O4
 
+  O4 --> M1
+  O4 --> M2
+  O4 --> M3
+
   classDef hub fill:#0F6DFF,stroke:#0E46A0,stroke-width:2px,color:#FFFFFF,font-weight:bold
   classDef source fill:#EEF4FF,stroke:#5394FD,stroke-width:1px,color:#0E46A0
   classDef outcome fill:#FFFFFF,stroke:#0F6DFF,stroke-width:1.5px,color:#0E46A0
 
   class CG hub
-  class P1,P2,P3,P4,P5 source
+  class P1,P2,P3,P4,P5,M1,M2,M3 source
   class O1,O2,O3,O4 outcome
 
   linkStyle default stroke:#5394FD,stroke-width:1.5px

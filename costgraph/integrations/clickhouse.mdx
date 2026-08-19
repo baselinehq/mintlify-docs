@@ -1,0 +1,82 @@
+---
+title: ClickHouse Cloud
+description: "Bring ClickHouse Cloud usage cost into CostGraph, pulled by us or pushed by you"
+---
+
+ClickHouse Cloud meters spend per service and metric per day, so compute,
+storage, backup, and data transfer are attributed separately rather than as one
+bill total.
+
+CostGraph reads ClickHouse Cloud as **FOCUS 1.2** records at a grain of usage
+cost line item (service x metric x day).
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call ClickHouse Cloud once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **ClickHouse Cloud**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the keys ClickHouse
+   Cloud needs and explains the permission each one requires. You create an API
+   key under **Organization -> API keys**; a read-only Developer key can read
+   usage cost. The key id and secret are sent together as HTTP Basic auth.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+### Credentials
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CLICKHOUSE_KEY_ID` | yes | yes | ClickHouse Cloud API key id (Organization -> API keys). A read-only Developer key can read usage cost. Sent with the key secret as HTTP Basic auth. |
+| `CLICKHOUSE_KEY_SECRET` | yes | yes | The API key secret paired with the key id, sent as the HTTP Basic auth password. |
+| `CLICKHOUSE_ORG_ID` | no | no | Organization id. When empty the adapter resolves it from `GET /v1/organizations`, since a key belongs to one organization. |
+
+<Note>
+Cost is metered in CHC (ClickHouse Cloud Credits) and treated 1:1 with USD.
+Credentials are encrypted at rest and used only to read billing and service
+metadata. Revoke the key in ClickHouse Cloud at any time and the connection
+stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Value signal
+
+The per-metric split is the point: a service that is almost all storage with
+near-zero compute is data sitting unqueried (a tier or archive candidate), while
+a compute-heavy service is actively used. On top of the cost split, CostGraph
+joins the Services API and carries each service's shape as FOCUS extensions so a
+cost can be judged valid or wasteful, not just reported.
+
+| Extension | Signals |
+| --- | --- |
+| `x_MetricCHC` | The raw ClickHouse metric key behind the line item (`computeCHC`, `storageCHC`, ...), so compute and storage stay distinguishable. |
+| `x_ServiceState` | Whether the service is running, idle, or stopped, so paid-for-but-idle spend is visible. |
+| `x_IdleScaling` | Whether scale-to-zero is enabled. A service without idle scaling pays for compute around the clock. |
+| `x_IdleTimeoutMinutes` | How long before an idle service scales down. A long timeout keeps paid compute up between queries. |
+| `x_Tier` | The service tier, which sets the compute and pricing floor. |
+| `x_MinReplicaMemoryGb` / `x_MaxReplicaMemoryGb` | The provisioned compute floor and ceiling per replica; a high floor is guaranteed spend even when idle. |
+| `x_NumReplicas` | Replica count, which multiplies the provisioned compute floor. |
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there ClickHouse Cloud spend appears in Cost Overview and in
+anomaly detection alongside every other provider, with the value-signal
+extensions available to flag idle or over-provisioned services.
+</content>
+</invoke>

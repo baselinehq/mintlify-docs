@@ -69,6 +69,7 @@
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
               "costgraph/integrations/cherryservers",
+              "costgraph/integrations/clickhouse",
               "costgraph/integrations/cloudflare",
               "costgraph/integrations/confluent",
               "costgraph/integrations/costgraph",
@@ -247,6 +248,10 @@
     {
       "source": "/costgraph/focus-exporter/cherryservers",
       "destination": "/costgraph/integrations/cherryservers"
+    },
+    {
+      "source": "/costgraph/focus-exporter/clickhouse",
+      "destination": "/costgraph/integrations/clickhouse"
     },
     {
       "source": "/costgraph/focus-exporter/cloudflare",

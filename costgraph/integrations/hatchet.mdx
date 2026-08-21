@@ -37,15 +37,14 @@ value or a missing permission fails while you are still on the form.
 
 ### Credentials
 
-Provide either `HATCHET_CLIENT_TOKEN` (single tenant) or `HATCHET_CLIENT_TOKENS`
-(several tenants). A client token is scoped to a single tenant, so exporting more
-than one tenant requires one token per tenant; the API cannot enumerate tenants
-from a token.
+`HATCHET_CLIENT_TOKEN` accepts one token or a comma-separated list of tokens, one
+per tenant. A client token is scoped to a single tenant, so exporting more than
+one tenant requires one comma-separated token per tenant; each token's JWT claims
+supply its base URL and tenant id.
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
-| `HATCHET_CLIENT_TOKEN` | either/or | yes | A Hatchet JWT (Settings -> API Tokens). Its claims carry the API base URL (`server_url`) and tenant id (`sub`), so no other config is needed. Sent as an HTTP Bearer token. Provide this or `HATCHET_CLIENT_TOKENS`. |
-| `HATCHET_CLIENT_TOKENS` | either/or | yes | Comma-separated Hatchet client tokens, one per tenant, to export several tenants (dev/staging/prod) in one run. Each token self-describes its base URL and tenant. Provide this or `HATCHET_CLIENT_TOKEN`. |
+| `HATCHET_CLIENT_TOKEN` | yes | yes | One Hatchet JWT or a comma-separated list of tokens, one per tenant (Settings -> API Tokens). A client token is scoped to a single tenant, so multiple tenants means multiple comma-separated tokens. Each token's claims carry the API base URL (`server_url`) and tenant id (`sub`), so no other config is needed. Sent as an HTTP Bearer token. |
 | `HATCHET_SERVER_URL` | no | no | API base URL override applied to every token. Defaults to each token's `server_url` claim. |
 | `HATCHET_INCLUDED_RUNS` | no | no | Monthly free task-run allowance for the plan (Developer includes 100000). The first this-many runs each calendar month are billed at zero; only the overage is rated. Plan tier is not exposed by the API, so it is supplied here. |
 | `HATCHET_MONTHLY_BASE_FEE` | no | no | Plan platform fee in USD per calendar month (Team 500, Scale 1000, Developer 0). When set, one recurring Purchase record is emitted per tenant per month in the window. Plan tier is not exposed by the API, so it is supplied here. |

@@ -76,6 +76,7 @@
               "costgraph/integrations/cursor",
               "costgraph/integrations/datadog",
               "costgraph/integrations/digitalocean",
+              "costgraph/integrations/elevenlabs",
               "costgraph/integrations/gcp",
               "costgraph/integrations/github",
               "costgraph/integrations/grafanacloud",
@@ -89,6 +90,7 @@
               "costgraph/integrations/planetscale",
               "costgraph/integrations/rediscloud",
               "costgraph/integrations/respanai",
+              "costgraph/integrations/runpod",
               "costgraph/integrations/scaleway",
               "costgraph/integrations/stackit",
               "costgraph/integrations/vercel"
@@ -279,6 +281,10 @@
       "destination": "/costgraph/integrations/digitalocean"
     },
     {
+      "source": "/costgraph/focus-exporter/elevenlabs",
+      "destination": "/costgraph/integrations/elevenlabs"
+    },
+    {
       "source": "/costgraph/focus-exporter/github",
       "destination": "/costgraph/integrations/github"
     },
@@ -325,6 +331,10 @@
     {
       "source": "/costgraph/focus-exporter/respanai",
       "destination": "/costgraph/integrations/respanai"
+    },
+    {
+      "source": "/costgraph/focus-exporter/runpod",
+      "destination": "/costgraph/integrations/runpod"
     },
     {
       "source": "/costgraph/focus-exporter/scaleway",

@@ -79,6 +79,7 @@
               "costgraph/integrations/gcp",
               "costgraph/integrations/github",
               "costgraph/integrations/grafanacloud",
+              "costgraph/integrations/hatchet",
               "costgraph/integrations/helicone",
               "costgraph/integrations/linode",
               "costgraph/integrations/modal",
@@ -284,6 +285,10 @@
     {
       "source": "/costgraph/focus-exporter/grafanacloud",
       "destination": "/costgraph/integrations/grafanacloud"
+    },
+    {
+      "source": "/costgraph/focus-exporter/hatchet",
+      "destination": "/costgraph/integrations/hatchet"
     },
     {
       "source": "/costgraph/focus-exporter/helicone",

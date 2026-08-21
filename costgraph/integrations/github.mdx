@@ -25,9 +25,10 @@ repository, carrying both gross and net billed cost.
 1. Open **Settings -> Integrations** and pick **GitHub**.
 2. Name the connection, pick the tenant these charges belong to, and enter the
    organization login whose billing you want.
-3. Supply a token with read access to the organization's billing. A fine-grained
-   personal access token needs **Administration: read**; a classic token needs the
-   billing read scope.
+3. Supply a token with read access to the organization's billing.
+   [Create a classic token with the scopes prefilled](https://github.com/settings/tokens/new?scopes=repo,read:org,copilot&description=costgraph-billing),
+   or use a fine-grained personal access token with **Administration: read**
+   (plus **Copilot: read** for seat data).
 4. Select **Connect**.
 
 CostGraph verifies the token with a short fetch before saving, so a wrong value or a

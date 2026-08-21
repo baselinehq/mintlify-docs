@@ -1,0 +1,88 @@
+---
+title: Blacksmith
+description: "Bring Blacksmith managed CI-runner cost into CostGraph, pulled by us or pushed by you"
+---
+
+Blacksmith runs managed GitHub Actions runners and bills the CI minutes they burn.
+Its dashboard API reports a real cost per day, already computed by Blacksmith, so
+CostGraph records the billed amount rather than reconstructing it from a rate.
+
+CostGraph reads Blacksmith as **FOCUS 1.2** records at a grain of one record per
+day per org, pulled from dashboardbackend.blacksmith.sh, plus per-runner-type
+utilization signals.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call Blacksmith once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **Blacksmith**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the keys Blacksmith needs
+   and explains each one. You create an organization token with
+   `blacksmith org-token create`; it is sent as an `Authorization: Bearer` token
+   (with an `Origin` header) and reaches the org-scoped daily, runner-type, total,
+   and usage endpoints.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+### Credentials
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `BLACKSMITH_API_TOKEN` | yes | yes | Blacksmith organization token (create with `blacksmith org-token create`). Sent as an `Authorization: Bearer` token. Reaches the org-scoped daily, runner-type, total, and usage endpoints. It cannot reach the per-repository or sticky-disk breakdowns, which require a logged-in user session. |
+| `BLACKSMITH_ORG` | yes | no | The GitHub organization login exactly as it appears on GitHub, case-sensitive (e.g. `RevylAI`, not `revylai`). It is the org whose CI usage is exported and becomes the billing account id. |
+
+<Note>
+Cost is the real amount Blacksmith billed, in USD, computed by Blacksmith. The
+GitHub org login is case-sensitive: a mismatched case resolves to no org and
+returns nothing. Credentials are encrypted at rest and used only to read CI usage.
+Revoke the token in Blacksmith at any time and the connection stops; nothing else
+is affected.
+</Note>
+
+<Warning>
+Per-repository and sticky-disk cost breakdowns are **not available to an
+unattended exporter**. Blacksmith gates those endpoints behind a logged-in user
+session (a browser cookie); an organization token gets a `403` there. The org
+token reaches only the org-level daily, runner-type, total, and usage endpoints,
+so CostGraph attributes spend at the org grain and by runner type, not per repo.
+</Warning>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Value signal
+
+Blacksmith bills billable minutes, but a runner's actual runtime is often less
+than what is billed, and that gap is waste. CostGraph carries the billed-versus-
+runtime split per runner type as FOCUS extensions so a CI spend can be judged
+valid or wasteful, not just reported.
+
+| Extension | Signals |
+| --- | --- |
+| `x_BillableMinutes` / `x_RuntimeMinutes` | Minutes billed against minutes the runner actually ran, per runner type. Billable well above runtime is minimum-billing or idle overhead you pay for. |
+| `x_RuntimeVsBillableRatio` | The runtime-to-billable ratio, a direct efficiency score: near 1 is tight, well below 1 is billed-but-idle waste. |
+| `x_RunnerType` / `x_VcpuSize` | The runner class and its vCPU size (parsed from the runner type), so spend is attributable to a specific machine size. |
+| `x_JobCount` | Jobs run in the day, for sizing per-job cost. |
+| `x_FreeMinutes` | The month's free-minute allowance, so paid overage is distinguishable from included usage. |
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Blacksmith spend appears in Cost Overview and in anomaly
+detection alongside every other provider, with the value-signal extensions
+available to flag runner types billing far above their actual runtime.
+</content>

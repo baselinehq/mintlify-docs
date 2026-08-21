@@ -68,6 +68,7 @@
               "costgraph/integrations/focus-push",
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
+              "costgraph/integrations/blacksmith",
               "costgraph/integrations/cherryservers",
               "costgraph/integrations/clickhouse",
               "costgraph/integrations/cloudflare",
@@ -75,6 +76,7 @@
               "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
               "costgraph/integrations/datadog",
+              "costgraph/integrations/depot",
               "costgraph/integrations/digitalocean",
               "costgraph/integrations/elevenlabs",
               "costgraph/integrations/gcp",
@@ -93,7 +95,8 @@
               "costgraph/integrations/runpod",
               "costgraph/integrations/scaleway",
               "costgraph/integrations/stackit",
-              "costgraph/integrations/vercel"
+              "costgraph/integrations/vercel",
+              "costgraph/integrations/xai"
             ]
           }
         ]
@@ -249,6 +252,10 @@
       "destination": "/costgraph/integrations/anthropic"
     },
     {
+      "source": "/costgraph/focus-exporter/blacksmith",
+      "destination": "/costgraph/integrations/blacksmith"
+    },
+    {
       "source": "/costgraph/focus-exporter/cherryservers",
       "destination": "/costgraph/integrations/cherryservers"
     },
@@ -275,6 +282,10 @@
     {
       "source": "/costgraph/focus-exporter/datadog",
       "destination": "/costgraph/integrations/datadog"
+    },
+    {
+      "source": "/costgraph/focus-exporter/depot",
+      "destination": "/costgraph/integrations/depot"
     },
     {
       "source": "/costgraph/focus-exporter/digitalocean",
@@ -347,6 +358,10 @@
     {
       "source": "/costgraph/focus-exporter/vercel",
       "destination": "/costgraph/integrations/vercel"
+    },
+    {
+      "source": "/costgraph/focus-exporter/xai",
+      "destination": "/costgraph/integrations/xai"
     }
   ],
   "contextual": {

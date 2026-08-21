@@ -1,0 +1,71 @@
+---
+title: xAI
+description: "Bring xAI (Grok) usage cost into CostGraph, pulled by us or pushed by you"
+---
+
+xAI bills Grok usage per team, and its Management API reports spend per day broken
+down by line item (Grok model and modality), so a chat model and an image model
+are attributed separately rather than as one bill total.
+
+CostGraph reads xAI as **FOCUS 1.2** records at a grain of one billed-cost record
+per day per line item (`POST /v1/billing/teams/{team_id}/usage` on
+management-api.x.ai), priced at the real billed amount in USD.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call xAI once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **xAI**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the keys xAI needs and
+   explains each one. You create a Management key under **xAI Console -> Settings
+   -> Management Keys**; this is distinct from the inference API key (`XAI_API_KEY`)
+   used to call Grok, and the billing usage endpoint only accepts a Management key.
+   The key is sent as an `Authorization: Bearer` token.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+### Credentials
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `XAI_MANAGEMENT_KEY` | yes | yes | xAI Management key (xAI Console -> Settings -> Management Keys). Separate from the inference `XAI_API_KEY`; the billing usage endpoint only accepts a Management key. Sent as an `Authorization: Bearer` token. |
+| `XAI_TEAM_ID` | yes | no | Team the charges belong to (xAI Console -> Settings). Used in the billing path and as the billing account id. |
+
+<Note>
+Cost is the real amount xAI billed, in USD. Credentials are encrypted at rest and
+used only to read billing usage. Revoke the key in xAI at any time and the
+connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Value signal
+
+The per-line-item split is the point: it shows which Grok model and modality the
+spend concentrates on, so a costly model that could be swapped for a cheaper one
+is visible rather than hidden in a single total. Token quantities are a deferred
+follow-up, since the underlying usage metric names are undocumented; today the
+signal is cost concentration by model.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there xAI spend appears in Cost Overview and in anomaly detection
+alongside every other provider, with cost attributed per Grok model so
+concentration and spikes are visible.
+</content>

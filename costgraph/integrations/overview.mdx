@@ -92,20 +92,15 @@ without changing anything that already works.
 
 ## Providers
 
-### Hyperscalers
+### Compute
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Amazon Web Services" icon="/images/logos/aws.svg" href="/costgraph/integrations/aws">
     Your AWS bill, down to the resource.
   </Card>
   <Card title="Google Cloud" icon="/images/logos/gcp.svg" href="/costgraph/integrations/gcp">
     Your Google Cloud bill, down to the resource.
   </Card>
-</CardGroup>
-
-### Cloud and edge
-
-<CardGroup cols={3}>
   <Card title="DigitalOcean" icon="/images/logos/digitalocean.svg" href="/costgraph/integrations/digitalocean">
     Droplets, volumes, load balancers, databases, spaces.
   </Card>
@@ -124,32 +119,24 @@ without changing anything that already works.
   <Card title="Cherry Servers" icon="/images/logos/cherryservers.svg" href="/costgraph/integrations/cherryservers">
     Bare metal, priced per server.
   </Card>
-  <Card title="Cloudflare" icon="/images/logos/cloudflare.svg" href="/costgraph/integrations/cloudflare">
-    Usage across every Cloudflare product.
-  </Card>
   <Card title="Vercel" icon="/images/logos/vercel.svg" href="/costgraph/integrations/vercel">
     Team spend, split by project.
   </Card>
-</CardGroup>
-
-### Data and streaming
-
-<CardGroup cols={3}>
-  <Card title="PlanetScale" icon="/images/logos/planetscale.svg" href="/costgraph/integrations/planetscale">
-    Database spend, plus rightsizing for the databases behind it.
+  <Card title="Modal" icon="/images/logos/modal.svg" href="/costgraph/integrations/modal">
+    Serverless GPU and compute, per function.
   </Card>
-  <Card title="Redis Cloud" icon="/images/logos/rediscloud.svg" href="/costgraph/integrations/rediscloud">
-    Per subscription and per database.
+  <Card title="RunPod" icon="/images/logos/runpod.svg" href="/costgraph/integrations/runpod">
+    GPU pods and serverless, per GPU type.
   </Card>
-  <Card title="Confluent Cloud" icon="/images/logos/confluent.svg" href="/costgraph/integrations/confluent">
-    Kafka spend per cluster and environment.
+  <Card title="Depot" icon="/images/logos/depot.svg" href="/costgraph/integrations/depot">
+    Container build and runner minutes, with cache savings.
   </Card>
-  <Card title="ClickHouse" icon="/images/logos/clickhouse.svg" href="/costgraph/integrations/clickhouse">
-    Usage cost per service, with idle/scale-to-zero signals.
+  <Card title="Daytona" icon="/images/logos/daytona.svg" href="/costgraph/integrations/daytona">
+    Dev sandboxes, priced per resource, with idle signals.
   </Card>
 </CardGroup>
 
-### AI and LLM
+### AI and Machine Learning
 
 Model spend sits next to infrastructure spend, so the AI line stops being a separate
 argument at the end of the month.
@@ -190,26 +177,36 @@ argument at the end of the month.
   </Card>
 </CardGroup>
 
-### Developer platforms and compute
+### Databases
+
+<CardGroup cols={3}>
+  <Card title="PlanetScale" icon="/images/logos/planetscale.svg" href="/costgraph/integrations/planetscale">
+    Database spend, plus rightsizing for the databases behind it.
+  </Card>
+  <Card title="Redis Cloud" icon="/images/logos/rediscloud.svg" href="/costgraph/integrations/rediscloud">
+    Per subscription and per database.
+  </Card>
+  <Card title="ClickHouse" icon="/images/logos/clickhouse.svg" href="/costgraph/integrations/clickhouse">
+    Usage cost per service, with idle/scale-to-zero signals.
+  </Card>
+</CardGroup>
+
+### Analytics
+
+<CardGroup cols={3}>
+  <Card title="Confluent Cloud" icon="/images/logos/confluent.svg" href="/costgraph/integrations/confluent">
+    Kafka spend per cluster and environment.
+  </Card>
+</CardGroup>
+
+### Developer Tools
 
 <CardGroup cols={3}>
   <Card title="GitHub" icon="/images/logos/github.svg" href="/costgraph/integrations/github">
     Actions minutes, Packages storage, Copilot seats.
   </Card>
-  <Card title="Modal" icon="/images/logos/modal.svg" href="/costgraph/integrations/modal">
-    Serverless GPU and compute, per function.
-  </Card>
-  <Card title="RunPod" icon="/images/logos/runpod.svg" href="/costgraph/integrations/runpod">
-    GPU pods and serverless, per GPU type.
-  </Card>
-  <Card title="Depot" icon="/images/logos/depot.svg" href="/costgraph/integrations/depot">
-    Container build and runner minutes, with cache savings.
-  </Card>
   <Card title="Blacksmith" icon="/images/logos/blacksmith.svg" href="/costgraph/integrations/blacksmith">
     GitHub Actions runner minutes, per runner size.
-  </Card>
-  <Card title="Daytona" icon="/images/logos/daytona.svg" href="/costgraph/integrations/daytona">
-    Dev sandboxes, priced per resource, with idle signals.
   </Card>
   <Card title="Buildkite" icon="/images/logos/buildkite.svg" href="/costgraph/integrations/buildkite">
     CI seats, with idle-seat signals.
@@ -219,7 +216,15 @@ argument at the end of the month.
   </Card>
 </CardGroup>
 
-### Observability and FinOps
+### Networking
+
+<CardGroup cols={3}>
+  <Card title="Cloudflare" icon="/images/logos/cloudflare.svg" href="/costgraph/integrations/cloudflare">
+    Usage across every Cloudflare product.
+  </Card>
+</CardGroup>
+
+### Management and Governance
 
 <CardGroup cols={3}>
   <Card title="Datadog" icon="/images/logos/datadog.svg" href="/costgraph/integrations/datadog">

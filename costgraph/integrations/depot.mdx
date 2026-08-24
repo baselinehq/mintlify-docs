@@ -3,15 +3,20 @@ title: Depot
 description: "Bring Depot container-build and CI cost into CostGraph, pulled by us or pushed by you"
 ---
 
-Depot accelerates container builds, GitHub Actions runners, and agent sandboxes,
-and its API reports usage as billed minutes and stored GB per product and project
-rather than as dollars. Depot has no vCPU or credits dimension, so CostGraph
-reconstructs cost from those minutes and GB at Depot's published (or your
-negotiated) per-minute rates.
+Depot accelerates container builds, GitHub Actions runners, cache storage, and
+agent sandboxes. Its dashboard and usage API report **billed minutes and stored
+GB**, not dollars, so CostGraph reconstructs cost from those quantities at Depot's
+published (or your negotiated) rates.
 
 CostGraph reads Depot as **FOCUS 1.2** records at a grain of one usage-cost record
-per product (build, runner, sandbox, storage) per project or repo per window,
-pulled from `UsageService.GetUsage` and `ListProjectUsage` on api.depot.dev.
+per product (container builds, GitHub Actions runners, storage, sandboxes) per
+project or repo per window, pulled from `UsageService.GetUsage` and
+`ListProjectUsage` on api.depot.dev.
+
+The usage API does not break minutes down by vCPU size. Each product is priced at
+one documented default (the 16 vCPU container-build rate, the default 2 vCPU
+GitHub Actions rate, and so on). Override the rate variables if your org runs
+larger machines or has a custom contract.
 
 ## Choose how the data reaches us
 
@@ -24,38 +29,77 @@ pulled from `UsageService.GetUsage` and `ListProjectUsage` on api.depot.dev.
   </Card>
 </CardGroup>
 
+## Create an organization token
+
+1. In the Depot dashboard, open **Organization -> Settings**.
+2. Copy the **Organization ID** from the sidebar if you want it as the billing
+   account label in CostGraph. The token is already scoped to this organization;
+   the id is only a label.
+3. Scroll to **API Tokens**, enter a description, and click **Create token**.
+4. Copy the token once. Depot will not show it again.
+
+<Frame caption="Organization -> Settings. The Organization ID is in the left sidebar.">
+  <img src="/images/integrations/depot-organization-id.png" alt="Depot sidebar showing Organization ID with a copy button" />
+</Frame>
+
+<Frame caption="Organization -> Settings -> API Tokens. Enter a description and create the token.">
+  <img src="/images/integrations/depot-api-tokens.png" alt="Depot API Tokens section with description field and Create token button" />
+</Frame>
+
+<Note>
+Use an **organization** token, not a user or project token. CostGraph sends it as
+an `Authorization: Bearer` token to `depot.core.v1.UsageService`. The token can
+also create builds and manage projects in Depot, so treat it as a secret and
+revoke it if you rotate credentials.
+</Note>
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Depot**.
+1. In CostGraph, open **Settings -> Integrations**
+   (`/settings/account/integrations`) and pick **Depot**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys Depot needs and
-   explains each one. You create an organization token under **Organization
-   settings -> API tokens**; it reads usage history via
-   `depot.core.v1.UsageService` and is sent as an `Authorization: Bearer` token.
+3. Paste the organization token. Optionally set the organization id and any rate
+   overrides. The form lists every key and whether it is required.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
-value or a missing permission fails while you are still on the form.
+value fails while you are still on the form.
 
 ### Credentials
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
-| `DEPOT_API_TOKEN` | yes | yes | Depot organization token (Organization settings -> API tokens). Reads usage history via `depot.core.v1.UsageService`. Sent as an `Authorization: Bearer` token. |
-| `DEPOT_ORGANIZATION_ID` | no | no | Organization identifier used as the billing account id label. The token is already scoped to one organization; when unset the record uses `depot`. |
-| `DEPOT_BUILD_MINUTE_RATE` | no | no | USD per container-build minute used to reconstruct cost (the API reports billed minutes, not dollars). Defaults to Depot's published 16 vCPU rate `0.04`. |
-| `DEPOT_RUNNER_MINUTE_RATE` | no | no | USD per GitHub Actions runner minute. Defaults to `0.008` (4 vCPU published rate). |
-| `DEPOT_SANDBOX_MINUTE_RATE` | no | no | USD per agent-sandbox minute. Defaults to `0.006` (2 vCPU published rate). |
+| `DEPOT_API_TOKEN` | yes | yes | Organization token from **Organization -> Settings -> API Tokens**. |
+| `DEPOT_ORGANIZATION_ID` | no | no | Organization id from the Depot sidebar, used as the billing account label. When unset the record uses `depot`. |
+| `DEPOT_BUILD_MINUTE_RATE` | no | no | USD per container-build minute. Defaults to Depot's published 16 vCPU rate `0.04`. |
+| `DEPOT_RUNNER_MINUTE_RATE` | no | no | USD per GitHub Actions runner minute. Defaults to Depot's published default 2 vCPU rate `0.004`. |
+| `DEPOT_SANDBOX_MINUTE_RATE` | no | no | USD per agent-sandbox minute. Defaults to Depot's published rate `0.01`. |
 | `DEPOT_STORAGE_GB_RATE` | no | no | USD per cache/registry GB-month. Defaults to Depot's published `0.20`. |
 
 <Note>
 Cost is an estimate: Depot exposes billed minutes and GB, not dollars, so
 CostGraph rates them at the published defaults unless you override with the
-`DEPOT_*_RATE` variables. Plan-included and negotiated minutes are not reflected,
-so set the rate overrides to match your contract for an accurate figure.
-Credentials are encrypted at rest and used only to read usage history. Revoke the
-token in Depot at any time and the connection stops; nothing else is affected.
+`DEPOT_*_RATE` variables. Plan-included minutes and negotiated pricing are not
+subtracted, so set the overrides to match your contract if you need the figure
+to line up with the Stripe invoice. Credentials are encrypted at rest and used
+only to read usage history. Revoke the token in Depot at any time and the
+connection stops; nothing else is affected.
 </Note>
+
+## What the usage numbers mean
+
+Depot's **Organization -> Settings -> Usage** (and **Organization -> Usage**)
+tracks the same meters CostGraph pulls: container-build minutes, GitHub Actions
+minutes, cache GB, and agent-sandbox minutes.
+
+<Frame caption="Depot current usage. CostGraph maps these meters into FOCUS records; it reconstructs dollars from the minutes and GB.">
+  <img src="/images/integrations/depot-current-usage.png" alt="Depot current usage showing container build minutes, GitHub Actions minutes, Depot CI minutes, and cache storage for the month" />
+</Frame>
+
+CostGraph maps **container builds**, **GitHub Actions runners**, **cache and
+registry storage**, and **agent sandboxes**. **Depot CI** minutes (billed per
+vCPU-second on Depot's side) are visible in this dashboard but are not a
+separate CostGraph product line yet.
 
 ## Push it yourself
 

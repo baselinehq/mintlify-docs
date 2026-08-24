@@ -89,6 +89,7 @@
               "costgraph/integrations/linode",
               "costgraph/integrations/litellm",
               "costgraph/integrations/modal",
+              "costgraph/integrations/newapi",
               "costgraph/integrations/openai",
               "costgraph/integrations/openrouter",
               "costgraph/integrations/ovhcloud",
@@ -98,6 +99,7 @@
               "costgraph/integrations/runpod",
               "costgraph/integrations/scaleway",
               "costgraph/integrations/stackit",
+              "costgraph/integrations/truefoundry",
               "costgraph/integrations/vercel",
               "costgraph/integrations/xai"
             ]
@@ -335,6 +337,10 @@
       "destination": "/costgraph/integrations/modal"
     },
     {
+      "source": "/costgraph/focus-exporter/newapi",
+      "destination": "/costgraph/integrations/newapi"
+    },
+    {
       "source": "/costgraph/focus-exporter/openai",
       "destination": "/costgraph/integrations/openai"
     },
@@ -369,6 +375,10 @@
     {
       "source": "/costgraph/focus-exporter/stackit",
       "destination": "/costgraph/integrations/stackit"
+    },
+    {
+      "source": "/costgraph/focus-exporter/truefoundry",
+      "destination": "/costgraph/integrations/truefoundry"
     },
     {
       "source": "/costgraph/focus-exporter/vercel",

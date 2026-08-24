@@ -1,0 +1,88 @@
+---
+title: TrueFoundry
+description: "Bring TrueFoundry LLM gateway spend into CostGraph, pulled by us or pushed by you"
+---
+
+TrueFoundry is an enterprise LLM gateway that fronts many model providers behind
+one control plane and tracks the spend of every request it routes. That spend is
+TrueFoundry's own computed figure, so CostGraph reads real dollars here rather
+than reconstructing them from tokens.
+
+CostGraph reads TrueFoundry as **FOCUS 1.2** records at a grain of one record per
+day per model per virtual account, read from `POST /api/svc/v1/llm-gateway/metrics/query`
+on your own TrueFoundry deployment.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call your TrueFoundry deployment once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **TrueFoundry**.
+2. Name the connection and pick the tenant this spend belongs to.
+3. Fill in the values the form asks for. It lists exactly the keys TrueFoundry
+   needs and explains each one. You supply the control plane URL of your
+   TrueFoundry deployment and a Personal Access Token (or Virtual Account Token)
+   with read access to gateway metrics; the token is sent as an
+   `Authorization: Bearer` token.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+### Credentials
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `TRUEFOUNDRY_BASE_URL` | yes | no | Control plane URL of your TrueFoundry deployment, e.g. `https://your-org.truefoundry.cloud`. The adapter reads gateway metrics from this host. |
+| `TRUEFOUNDRY_API_KEY` | yes | yes | TrueFoundry Personal Access Token or Virtual Account Token with read access to gateway metrics. Sent as an `Authorization: Bearer` token. |
+
+<Note>
+TrueFoundry computes the spend of each request it routes, so cost here is a real
+tracked figure, not an estimate. Credentials are encrypted at rest and used only
+to read gateway metrics. Revoke or rotate the token in TrueFoundry at any time and
+the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Value signal
+
+The point of a shared gateway is knowing whether its spend is justified.
+TrueFoundry's headline signal is the prompt cache: it reports the dollars a cache
+hit avoided, so waste and savings are visible directly. CostGraph sets the
+sub-account to the virtual account and carries the cache economics, latency, and
+token mix as FOCUS extensions, so a cost can be judged, not just totalled.
+
+| Extension | Signals |
+| --- | --- |
+| `x_CacheSavings` | USD avoided by prompt-cache hits in the day for the model and account. The clearest signal of whether caching is paying off. |
+| `x_CacheReadTokens` | Input tokens served from cache rather than recomputed, the volume behind the savings. |
+| `x_CacheHits` | Requests that hit the cache, for sizing cache effectiveness. |
+| `x_AvgLatencyMs` / `x_P99LatencyMs` | Average and p99 request latency, so a model's cost sits next to its responsiveness. |
+| `x_AvgTimeToFirstTokenMs` | Average time to first token, the streaming-latency signal users feel. |
+| `x_ApiRequests` | Requests in the day for the model and account, for sizing per-request cost. |
+| `x_PromptTokens` / `x_CompletionTokens` | The input against output token split behind the spend, so prompt-heavy and generation-heavy usage are distinguishable. |
+
+<Note>
+The request body is verified against a live TrueFoundry deployment. Response keys
+are mapped from the documented metrics schema and confirmed as data flows.
+</Note>
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there TrueFoundry spend appears in Cost Overview and in anomaly
+detection alongside every other provider, with the value-signal extensions
+available to attribute spend to the virtual account and flag where caching is
+saving or missing dollars.

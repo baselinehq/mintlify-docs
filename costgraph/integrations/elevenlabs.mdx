@@ -4,12 +4,10 @@ description: "Bring ElevenLabs voice and TTS usage cost into CostGraph, pulled b
 ---
 
 ElevenLabs meters voice and text-to-speech work in characters and credits, and
-it exposes a per-day usage series plus a plan subscription with quota and
-overage.
+exposes a per-day usage series plus a plan subscription with quota and overage.
 
-CostGraph reads ElevenLabs as **FOCUS 1.2** records at a grain of one usage
-record per day, split per model by default or per workspace member when
-workspace metrics are turned on, alongside a daily plan quota snapshot.
+CostGraph reads ElevenLabs as **FOCUS 1.2** records at a grain of one usage record
+per day, split per model or per workspace member.
 
 ## Choose how the data reaches us
 
@@ -26,70 +24,26 @@ workspace metrics are turned on, alongside a daily plan quota snapshot.
 
 1. Open **Settings -> Integrations** and pick **ElevenLabs**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys ElevenLabs
-   needs and explains each one. You create an API key under **Profile -> API
-   keys** and grant it the scopes below. The key is sent as the `xi-api-key`
-   header.
+3. Fill in the values the form asks for. It lists exactly the variables ElevenLabs
+   needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
-value or a missing scope fails while you are still on the form.
-
-### Required scopes
-
-| Scope | Required | Unlocks |
-| --- | --- | --- |
-| `Usage:Read` | yes | The character and credit usage series (`/v1/usage/character-stats`), the basis for every usage record. |
-| `User:Read` | recommended | The plan subscription (`/v1/user/subscription`): quota, tier, voice slots, and the real-dollar overage. Without it, usage is still exported but the cost and quota snapshot are not. |
-| workspace read | for per-member | Per-member usage attribution when `ELEVENLABS_WORKSPACE_METRICS` is on. Without it, the exporter falls back to per-model. |
-
-### Credentials
-
-| Variable | Required | Secret | Description |
-| --- | --- | --- | --- |
-| `ELEVENLABS_API_KEY` | yes | yes | ElevenLabs API key with read access to usage and subscription (Profile -> API keys). Sent as the `xi-api-key` header. |
-| `ELEVENLABS_ACCOUNT_ID` | no | no | Label for the ElevenLabs workspace this key belongs to, used as the billing account id. Defaults to `elevenlabs` when unset. |
-| `ELEVENLABS_WORKSPACE_METRICS` | no | no | Set `true` to attribute usage per workspace member instead of per model. Needs a key with workspace read access; falls back to per-model if the key lacks it. Defaults to `false`. |
+value or a missing permission fails while you are still on the form.
 
 <Note>
-Real dollars come from the subscription's current overage; `next_invoice` and
-`open_invoices` are deferred to paid verification. Per-model usage is
-quantity-only credits. Credentials are encrypted at rest and used only to read
-usage and subscription metadata. Revoke the key in ElevenLabs at any time and
-the connection stops; nothing else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+ElevenLabs at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-Paid credits that go unused are the clearest waste here: a plan bought for a
-character quota that is barely touched is money spent on nothing. The plan quota
-snapshot carries used-vs-quota and voice-slot usage so unused-paid-credit and
-seat waste are visible, and per-model usage exposes model-multiplier arbitrage.
-CostGraph carries these as FOCUS extensions so a cost can be judged valid or
-wasteful, not just reported.
-
-| Extension | Signals |
-| --- | --- |
-| `x_CharactersUsed` | Characters consumed against the plan quota, the share of the plan doing useful work. |
-| `x_CharacterQuota` | The plan's character quota, the paid ceiling. |
-| `x_CharacterQuotaRemaining` | Quota left unused, the unused-paid-credits waste lever: a large remainder is a plan sized above its use. |
-| `x_VoiceSlotsUsed` / `x_VoiceLimit` | Voice slots in use against the plan's voice limit, so seat-style over-provisioning is visible. |
-| `x_Tier` | The plan tier, which sets the quota and pricing floor. |
-| `x_SubscriptionStatus` | Whether the subscription is active, trialing, or otherwise, for judging whether the spend is live. |
-
-Per-model usage also exposes model-multiplier arbitrage as a queryable signal:
-a turbo model costs roughly a third of the credits of a multilingual model for
-the same characters, so shifting eligible work down a tier is a rightsizing
-lever.
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there ElevenLabs spend appears in Cost Overview and in anomaly
-detection alongside every other provider, with the value-signal extensions
-available to flag unused-quota and model-multiplier waste.
+detection alongside every other provider, so unused plan quota and seat waste
+stand out and shifting eligible work to a cheaper model becomes an obvious swap.

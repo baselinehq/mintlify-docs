@@ -1,22 +1,19 @@
 ---
 title: New API
-description: "Bring New API self-hosted LLM gateway spend into CostGraph, pulled by us or pushed by you"
+description: "Bring New API (new-api / one-api) gateway cost into CostGraph, pulled by us or pushed by you"
 ---
 
-New API (new-api / one-api) is a self-hosted LLM gateway and proxy that fronts
-many model providers behind one deployment and tracks the quota each request
-consumes. That tracked quota is New API's own figure, so CostGraph reads the spend
-it recorded rather than reconstructing it from raw token prices.
+New API (new-api / one-api) is a self-hosted LLM gateway that fronts many model
+providers behind one deployment and tracks the quota each request consumes.
 
 CostGraph reads New API as **FOCUS 1.2** records at a grain of one record per day
-per model per token, read from `GET /api/log/` on your own deployment. Quota is
-converted to USD using the deployment's `QuotaPerUnit` setting.
+per model per token.
 
 ## Choose how the data reaches us
 
 <CardGroup cols={2}>
   <Card title="CostGraph pulls it" icon="cloud-arrow-down">
-    You supply read-only credentials and we call your New API deployment once a day. Nothing to run.
+    You supply read-only credentials and we call New API once a day. Nothing to run.
   </Card>
   <Card title="You push it" icon="cloud-arrow-up">
     You send us FOCUS records over the API. Credentials never leave your infrastructure.
@@ -26,65 +23,27 @@ converted to USD using the deployment's `QuotaPerUnit` setting.
 ## Let CostGraph pull
 
 1. Open **Settings -> Integrations** and pick **New API**.
-2. Name the connection and pick the tenant this spend belongs to.
-3. Fill in the values the form asks for. It lists exactly the keys New API needs
-   and explains each one. You supply the base URL of your deployment and an admin
-   account's dashboard access token, generated at **Profile -> Security -> Access
-   Token** (this is a dashboard PAT, not an inference `sk-` API key). The token is
-   sent as an `Authorization: Bearer` token and reads spend logs across all users.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the variables New API
+   needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
 value or a missing permission fails while you are still on the form.
 
-### Credentials
-
-| Variable | Required | Secret | Description |
-| --- | --- | --- | --- |
-| `NEWAPI_BASE_URL` | yes | no | Base URL of your new-api / one-api deployment, e.g. `https://newapi.mycompany.com`. The adapter reads spend logs from this deployment. |
-| `NEWAPI_ACCESS_TOKEN` | yes | yes | Dashboard access token (PAT) of an admin account, generated at Profile -> Security -> Access Token (not an inference `sk-` API key). Sent as an `Authorization: Bearer` token; required to read `GET /api/log/` across all users. |
-| `NEWAPI_QUOTA_PER_UNIT` | no | no | Quota credits per US dollar for USD conversion. Must match the deployment's `QuotaPerUnit` setting. Defaults to `500000` (the new-api default). |
-
 <Note>
-New API tracks the quota each request consumes, so cost here is a real recorded
-figure, converted to USD at your deployment's `QuotaPerUnit`. Set
-`NEWAPI_QUOTA_PER_UNIT` to match that setting or the dollars will be off by a
-constant factor. Credentials are encrypted at rest and used only to read spend
-logs. Revoke the token in New API at any time and the connection stops; nothing
-else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+New API at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-The point of a shared gateway is knowing whether its spend is justified. New API
-records the outcome, cache use, and upstream routing behind each request, so waste
-is visible. CostGraph sets the sub-account to the token (falling back to the
-username) and carries these as FOCUS extensions, so a cost can be judged, not just
-totalled.
-
-| Extension | Signals |
-| --- | --- |
-| `x_ErrorRequests` | Requests that failed in the day for the model and token. Failed requests still consume gateway effort, so this is spend producing nothing. |
-| `x_CachedTokens` | Input tokens served from cache rather than recomputed, the volume that reduced spend. |
-| `x_AvgLatencyMs` | Average request latency, so a model's cost sits next to its responsiveness. |
-| `x_StreamRequests` | Requests served as streams, for sizing interactive against batch usage. |
-| `x_UpstreamChannels` | Distinct upstream channels New API routed the model through in the day. |
-| `x_ChannelName` | The dominant upstream channel behind the spend, so cost stays attributable across the providers behind the gateway. |
-| `x_ApiRequests` | Requests in the day for the model and token, for sizing per-request cost. |
-| `x_PromptTokens` / `x_CompletionTokens` | The input against output token split behind the spend, so prompt-heavy and generation-heavy usage are distinguishable. |
-
-<Note>
-This adapter is live-verified against new-api rc.25.
-</Note>
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there New API spend appears in Cost Overview and in anomaly
-detection alongside every other provider, with the value-signal extensions
-available to attribute spend to the token and flag failed-request waste.
+detection alongside every other provider, with spend attributed back to the token
+or user that incurred it.

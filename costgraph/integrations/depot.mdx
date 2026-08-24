@@ -3,20 +3,11 @@ title: Depot
 description: "Bring Depot container-build and CI cost into CostGraph, pulled by us or pushed by you"
 ---
 
-Depot accelerates container builds, GitHub Actions runners, cache storage, and
-agent sandboxes. Its dashboard and usage API report **billed minutes and stored
-GB**, not dollars, so CostGraph reconstructs cost from those quantities at Depot's
-published (or your negotiated) rates.
+Depot accelerates container builds, GitHub Actions runners, and agent sandboxes,
+and reports usage per product and project.
 
-CostGraph reads Depot as **FOCUS 1.2** records at a grain of one usage-cost record
-per product (container builds, GitHub Actions runners, storage, sandboxes) per
-project or repo per window, pulled from `UsageService.GetUsage` and
-`ListProjectUsage` on api.depot.dev.
-
-The usage API does not break minutes down by vCPU size. Each product is priced at
-one documented default (the 16 vCPU container-build rate, the default 2 vCPU
-GitHub Actions rate, and so on). Override the rate variables if your org runs
-larger machines or has a custom contract.
+CostGraph reads Depot as **FOCUS 1.2** records at a grain of one record per product
+(build, runner, sandbox, storage) per project per day.
 
 ## Choose how the data reaches us
 
@@ -103,29 +94,12 @@ separate CostGraph product line yet.
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-Depot's whole pitch is cache acceleration, so the moat is proving it: minutes
-saved by the cache next to minutes actually billed says whether the acceleration
-is earning its cost. CostGraph carries these as FOCUS extensions so a build spend
-can be judged valid or wasteful, not just reported.
-
-| Extension | Signals |
-| --- | --- |
-| `x_MinutesSaved` / `x_MinutesBilled` | Cache-avoided minutes against billed minutes per project. A high saved-to-billed ratio is the cache paying for itself; a low one is acceleration you pay for but barely use. |
-| `x_BuildDurationSeconds` | Per-project container-build compute-seconds, the underlying build workload behind the spend. |
-| `x_LayerCacheSizeGb` | Per-project layer-cache size, so a large cache with few builds is stored bytes going unused. |
-| `x_BuildCount` | Builds run in the window, for sizing per-build cost. |
-| `x_JobCount` / `x_MinutesElapsed` | Per-repo GitHub Actions runner jobs and wall-clock minutes, so billed runner minutes can be checked against elapsed time. |
-| `x_SandboxesCount` | Agent sandboxes run, splitting sandbox minutes from build and runner minutes. |
-| `x_StorageType` | Whether the stored GB is cache or registry, so storage spend stays attributable. |
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there Depot spend appears in Cost Overview and in anomaly
-detection alongside every other provider, with the value-signal extensions
-available to flag caches that are not paying for their acceleration.
+detection alongside every other provider, so you can see whether the build cache
+is earning its cost.

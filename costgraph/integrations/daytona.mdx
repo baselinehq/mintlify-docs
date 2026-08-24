@@ -1,17 +1,13 @@
 ---
 title: Daytona
-description: "Bring Daytona sandbox cost into CostGraph, pulled by us or pushed by you"
+description: "Bring Daytona cloud development environment cost into CostGraph, pulled by us or pushed by you"
 ---
 
-Daytona runs cloud development environments as sandboxes, and it has no
-historical cost API, so CostGraph rates your live sandboxes at Daytona's
-published per-hour prices to produce cost. A started sandbox bills compute and
-disk; a stopped or archived sandbox bills disk only.
+Daytona runs cloud development environments as sandboxes. A started sandbox bills
+compute and disk; a stopped or archived sandbox bills disk only.
 
 CostGraph reads Daytona as **FOCUS 1.2** records at a grain of one record per
-sandbox (sandbox x organization), prorated to the window. Because the figure
-comes from current inventory rather than a bill, it is a run-rate estimate of
-what the sandboxes are costing you right now.
+sandbox per day.
 
 ## Choose how the data reaches us
 
@@ -27,59 +23,27 @@ what the sandboxes are costing you right now.
 ## Let CostGraph pull
 
 1. Open **Settings -> Integrations** and pick **Daytona**.
-2. Name the connection and pick the tenant these sandboxes belong to.
-3. Fill in the values the form asks for. It lists exactly the keys Daytona needs
-   and explains each one. You create an API key under **Dashboard -> Keys**; it
-   lists the organization's sandboxes with their reserved size and lifecycle
-   state and is sent as an `Authorization: Bearer` token. Optionally scope the
-   export to a single organization id; left empty, the key's default
-   organization is used.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the variables Daytona
+   needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
 value or a missing permission fails while you are still on the form.
 
-### Credentials
-
-| Variable | Required | Secret | Description |
-| --- | --- | --- | --- |
-| `DAYTONA_API_KEY` | yes | yes | Daytona API key (Dashboard -> Keys). Sent as an `Authorization: Bearer` token. Lists the organization's sandboxes with their reserved size (vCPU, memory, disk) and lifecycle state, which are rated against Daytona's published per-hour prices. |
-| `DAYTONA_ORGANIZATION_ID` | no | no | Organization id to scope the export (sent as the `X-Daytona-Organization-ID` header). When empty the key's default organization is used; the sandbox's own organization id becomes the billing account id either way. |
-
 <Note>
-Daytona has no historical cost API, so cost is your live sandbox inventory rated
-at Daytona's published per-hour prices and prorated to the window. That is a
-run-rate approximation, not a reconciled bill: a sandbox that started or stopped
-mid-window is rated from its current state. GPU rating and the organization's
-free-disk tier are not yet reflected. Credentials are encrypted at rest and used
-only to read your sandboxes. Revoke the key in Daytona at any time and the
-connection stops; nothing else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Daytona at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-A sandbox that is started but idle is the clearest waste here: it bills compute
-around the clock while nobody is working in it. CostGraph carries each sandbox's
-lifecycle state, its idle time, and its reserved size as FOCUS extensions so a
-cost can be judged valid or wasteful, not just reported.
-
-| Extension | Signals |
-| --- | --- |
-| `x_SandboxState` | The sandbox lifecycle state (started, stopped, archived, ...), so paid-for-but-stopped spend is visible. |
-| `x_ComputeBilled` | Whether compute is billing (started) or only disk is (stopped/archived). A started sandbox with no activity is compute you pay for and do not use. |
-| `x_IdleHours` | Hours since the sandbox's last activity while still billing compute, the direct idle-but-billed waste measure. |
-| `x_CpuCores` / `x_MemoryGiB` / `x_DiskGiB` | The reserved size behind the rate, so an oversized sandbox is visible against its actual use. |
-| `x_SandboxClass` | The sandbox class, which sets the compute and pricing floor. |
-| `x_GpuCount` / `x_GpuType` | GPU count and type attached to the sandbox, for sizing accelerated spend. |
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there Daytona spend appears in Cost Overview and in anomaly
-detection alongside every other provider, with the value-signal extensions
-available to flag started-but-idle sandboxes.
+detection alongside every other provider, so started-but-idle sandboxes stand
+out as waste.

@@ -75,6 +75,8 @@ nothing lands half-applied. The `422` response names the offending row index.
 | `charge_period_end` | **yes** | End of the window. Must be after the start, and no more than 366 days later. |
 | `rows` | **yes** | The FOCUS records. |
 | `complete` | no | `true` replaces the window. Omitted or `false` appends. |
+| `batch_id` | when appending | Names one export run, the same on every page of it. Required unless `complete` is `true`. |
+| `row_offset` | no | Index of this page's first row within that export. Defaults to `0`. Requires `batch_id`. |
 | `focus_version` | no | The FOCUS version the rows conform to, for example `1.2`. Recorded against the batch. |
 
 ## Row fields
@@ -175,7 +177,9 @@ idempotent, and it is how you correct a restatement: send the corrected month ag
 
 <Warning>
 `complete: true` with an empty `rows` array is refused, because it would silently
-delete the window. Omit `complete` if you mean to append nothing.
+delete the window. Omit `complete` if you mean to append nothing. A later page of a
+paged export may be empty, since its `row_offset` shows the window was already
+cleared by an earlier page.
 </Warning>
 
 Every row's `ChargePeriodStart` must fall inside the declared window, and all rows in
@@ -185,11 +189,53 @@ later pushes must agree with it.
 ## Batch size
 
 The endpoint accepts **32 MB** per request by default. A larger payload is rejected
-with a `413` telling you to split the batch. Narrow the window rather than dropping
-rows - a month is usually the natural unit.
+with a `413`. Either narrow the window - a month is usually the natural unit - or
+page the export, below.
 
 Only one ingest runs per connection at a time. A concurrent push gets a `409`, so
 retry rather than posting two batches to one connection in parallel.
+
+## Paging a large export
+
+A month of a busy account can exceed the size limit at any window you would want to
+send. Split it into pages, and tell CostGraph that is what you are doing:
+
+- `batch_id` names the export run. Use the same value on every page of it, and on
+  any retry of a page.
+- `row_offset` is the index of that page's first row within the whole export. Page
+  one is `0`, and each page adds the number of rows the previous one carried.
+
+```bash
+POST rows[0    ..4999]   batch_id: "2026-07-run1"  row_offset: 0      complete: true
+POST rows[5000..9999]    batch_id: "2026-07-run1"  row_offset: 5000
+POST rows[10000..]       batch_id: "2026-07-run1"  row_offset: 10000
+```
+
+Only the first page carries `complete: true`. It clears the window once; the pages
+after it append to what the run has already written, so page two never wipes page
+one. Send the pages in order, since a page at offset `0` is what clears the window.
+
+<Warning>
+An appending push - `complete` omitted or `false` - must carry `batch_id`. Without
+it CostGraph cannot tell the next page of an export from a retry of the last one,
+and either loses charges or counts them twice. A `complete` push does not need one,
+because it replaces the window outright.
+</Warning>
+
+### Why the offset matters
+
+A provider may bill one line item several times in a period, and FOCUS has no field
+that separates the copies: five load balancers of the same shape, in one project, on
+one day, are five identical rows. `row_offset` gives each row a slot in the export,
+so the copies stay distinct.
+
+That slot is also what makes a retry safe. A page resent after a timeout addresses
+the same slots and updates those rows in place; the next page addresses new slots
+and both pages survive. Retry a failed page with exactly the same `batch_id` and
+`row_offset` it had the first time.
+
+Start a new `batch_id` for every export run. Reusing the previous run's id with
+different rows lands them in slots the old run already owns.
 
 ## A daily loop
 
@@ -198,6 +244,9 @@ Send yesterday once the day closes, with `complete: true` so a re-run is harmles
 ```
 POST window [yesterday 00:00Z, today 00:00Z)  complete: true
 ```
+
+A day rarely needs paging. If a re-sent month does, page it as above with a fresh
+`batch_id` per run.
 
 Then re-send the whole month after your own books close, again with `complete: true`.
 The month replaces the days it covers, so late charges and restatements correct
@@ -214,7 +263,7 @@ touches.
 | Status | Meaning |
 |--------|---------|
 | `200` | Ingested. The body echoes the connection id, provider, row count, and whether the batch was complete. |
-| `400` | Malformed payload, or the window or rows failed validation. |
+| `400` | Malformed payload, or the window or rows failed validation. Also returned when an appending push omits `batch_id`. |
 | `403` | The key is missing the `focus:write` scope. |
 | `404` | No such connection for this organization and tenant. |
 | `409` | The connection is pull-mode, or another ingest is already running. |

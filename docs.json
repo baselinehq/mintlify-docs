@@ -69,6 +69,7 @@
               "costgraph/integrations/anthropic",
               "costgraph/integrations/aws",
               "costgraph/integrations/blacksmith",
+              "costgraph/integrations/buildkite",
               "costgraph/integrations/cherryservers",
               "costgraph/integrations/clickhouse",
               "costgraph/integrations/cloudflare",
@@ -76,6 +77,7 @@
               "costgraph/integrations/costgraph",
               "costgraph/integrations/cursor",
               "costgraph/integrations/datadog",
+              "costgraph/integrations/daytona",
               "costgraph/integrations/depot",
               "costgraph/integrations/digitalocean",
               "costgraph/integrations/elevenlabs",
@@ -85,6 +87,7 @@
               "costgraph/integrations/hatchet",
               "costgraph/integrations/helicone",
               "costgraph/integrations/linode",
+              "costgraph/integrations/litellm",
               "costgraph/integrations/modal",
               "costgraph/integrations/openai",
               "costgraph/integrations/openrouter",
@@ -256,6 +259,10 @@
       "destination": "/costgraph/integrations/blacksmith"
     },
     {
+      "source": "/costgraph/focus-exporter/buildkite",
+      "destination": "/costgraph/integrations/buildkite"
+    },
+    {
       "source": "/costgraph/focus-exporter/cherryservers",
       "destination": "/costgraph/integrations/cherryservers"
     },
@@ -282,6 +289,10 @@
     {
       "source": "/costgraph/focus-exporter/datadog",
       "destination": "/costgraph/integrations/datadog"
+    },
+    {
+      "source": "/costgraph/focus-exporter/daytona",
+      "destination": "/costgraph/integrations/daytona"
     },
     {
       "source": "/costgraph/focus-exporter/depot",
@@ -314,6 +325,10 @@
     {
       "source": "/costgraph/focus-exporter/linode",
       "destination": "/costgraph/integrations/linode"
+    },
+    {
+      "source": "/costgraph/focus-exporter/litellm",
+      "destination": "/costgraph/integrations/litellm"
     },
     {
       "source": "/costgraph/focus-exporter/modal",

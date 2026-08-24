@@ -1,0 +1,84 @@
+---
+title: Buildkite
+description: "Bring Buildkite seat cost into CostGraph, pulled by us or pushed by you"
+---
+
+Buildkite is a CI/CD platform billed per user seat. Its REST API returns no plan
+or price, so CostGraph exports the seats as the billable unit and values them at
+a per-seat price you supply, while reconstructing each member's build activity so
+an idle seat stands out.
+
+CostGraph reads Buildkite as **FOCUS 1.2** records at a grain of one record per
+member per month (a `User Seat`, attributed via the sub-account). The seat is the
+billable unit; because members carry no last-activity field, build activity is
+reconstructed from who created builds in the window.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call Buildkite once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **Buildkite**.
+2. Name the connection and pick the tenant these seats belong to.
+3. Fill in the values the form asks for. It lists exactly the keys Buildkite needs
+   and explains each one. You create an API access token under **User Settings ->
+   API Access Tokens** with the `read_organizations`, `read_builds` and
+   `read_user` scopes; it is sent as an `Authorization: Bearer` token. Supply the
+   organization slug, and optionally a per-seat monthly price to value the seats.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+### Credentials
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `BUILDKITE_API_TOKEN` | yes | yes | Buildkite REST API access token (User Settings -> API Access Tokens) with the `read_organizations`, `read_builds` and `read_user` scopes. Sent as an `Authorization: Bearer` token. |
+| `BUILDKITE_ORG` | yes | no | Organization slug whose seats are exported (the `{org}` in `buildkite.com/{org}`). Becomes the billing account id. |
+| `BUILDKITE_SEAT_PRICE` | no | no | Per-user monthly price in USD used to value each seat (Buildkite's REST API returns no plan or price). When set, each seat record carries this cost; when unset, seats are emitted with zero cost so the idle-seat signal still lands. |
+
+<Note>
+Buildkite's REST API exposes no plan or price, so cost is only reconstructed when
+you supply `BUILDKITE_SEAT_PRICE`; without it seats are emitted at zero cost as a
+pure usage and value signal. Buildkite Hosted vCPU-minutes are not yet reflected,
+as there is no REST endpoint for them. Credentials are encrypted at rest and used
+only to read organization members and build activity. Revoke the token in
+Buildkite at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Value signal
+
+A paid seat that ran no builds in the window is the clearest waste here. Members
+have no last-activity field, so CostGraph reconstructs each member's build
+activity from the builds they created and carries it as FOCUS extensions so a
+seat can be judged active or idle, not just counted.
+
+| Extension | Signals |
+| --- | --- |
+| `x_ActiveInWindow` | Whether the member created any build in the window. A seat that is paid for but inactive is the idle-seat waste to reclaim. |
+| `x_BuildsCreated` | Builds the member created in the month, for ranking heavy against barely-used seats. |
+| `x_LastBuildAt` | Timestamp of the member's most recent build, so recently-idle and long-idle seats are distinguishable. |
+| `x_MemberRole` | The member's role in the organization, for context on who the seat is for. |
+| `x_SsoMode` | The member's SSO mode, so provisioning gaps are visible. |
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Buildkite spend appears in Cost Overview and in anomaly
+detection alongside every other provider, with the value-signal extensions
+available to flag idle seats.
+</content>

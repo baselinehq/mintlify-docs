@@ -3,13 +3,11 @@ title: RunPod
 description: "Bring RunPod GPU cloud cost into CostGraph, pulled by us or pushed by you"
 ---
 
-RunPod is a GPU cloud, and it bills GPU work per day: on-demand pods and
-serverless endpoints each accrue a real billed amount in USD, broken down by GPU
-type.
+RunPod is a GPU cloud that bills GPU work per day, with on-demand pods and
+serverless endpoints broken down by GPU type.
 
 CostGraph reads RunPod as **FOCUS 1.2** records at a grain of one record per pod
-or serverless endpoint per GPU type per day, priced at the real billed amount
-RunPod reports.
+or serverless endpoint per GPU type per day.
 
 ## Choose how the data reaches us
 
@@ -26,53 +24,26 @@ RunPod reports.
 
 1. Open **Settings -> Integrations** and pick **RunPod**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys RunPod needs
-   and explains each one. You create an API key under **Settings -> API Keys**;
-   it reads the pod and serverless-endpoint billing history over the REST v1 API
-   (`/billing/pods` and `/billing/endpoints`). The key is sent as an
-   `Authorization: Bearer` token.
+3. Fill in the values the form asks for. It lists exactly the variables RunPod
+   needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
 value or a missing permission fails while you are still on the form.
 
-### Credentials
-
-| Variable | Required | Secret | Description |
-| --- | --- | --- | --- |
-| `RUNPOD_API_KEY` | yes | yes | RunPod API key (Settings -> API Keys). Reads the pod and serverless-endpoint billing history. Sent as an `Authorization: Bearer` token. |
-| `RUNPOD_ACCOUNT_ID` | no | no | RunPod account id, used as the billing account id. When unset it is resolved from the account via GraphQL (`myself.id`). |
-
 <Note>
-Cost is the real amount RunPod billed, in USD. Credentials are encrypted at rest
-and used only to read billing history and account id. Revoke the key in RunPod
-at any time and the connection stops; nothing else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+RunPod at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-GPU spend is only valid when the GPU is doing work, and RunPod's billing
-breakdown exposes both the time billed and the disk held while a pod is stopped.
-CostGraph carries these as FOCUS extensions so a cost can be judged valid or
-wasteful, not just reported.
-
-| Extension | Signals |
-| --- | --- |
-| `x_ResourceKind` | Whether the record is a pod or a serverless endpoint, so on-demand and serverless spend stay distinguishable. |
-| `x_GpuType` | The GPU model behind the line item, so spend is attributable to a specific accelerator. |
-| `x_TimeBilledMs` | Milliseconds billed in the day, a GPU-idle proxy: time billed well below the wall-clock window is paid-for-but-idle GPU. |
-| `x_DiskSpaceBilledGb` | Disk space billed, which surfaces stopped-pod storage waste: a stopped pod still pays for its held volume. |
-
-Pod-state and spot-versus-on-demand signals are a deferred follow-up.
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
 daily cost. From there RunPod spend appears in Cost Overview and in anomaly
-detection alongside every other provider, with the value-signal extensions
-available to flag idle-GPU and stopped-pod storage waste.
+detection alongside every other provider, so idle GPUs and stopped-pod storage
+waste stand out.

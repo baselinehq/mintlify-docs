@@ -3,12 +3,11 @@ title: Hatchet Cloud
 description: "Bring Hatchet Cloud task-run cost into CostGraph, pulled by us or pushed by you"
 ---
 
-Hatchet Cloud is a distributed task queue for durable execution, and it bills on
-the work it runs: task runs are charged at the published rate of **$10 per
-1,000,000 task runs**. Events are not separately charged.
+Hatchet Cloud is a distributed task queue for durable execution, billed on the
+task runs it executes.
 
 CostGraph reads Hatchet Cloud as **FOCUS 1.2** records at a grain of one record
-per tenant per day, with runs priced at that published rate.
+per tenant per day.
 
 ## Choose how the data reaches us
 
@@ -25,57 +24,26 @@ per tenant per day, with runs priced at that published rate.
 
 1. Open **Settings -> Integrations** and pick **Hatchet Cloud**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys Hatchet Cloud
-   needs and explains each one. You create a client token under **Settings -> API
-   Tokens**; the token is a Hatchet JWT whose claims carry the API base URL
-   (`server_url`) and tenant id (`sub`), so no other configuration is required.
-   The token is sent as an HTTP Bearer token.
+3. Fill in the values the form asks for. It lists exactly the variables Hatchet
+   Cloud needs, marks which are optional, and explains the permission each one requires.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong
 value or a missing permission fails while you are still on the form.
 
-### Credentials
-
-`HATCHET_CLIENT_TOKEN` accepts one token or a comma-separated list of tokens, one
-per tenant. A client token is scoped to a single tenant, so exporting more than
-one tenant requires one comma-separated token per tenant; each token's JWT claims
-supply its base URL and tenant id.
-
-| Variable | Required | Secret | Description |
-| --- | --- | --- | --- |
-| `HATCHET_CLIENT_TOKEN` | yes | yes | One Hatchet JWT or a comma-separated list of tokens, one per tenant (Settings -> API Tokens). A client token is scoped to a single tenant, so multiple tenants means multiple comma-separated tokens. Each token's claims carry the API base URL (`server_url`) and tenant id (`sub`), so no other config is needed. Sent as an HTTP Bearer token. |
-| `HATCHET_SERVER_URL` | no | no | API base URL override applied to every token. Defaults to each token's `server_url` claim. |
-| `HATCHET_INCLUDED_RUNS` | no | no | Monthly free task-run allowance for the plan (Developer includes 100000). The first this-many runs each calendar month are billed at zero; only the overage is rated. Plan tier is not exposed by the API, so it is supplied here. |
-| `HATCHET_MONTHLY_BASE_FEE` | no | no | Plan platform fee in USD per calendar month (Team 500, Scale 1000, Developer 0). When set, one recurring Purchase record is emitted per tenant per month in the window. Plan tier is not exposed by the API, so it is supplied here. |
-
 <Note>
-Credentials are encrypted at rest and used only to read task-run usage and tenant
-membership. Revoke the token in Hatchet Cloud at any time and the connection
-stops; nothing else is affected.
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Hatchet Cloud at any time and the connection stops; nothing else is affected.
 </Note>
 
 ## Push it yourself
 
-Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
-
-## Value signal
-
-Billing is task runs only, and a failed run costs exactly the same as a
-succeeded one, so failed runs are wasted spend. CostGraph carries the run
-outcome split and the tenant's member count as FOCUS extensions so a cost can be
-judged valid or wasteful, not just reported.
-
-| Extension | Signals |
-| --- | --- |
-| `x_SucceededRuns` | Task runs that completed successfully in the day, the share of spend doing useful work. |
-| `x_FailedRuns` | Task runs that failed. Failed runs bill at the same rate as succeeded ones, so this is spend on work that produced nothing. |
-| `x_MemberCount` | The tenant's member (seat) count from the members API, for sizing the account behind the spend. |
 
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into
-daily cost. From there Hatchet Cloud spend appears in Cost Overview and in
-anomaly detection alongside every other provider, with the value-signal
-extensions available to flag failed-run waste.
+daily cost. From there Hatchet Cloud spend appears in Cost Overview and in anomaly
+detection alongside every other provider, so failed task runs that bill the same
+as successful ones stand out as waste.

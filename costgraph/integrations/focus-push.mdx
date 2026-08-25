@@ -224,7 +224,8 @@ A month of a busy account can exceed the size limit at any window you would want
 send. Split it into pages, and tell CostGraph that is what you are doing:
 
 - `batch_id` names the export run. Use the same value on every page of it, and on
-  any retry of a page.
+  any retry of a page. Letters, digits, dot, dash and underscore, up to 128
+  characters.
 - `row_offset` is the index of that page's first row within the whole export. Page
   one is `0`, and each page adds the number of rows the previous one carried.
 
@@ -236,7 +237,8 @@ POST rows[10000..]       batch_id: "2026-07-run1"  row_offset: 10000
 
 Only the first page carries `complete: true`. It clears the window once; the pages
 after it append to what the run has already written, so page two never wipes page
-one. Send the pages in order, since a page at offset `0` is what clears the window.
+one. Clearing spares whatever this `batch_id` has already written, so retrying the
+first page rewrites its own rows and leaves the pages that followed it alone.
 
 <Warning>
 An appending push - `complete` omitted or `false` - must carry `batch_id`. Without

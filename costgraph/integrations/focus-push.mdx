@@ -93,8 +93,7 @@ Timestamps are RFC 3339.
 | `BillingPeriodStart` / `BillingPeriodEnd` | End must be after start. The invoice period the charge belongs to. |
 | `ChargePeriodStart` / `ChargePeriodEnd` | End must be after start. Start must fall inside the window the batch declares. |
 | `ChargeCategory` | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
-| `ChargeDescription` | Non-empty. |
-| `Provider` | Non-empty. Every row in a batch must agree, and must match the connection. |
+| `Provider` | Non-empty, or send `ProviderName` instead. Every row in a batch must agree, and must match the connection. |
 | `ServiceName` | Non-empty. |
 | `BilledCost` | Decimal string. |
 | `EffectiveCost` | Decimal string. Amortised cost; this is what CostGraph reports on. |
@@ -105,9 +104,33 @@ Timestamps are RFC 3339.
 | Field | Constraint |
 |-------|-----------|
 | `ChargeClass` | Only `Correction` is accepted. |
-| `ServiceCategory` | One of `AI and Machine Learning`, `Analytics`, `Business Applications`, `Compute`, `Databases`, `Developer Tools`, `Identity`, `Integration`, `Internet of Things`, `Management and Governance`, `Media`, `Migration`, `Mobile`, `Multicloud`, `Networking`, `Security`, `Storage`, `Web`, `Other`. |
 | `ContractedCost` | Must parse as a decimal. |
 | `SubAccountName`, `SubAccountType` | Require `SubAccountId` to be set too. |
+
+### Repaired rather than rejected
+
+A vendor that publishes FOCUS rarely publishes it exactly, and the deviations are
+usually repairable. CostGraph repairs these on the way in rather than refusing the
+batch:
+
+| Field | What happens |
+|-------|--------------|
+| `ChargeDescription` | Null or absent is filled from `ServiceName`. The spec allows it to be null. |
+| `ServiceCategory` | A value outside the FOCUS enum is mapped onto it - `Compute Engine` and `Runtime` become `Compute`, `Logging & Monitoring` becomes `Management and Governance`. A value nothing matches becomes `Other`, so the charge still counts. |
+| `Provider` | Taken from a `ProviderName` column when `Provider` itself is absent, which is how most vendor exports name it. |
+
+Your own category is not discarded. Unless you set `ServiceSubcategory` yourself, the
+value you declared is kept there, so a row filed under `Compute` still says
+`Compute Engine GPU` in breakdowns.
+
+<Note>
+The FOCUS `ServiceCategory` enum is `AI and Machine Learning`, `Analytics`,
+`Business Applications`, `Compute`, `Databases`, `Developer Tools`, `Identity`,
+`Integration`, `Internet of Things`, `Management and Governance`, `Media`,
+`Migration`, `Mobile`, `Multicloud`, `Networking`, `Security`, `Storage`, `Web`,
+`Other`. Sending one of these exactly is always cleanest - the mapping is a safety
+net, not a substitute for saying what you mean.
+</Note>
 
 ### Optional
 

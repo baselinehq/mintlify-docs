@@ -93,8 +93,7 @@ Timestamps are RFC 3339.
 | `BillingPeriodStart` / `BillingPeriodEnd` | End must be after start. The invoice period the charge belongs to. |
 | `ChargePeriodStart` / `ChargePeriodEnd` | End must be after start. Start must fall inside the window the batch declares. |
 | `ChargeCategory` | One of `Usage`, `Purchase`, `Tax`, `Credit`, `Adjustment`. |
-| `ChargeDescription` | Non-empty. |
-| `Provider` | Non-empty. Every row in a batch must agree, and must match the connection. |
+| `Provider` | Non-empty, or send `ProviderName` instead. Every row in a batch must agree, and must match the connection. |
 | `ServiceName` | Non-empty. |
 | `BilledCost` | Decimal string. |
 | `EffectiveCost` | Decimal string. Amortised cost; this is what CostGraph reports on. |
@@ -105,9 +104,33 @@ Timestamps are RFC 3339.
 | Field | Constraint |
 |-------|-----------|
 | `ChargeClass` | Only `Correction` is accepted. |
-| `ServiceCategory` | One of `AI and Machine Learning`, `Analytics`, `Business Applications`, `Compute`, `Databases`, `Developer Tools`, `Identity`, `Integration`, `Internet of Things`, `Management and Governance`, `Media`, `Migration`, `Mobile`, `Multicloud`, `Networking`, `Security`, `Storage`, `Web`, `Other`. |
 | `ContractedCost` | Must parse as a decimal. |
 | `SubAccountName`, `SubAccountType` | Require `SubAccountId` to be set too. |
+
+### Repaired rather than rejected
+
+A vendor that publishes FOCUS rarely publishes it exactly, and the deviations are
+usually repairable. CostGraph repairs these on the way in rather than refusing the
+batch:
+
+| Field | What happens |
+|-------|--------------|
+| `ChargeDescription` | Null or absent is filled from `ServiceName`. The spec allows it to be null. |
+| `ServiceCategory` | A value outside the FOCUS enum is mapped onto it - `Compute Engine` and `Runtime` become `Compute`, `Logging & Monitoring` becomes `Management and Governance`. A value nothing matches becomes `Other`, so the charge still counts. |
+| `Provider` | Taken from a `ProviderName` column when `Provider` itself is absent, which is how most vendor exports name it. |
+
+Your own category is not discarded. Unless you set `ServiceSubcategory` yourself, the
+value you declared is kept there, so a row filed under `Compute` still says
+`Compute Engine GPU` in breakdowns.
+
+<Note>
+The FOCUS `ServiceCategory` enum is `AI and Machine Learning`, `Analytics`,
+`Business Applications`, `Compute`, `Databases`, `Developer Tools`, `Identity`,
+`Integration`, `Internet of Things`, `Management and Governance`, `Media`,
+`Migration`, `Mobile`, `Multicloud`, `Networking`, `Security`, `Storage`, `Web`,
+`Other`. Sending one of these exactly is always cleanest - the mapping is a safety
+net, not a substitute for saying what you mean.
+</Note>
 
 ### Optional
 
@@ -201,7 +224,8 @@ A month of a busy account can exceed the size limit at any window you would want
 send. Split it into pages, and tell CostGraph that is what you are doing:
 
 - `batch_id` names the export run. Use the same value on every page of it, and on
-  any retry of a page.
+  any retry of a page. Letters, digits, dot, dash and underscore, up to 128
+  characters.
 - `row_offset` is the index of that page's first row within the whole export. Page
   one is `0`, and each page adds the number of rows the previous one carried.
 
@@ -213,7 +237,8 @@ POST rows[10000..]       batch_id: "2026-07-run1"  row_offset: 10000
 
 Only the first page carries `complete: true`. It clears the window once; the pages
 after it append to what the run has already written, so page two never wipes page
-one. Send the pages in order, since a page at offset `0` is what clears the window.
+one. Clearing spares whatever this `batch_id` has already written, so retrying the
+first page rewrites its own rows and leaves the pages that followed it alone.
 
 <Warning>
 An appending push - `complete` omitted or `false` - must carry `batch_id`. Without

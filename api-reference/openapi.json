@@ -3,11 +3,11 @@
   "info": {
     "title": "CostGraph Pricing API",
     "description": "Provides API level access to the Costgraph Services.",
-    "termsOfService": "https://costgraph.baselinehq.cloud/terms-of-use",
+    "termsOfService": "https://costgraph.ai/terms-of-use",
     "contact": {
       "name": "Customer Support",
-      "url": "https://costgraph.baselinehq.cloud/support",
-      "email": "contact@baselinehq.cloud"
+      "url": "https://costgraph.ai/support",
+      "email": "support@costgraph.ai"
     },
     "license": {
       "name": "Apache 2.0",

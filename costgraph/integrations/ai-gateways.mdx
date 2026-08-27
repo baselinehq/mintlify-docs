@@ -53,11 +53,24 @@ That is the whole cluster-side setup. **You do not add scrape targets.**
 CostGraph serves them from the connections you create, so connecting another
 gateway later changes nothing in your Helm values.
 
+A connection is picked up within five minutes of being created; the scraper
+refreshes its served targets on that interval rather than at start only.
+
 <Note>
   A served target always carries a metric-name filter, so it only ever collects
   the token metrics it was configured for. A target you set yourself in
   `operatorPrometheus.scrapeTargets` always wins over a served one.
 </Note>
+
+<Warning>
+  **agentgateway has no stock scrape location.** Its token metrics come from the
+  per-Gateway data plane, not the control plane, and those pods live in whichever
+  namespace you created the Gateway in. So there is nothing for CostGraph to
+  default to: an agentgateway connection must name the namespace and the pod
+  label selector when you connect, or nothing can ever be scraped. Every other
+  gateway defaults to its stock location, and you only supply these to override
+  a non-standard deployment.
+</Warning>
 
 ## Attribute usage to your customers
 
@@ -81,16 +94,18 @@ per-customer usage shows up wherever you already group by sub-account.
   </Accordion>
 
   <Accordion title="Solo.io agentgateway">
-    Add a metric field computed from the request. The value is a CEL expression,
-    so the identifier can come from a header, a JWT claim, or anything else in
-    the request.
+    Add a metric attribute computed from the request. On Kubernetes this goes in
+    an AgentgatewayPolicy. The value is a CEL expression, so the identifier can
+    come from a header, a JWT claim, or anything else in the request.
 
     ```yaml
-    config:
-      metrics:
-        fields:
-          add:
-            customer: 'request.headers["x-customer-id"]'
+    spec:
+      frontend:
+        metrics:
+          attributes:
+            add:
+              - name: customer
+                expression: request.headers["x-customer-id"]
     ```
   </Accordion>
 
@@ -117,6 +132,13 @@ per-customer usage shows up wherever you already group by sub-account.
   </Accordion>
 </AccordionGroup>
 
+<Note>
+  The annotation fills in a customer only where the gateway did not report one
+  itself. A gateway that labels each request wins, so annotating a shared
+  gateway does not collapse its customers onto one sub-account. Annotate the
+  workload only where per-request attribution is not available.
+</Note>
+
 ## How usage is priced
 
 Rates resolve in order, and the first match wins:
@@ -126,6 +148,10 @@ Rates resolve in order, and the first match wins:
    it returns. See [Pricing IDs](/costgraph/operator/on-prem-pricing).
 2. **A hosted reference rate** for the same model, from the model catalog. This
    answers "what would this have cost on someone else's API".
+3. **Your own amortized rate**, for a model you serve yourself. CostGraph divides
+   what the serving namespace cost that day by the tokens it served that day, so
+   a self-hosted model prices at what it actually cost you to run rather than at
+   somebody else's list price.
 
 A pin that names a rate which no longer exists leaves the usage **unpriced**, and
 never silently falls back to a market rate. A plausible wrong number is worse

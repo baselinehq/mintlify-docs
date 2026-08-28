@@ -1,0 +1,57 @@
+---
+sidebar_position: 1
+title: Changelogs
+---
+Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own infrastructure. Helm release notes are on our [chart repository](https://github.com/BaselineHQ/costgraph-charts); view the [index.yaml](http://charts.costgraph.ai/index.yaml) for the latest published versions.
+
+## SLA
+- We will provide changelogs for major and minor releases of the chart
+- Customers will be made aware of any breaking changes in any release cycle
+- Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
+
+<Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
+    ### Breaking Changes
+
+    <Warning>
+        Read the first item before upgrading. The Postgres and metrics StatefulSets are renamed, and a renamed StatefulSet does not adopt the volumes of the old one. Upgrading without acting will start both databases against empty storage.
+    </Warning>
+
+    - **Every object is renamed and no longer carries the release name.** Objects were `<release>-costgraph-selfhosted...`; they are now `costgraph-selfhosted...`. The chart is installed once per namespace, so the prefix distinguished nothing, and components rendered by the shared application chart cannot reproduce it.
+
+      The two StatefulSets, `costgraph-selfhosted-postgres` and `costgraph-selfhosted-victoria-metrics`, are affected. **Their PersistentVolumeClaims are not deleted**, but the renamed StatefulSets will not claim them and will provision empty volumes instead.
+
+      If you run the bundled Postgres or the bundled metrics store, take a backup first, then either point the release at the existing volumes or restore into the new ones. If you run your own Postgres and metrics store, which is what we recommend for production, nothing here affects your data.
+
+    - **Shared values move under `global`.** A values file using the old paths still parses, and the settings are then ignored, so an install can silently fall back to bundled defaults. Every moved key:
+
+      | Before | After |
+      | --- | --- |
+      | `postgres.*` | `global.postgres.*` |
+      | `redis.url`, `redis.existingSecret`, `redis.bundled.*` | `global.redis.*` |
+      | `metricsStore.*` | `global.metricsStore.*` |
+      | `controlPlane.*` | `global.controlPlane.*` |
+      | `appBaseURL` | `global.appBaseURL` |
+      | `corsAllowedOrigins` | `global.corsAllowedOrigins` |
+      | `pricingApiKey` | `global.pricingApiKey` |
+      | `analytics.*` | `global.analytics.*` |
+      | `image.*` | `global.image.*` |
+      | `imagePullSecrets` | `global.imagePullSecrets` |
+      | `podSecurityContext`, `securityContext` | `global.podSecurityContext`, `global.securityContext` |
+      | `nodeSelector`, `tolerations`, `affinity` | `global.nodeSelector`, `global.tolerations`, `global.affinity` |
+      | `podAnnotations` | `global.podAnnotations` |
+
+    - **Per-component resources move under `deployment`.** Also silent: the old paths parse and are ignored, and the container then runs with no requests or limits.
+
+      | Before | After |
+      | --- | --- |
+      | `aggregator.resources` | `aggregator.deployment.resources` |
+      | `ingestionApi.resources` | `ingestionApi.deployment.resources` |
+      | `redis.bundled.resources` | `redis.deployment.resources` |
+
+    ### Updates
+    - The bundled Redis, vmalert, the aggregator and the ingestion API are rendered from shared chart definitions rather than templates unique to this chart, so they no longer drift from the same components in our own deployment
+    - vmalert gains a Service per rule set, so `/api/v1/rules` can be reached when a rule is producing no samples. There was no way to reach it before
+    - vmalert reads the recording rules from the aggregator image rather than a ConfigMap built from a copy of them, so the rules cannot fall behind the aggregator that consumes them
+    - The bundled Redis no longer mounts a service account token
+    - Configuration changes roll the affected Deployments again: the pods carry a hash of the values that produced them
+</Update>

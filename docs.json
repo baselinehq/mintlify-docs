@@ -68,7 +68,8 @@
             "icon": "server",
             "pages": [
               "costgraph/self-hosted/overview",
-              "costgraph/self-hosted/install"
+              "costgraph/self-hosted/install",
+              "costgraph/self-hosted/changelog"
             ]
           },
           {

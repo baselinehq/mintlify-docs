@@ -1,0 +1,294 @@
+---
+title: Install
+description: "Run the CostGraph self-hosted chart and connect your clusters to it"
+---
+
+## Prerequisites
+
+From CostGraph, one thing: a **deployment API key**, created in the dashboard
+under Settings → API Keys. It is the only credential you need. The image
+registry authenticates with the same key, and the chart wires that up for you.
+
+From your side:
+
+- Kubernetes and [Helm 3+](https://helm.sh/docs/intro/install/)
+- **Postgres 14+**, with `citext` and `pg_trgm`
+- **Redis**
+- **VictoriaMetrics**
+- The URL your users will reach the dashboard on
+
+<Warning>
+  `pg_partman` and `pg_cron` are not strictly required, but install them. Without
+  `pg_partman` every row lands in one default partition and large tables degrade;
+  without `pg_cron` partition maintenance is never scheduled, and inserts
+  eventually fail.
+
+  Managed Postgres (RDS, Cloud SQL) often ships neither. The install still
+  succeeds and warns you.
+</Warning>
+
+Sign-in needs no configuration. Your users sign in with their CostGraph
+accounts; their cost data stays in your network.
+
+## Install
+
+<Steps>
+  <Step title="Add the Helm repository">
+    ```shell
+    helm repo add costgraph https://charts.costgraph.ai
+    helm repo update
+    ```
+  </Step>
+
+  <Step title="Write a values file">
+    ```yaml my-values.yaml
+    controlPlane:
+      apiKey: bl_...
+
+    appBaseURL: https://costgraph.internal.example.com
+
+    postgres:
+      url: postgres://costgraph@pg.internal:5432/costgraph?sslmode=require
+      password: ...
+
+    redis:
+      url: redis://redis.internal:6379
+
+    metricsStore:
+      url: http://victoria-metrics.internal:8428
+
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: costgraph.internal.example.com
+          paths: [{ path: /, pathType: Prefix }]
+      tls:
+        - secretName: costgraph-tls
+          hosts: [costgraph.internal.example.com]
+    ```
+
+    `appBaseURL` must be the address people actually open in a browser, not an
+    internal Service DNS name. It shapes the links in invitation email.
+  </Step>
+
+  <Step title="Install">
+    ```shell
+    helm install costgraph costgraph/costgraph-selfhosted \
+      --namespace costgraph --create-namespace \
+      -f my-values.yaml
+    ```
+
+    A preflight check runs first and fails the install with the reason if the
+    database cannot support the schema.
+  </Step>
+</Steps>
+
+### Evaluating without a database
+
+To try it before standing up Postgres, Redis and VictoriaMetrics, replace those
+three blocks with `bundled.enabled: true` on each and the chart runs them
+in-cluster:
+
+```yaml
+postgres:
+  bundled:
+    enabled: true
+redis:
+  bundled:
+    enabled: true
+metricsStore:
+  bundled:
+    enabled: true
+```
+
+<Warning>
+  Evaluation only. Single replica, no backups, and the bundled Postgres image
+  carries neither `pg_partman` nor `pg_cron`, so partition maintenance never
+  runs. A database holding your cost history should outlive a Helm release.
+</Warning>
+
+### Keeping credentials out of values
+
+For production, put credentials in Secrets you manage and reference them with
+`existingSecret` rather than inline values, so nothing sensitive is written into
+Helm release history:
+
+```yaml
+controlPlane:
+  existingSecret: costgraph-control-plane
+postgres:
+  existingSecret: costgraph-postgres
+redis:
+  existingSecret: costgraph-redis
+```
+
+<Note>
+  When you use `controlPlane.existingSecret`, create the image pull secret
+  yourself as well and set `imagePullSecrets`:
+
+  ```shell
+  kubectl create secret docker-registry costgraph-registry \
+    --namespace costgraph \
+    --docker-server=registry.costgraph.ai \
+    --docker-username=x \
+    --docker-password=<your deployment API key>
+  ```
+</Note>
+
+## Network access it needs
+
+Outbound HTTPS (443) to these hosts:
+
+| Host | Used for |
+|---|---|
+| `api.costgraph.ai` | licensing, cloud price lists, billing quantities, account email |
+| `cognito-idp.us-east-2.amazonaws.com` | verifying sign-in |
+| `registry.costgraph.ai` | pulling the images |
+| `pkg-containers.githubusercontent.com` | the image layers |
+| `us.i.posthog.com` | anonymous product analytics, unless `analytics.enabled: false` |
+
+Nothing needs to reach the deployment from outside your network.
+
+## Connecting your spend
+
+Installing the chart gives you CostGraph. It does not give it anything to
+report on yet. That comes from the same sources as hosted CostGraph:
+
+| Source | Covers | Set up |
+|---|---|---|
+| Provider integrations | Clouds, databases, AI providers and developer tools you pay for | [Integrations](/costgraph/integrations/overview) |
+| CostGraph Operator | Kubernetes clusters | [Operator](/costgraph/operator/overview) |
+| CostGraph Agent | Virtual machines and bare metal | [Agent](/costgraph/agent) |
+| FOCUS push | Anything else, sent to the API yourself | [Push FOCUS data](/costgraph/integrations/focus-push) |
+
+Connect whichever apply to you. Provider integrations need only a read-only
+credential and nothing deployed.
+
+### Pointing them at your install
+
+Everything you deploy defaults to hosted CostGraph, so on a self-hosted install
+you redirect it at your own address.
+
+<Warning>
+  Miss this and that cluster or machine reports to hosted CostGraph instead of
+  to you.
+</Warning>
+
+For the operator, in every cluster you want costs for, including the one running
+CostGraph:
+
+```shell
+helm install costgraph-operator costgraph/costgraph-operator \
+  --namespace costgraph --create-namespace \
+  --set global.clusterName=<a name for this cluster> \
+  --set global.apiKey=<your deployment API key> \
+  --set global.backendURL=https://costgraph.internal.example.com/api/v1 \
+  --set operatorPrometheus.config.remoteWriteURL=https://costgraph.internal.example.com
+```
+
+| Operator setting | Points at | Default if left alone |
+|---|---|---|
+| `global.backendURL` | your install's API | hosted CostGraph |
+| `operatorPrometheus.config.remoteWriteURL` | your install's metrics endpoint | `tsdb.costgraph.ai` |
+
+The agent and the API take the same treatment: give them your own address in
+place of `api.costgraph.ai`, and your deployment API key.
+
+## Pricing hardware that is not in a cloud
+
+A resource in a public cloud is priced from that provider's published rates,
+matched on its instance type and region. Hardware you own has no published rate,
+so you register what it costs you and tag the resources that bill at it. This
+applies whether you measure them with the operator or the agent.
+
+Register the rate once, then tag everything that bills at it:
+
+```shell
+kubectl label node/node-1 \
+  costgraph.ai/pricing-id.compute="$COMPUTE_ID" --overwrite
+```
+
+<Card title="Pricing IDs" icon="tag" href="/costgraph/operator/on-prem-pricing">
+  Registering rates, the label spellings each platform accepts, and how a rate
+  is inherited from a node to the volumes on it.
+</Card>
+
+<Note>
+  Labels are inherited: tagging a node prices the volumes attached to it, so you
+  rarely need to label every object. A node is in no namespace, so labelling a
+  namespace never changes a node's own rate.
+</Note>
+
+## Operating
+
+Resources are named `<release>-costgraph-selfhosted`. The examples below assume
+`helm install costgraph ...`; `helm status costgraph` prints them with your own
+release name filled in.
+
+Check health at any time. This reads the database and makes no outbound call:
+
+```shell
+kubectl exec -n costgraph deploy/costgraph-costgraph-selfhosted -- \
+  selfhost-doctor -offline
+```
+
+If support asks for a diagnostic bundle. It contains no secrets and no cost
+data:
+
+```shell
+kubectl exec -n costgraph deploy/costgraph-costgraph-selfhosted -- \
+  selfhost-doctor -bundle -offline
+```
+
+## The one thing you must not delete
+
+On first install the chart generates encryption keys into a Secret named
+`<release>-costgraph-selfhosted-generated`. Everything you have saved is tied to
+them.
+
+Helm keeps this Secret across upgrades and uninstalls, so normally you need do
+nothing. But it cannot be regenerated.
+
+<Warning>
+  If that Secret is deleted, every API key your team issued stops working and
+  every connected cloud account has to be reconnected, because the stored
+  credentials can no longer be decrypted.
+
+  Back it up alongside the database, and keep the two together. A database
+  restored next to a different Secret is a database whose credentials cannot be
+  read.
+</Warning>
+
+```shell
+kubectl get secret costgraph-costgraph-selfhosted-generated \
+  -n costgraph -o yaml > costgraph-keys-backup.yaml
+```
+
+## Upgrades
+
+Upgrade in place. Pending migrations are applied on start:
+
+```shell
+helm upgrade costgraph costgraph/costgraph-selfhosted -f my-values.yaml
+```
+
+<Warning>
+  Back the database up first. Migrations are not reversible, so rolling the
+  release back does not roll the schema back. A failed upgrade recovers
+  forwards, not by `helm rollback`.
+</Warning>
+
+The chart's README carries the full recovery procedure for a failed upgrade:
+
+```shell
+helm show readme costgraph/costgraph-selfhosted
+```
+
+## Every setting
+
+`values.yaml` documents each setting inline, next to the value it controls:
+
+```shell
+helm show values costgraph/costgraph-selfhosted
+```

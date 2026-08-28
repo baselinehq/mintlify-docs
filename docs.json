@@ -61,6 +61,13 @@
             ]
           },
           {
+            "group": "Self-Hosted",
+            "pages": [
+              "costgraph/self-hosted/overview",
+              "costgraph/self-hosted/install"
+            ]
+          },
+          {
             "group": "Integrations",
             "icon": "plug",
             "pages": [

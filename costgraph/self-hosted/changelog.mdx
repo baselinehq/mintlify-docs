@@ -9,6 +9,11 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
 - Customers will be made aware of any breaking changes in any release cycle
 - Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
 
+
+<Note>
+    0.2.0 was tagged but never published: the chart repository's release job was failing at the time, and 0.3.0 superseded it. Its only change, moving vmalert to a shared definition, is part of 0.3.0. Nothing was released between 0.1.0 and 0.3.0.
+</Note>
+
 <Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
     ### Breaking Changes
 
@@ -54,4 +59,14 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     - vmalert reads the recording rules from the aggregator image rather than a ConfigMap built from a copy of them, so the rules cannot fall behind the aggregator that consumes them
     - The bundled Redis no longer mounts a service account token
     - Configuration changes roll the affected Deployments again: the pods carry a hash of the values that produced them
+</Update>
+
+<Update label="2026-08-27" description="costgraph-selfhosted v0.1.0">
+    ### Breaking Changes
+    - N/A. First release.
+
+    ### Updates
+    - CostGraph running in your own infrastructure: the API, dashboard, ingestion API, aggregator and vmalert, with Postgres, Redis and a VictoriaMetrics store optionally bundled for evaluation
+    - Postgres, Redis and the metrics store each take either a URL you provide, a Secret you manage, or a bundled instance. For production we recommend pointing the release at datastores you operate, so cost history outlives a Helm release
+    - A preflight check runs before an upgrade and reports a database the release cannot use, rather than failing partway through
 </Update>

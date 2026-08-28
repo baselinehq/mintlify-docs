@@ -40,8 +40,15 @@ Releases for the CostGraph operator will have helm tags associated that are not 
       | `operatorKubernetes.podAnnotations` | `operatorKubernetes.deployment.additionalPodAnnotations` |
       | `operatorKubernetes.podLabels` | `operatorKubernetes.deployment.podLabels` |
       | `operatorKubernetes.securityContext` | `operatorKubernetes.deployment.securityContext` |
+      | top-level `imagePullSecrets` | `operatorKubernetes.deployment.imagePullSecrets` |
 
-      `operatorKubernetes.config` is unchanged, as are the top-level `global`, `rbac` and `serviceAccount` values.
+      The top-level `imagePullSecrets` still applies to everything else in the chart, but no longer
+      reaches this Deployment, so a private operator image needs it repeated under the alias.
+
+      `operatorKubernetes.config.operatorVersion` is removed. `OPERATOR_VERSION` has always been
+      taken from the image tag, so the value was inert.
+
+      The top-level `global`, `rbac` and `serviceAccount` values are unchanged.
 
     ### Updates
     - `operatorPrometheus` is unchanged in both its values and its rendering

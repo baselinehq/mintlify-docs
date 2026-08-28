@@ -16,17 +16,17 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-08-28" description="costgraph-operator v0.5.0">
     ### Breaking Changes
-    - **`helm upgrade` fails until the two operator Deployments are deleted.** `costgraph-operator-kubernetes` and `costgraph-operator-prometheus` are now rendered by a shared chart, and their `spec.selector` changes as a result. A Deployment's selector is immutable, so Kubernetes rejects the patch rather than replacing the object. Delete both before upgrading; they are stateless and are recreated immediately:
+    - **Two objects are renamed and lose the release prefix.** The kubernetes operator's Deployment is now rendered by a shared chart that builds names from a plain value, which cannot include the release name. The service account it references cannot be templated either, so it is pinned.
 
-      ```sh
-      kubectl -n <namespace> delete deployment \
-        <release>-costgraph-operator-kubernetes \
-        <release>-costgraph-operator-prometheus
-      helm upgrade <release> costgraph/costgraph-operator
-      ```
+      | Object | Before | After |
+      | --- | --- | --- |
+      | Deployment | `<release>-costgraph-operator-kubernetes` | `costgraph-operator-kubernetes` |
+      | ServiceAccount | `<release>-costgraph-operator` | `costgraph-operator` |
 
-      No metrics are lost. The operators resume from the cluster's current state on restart, and the collectors that hold data are DaemonSets, which are unaffected.
-    - **Values under `operatorKubernetes` and `operatorPrometheus` move beneath `deployment`.** A values file that sets them at the old paths still parses, but the settings no longer apply and the chart's defaults are used instead. Nothing errors, so check any override you rely on:
+      `helm upgrade` handles this on its own: the renamed objects are created and the old ones pruned, with no manual step. **Two releases of this chart in one namespace now collide**, where the release prefix previously kept them apart. Install them in separate namespaces.
+
+      The credentials Secret is unchanged and keeps its release-derived name.
+    - **Values under `operatorKubernetes` move beneath `deployment`.** A values file using the old paths still parses, but the settings no longer apply and the chart's defaults are used instead. Nothing errors, so check any override you rely on:
 
       | Before | After |
       | --- | --- |
@@ -41,11 +41,11 @@ Releases for the CostGraph operator will have helm tags associated that are not 
       | `operatorKubernetes.podLabels` | `operatorKubernetes.deployment.podLabels` |
       | `operatorKubernetes.securityContext` | `operatorKubernetes.deployment.securityContext` |
 
-      The same mapping applies to `operatorPrometheus`. Settings under `config`, and the top-level `global` and `rbac` values, are unchanged.
+      `operatorKubernetes.config` is unchanged, as are the top-level `global`, `rbac` and `serviceAccount` values.
 
     ### Updates
-    - The two operator Deployments are rendered from a shared definition rather than a template each, so they no longer drift apart in the fields that should match
-    - The flowtrace DaemonSet, the ClusterRole and its bindings, the ServiceAccount, the credentials Secret and every bundled exporter are unchanged
+    - `operatorPrometheus` is unchanged in both its values and its rendering
+    - The flowtrace DaemonSet, the ClusterRole and its bindings, the credentials Secret and every bundled exporter are unchanged
 </Update>
 
 <Update label="2026-08-17" description="costgraph-operator v0.3.0">

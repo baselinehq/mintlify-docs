@@ -79,6 +79,32 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
   Timeout for scrape and backend requests.
 </ParamField>
 
+## AI gateway scraper
+
+`aiGatewayScraper` reads token usage from AI gateways running in the cluster and
+remote-writes it to the short-retention tier. It is a second instance of the
+same scraper image; the difference is `remoteWritePath`, because raw gateway
+series are high cardinality and are not intended to live as long as the
+operator's scraped metrics.
+
+<ParamField body="aiGatewayScraper.enabled" type="boolean" default="false">
+  Deploy the AI gateway scraper.
+</ParamField>
+
+<ParamField body="aiGatewayScraper.config.remoteWritePath" type="string" default="/api/v1/write/short">
+  Short-retention tier. Recording rules distil these series before anything
+  reaches 90-day retention.
+</ParamField>
+
+It takes **no** `scrapeTargets`. Targets are served by CostGraph from the
+connections you create in **Settings -> Integrations**, fetched at start and
+refreshed while it runs, so connecting a gateway never edits these values. See
+[AI gateways](/costgraph/integrations/ai-gateways).
+
+A target you define yourself in `operatorPrometheus.scrapeTargets` always wins
+over a served one, and a served target is only applied when it carries a
+metric-name filter.
+
 ## Network Metrics scraper
 
 `flowtrace` scrapes per-container network metrics and, optionally, host-process network metrics, then remote-writes them to CostGraph.

@@ -61,12 +61,20 @@
             ]
           },
           {
+            "group": "Self-Hosted",
+            "pages": [
+              "costgraph/self-hosted/overview",
+              "costgraph/self-hosted/install"
+            ]
+          },
+          {
             "group": "Integrations",
             "icon": "plug",
             "pages": [
               "costgraph/integrations/overview",
               "costgraph/integrations/focus-push",
               "costgraph/integrations/anthropic",
+              "costgraph/integrations/ai-gateways",
               "costgraph/integrations/aws",
               "costgraph/integrations/blacksmith",
               "costgraph/integrations/buildkite",
@@ -191,7 +199,7 @@
     "links": [
       {
         "label": "Talk to support",
-        "href": "mailto:contact@baselinehq.cloud"
+        "href": "mailto:support@costgraph.ai"
       }
     ],
     "primary": {

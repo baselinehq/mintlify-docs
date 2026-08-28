@@ -1,0 +1,82 @@
+---
+title: Overview
+description: "Run CostGraph in your own infrastructure"
+---
+
+Self-hosted CostGraph runs in infrastructure you control. Your spend data is
+collected into your own install and stays in your network.
+
+It is one Helm chart, `costgraph-selfhosted`, and one API key.
+
+## When you need it
+
+Self-hosting is for organisations that cannot send infrastructure metadata to a
+third party: data residency rules, a restricted network, or a security review
+that will not permit it.
+
+If none of those apply, hosted CostGraph is less to operate.
+## What still reaches CostGraph
+
+Your install keeps a light connection to CostGraph for licensing, cloud price lists, and billing quantities.
+
+<Note>
+  Your cost data, resource inventory and metrics stay in your infrastructure. What
+  leaves is your licence status, aggregate billing quantities, and requests for
+  public cloud prices.
+</Note>
+
+If that connection is lost, collection and everything you read keep working for
+a grace period. Past it the install becomes read-only and tells you so. New
+sign-ins are the exception, because they need the connection, so that is usually
+the first thing you notice.
+
+## What you provide
+
+You run the database, cache and metrics store; CostGraph runs on top of them.
+The chart can run all three for you to evaluate with, though not for production.
+See [Install](/costgraph/self-hosted/install).
+
+## What it reports on
+
+Self-hosted CostGraph sees everything hosted CostGraph sees. You connect the
+same sources:
+
+| Source | Covers |
+|---|---|
+| [Provider integrations](/costgraph/integrations/overview) | Clouds, databases, AI providers and developer tools you pay for |
+| [CostGraph Operator](/costgraph/operator/overview) | Kubernetes clusters |
+| [CostGraph Agent](/costgraph/agent) | Virtual machines and bare metal |
+| [FOCUS push](/costgraph/integrations/focus-push) | Anything else, sent to the API yourself |
+
+The chart itself installs once for your organisation. Everything above connects
+to it afterwards.
+
+<Warning>
+  Anything you deploy defaults to hosted CostGraph. On a self-hosted install you
+  point it at your own address instead, or it reports to hosted CostGraph rather
+  than to you. That is the most common mistake, and
+  [Install](/costgraph/self-hosted/install#pointing-them-at-your-install) covers
+  it.
+</Warning>
+
+## Pricing your own hardware
+
+CostGraph prices cloud resources from the provider's published rates. Hardware
+you own has no published rate to look up, so you register what it costs you and
+tag the resources that bill at it.
+
+That applies to bare metal and on-prem virtual machines, whether you measure
+them with the operator or the agent. See
+[Pricing IDs](/costgraph/operator/on-prem-pricing), which is the same mechanism
+whether you self-host or not.
+
+<Warning>
+  Until you register those rates, hardware you own is measured but has nothing
+  to price against. Usage without cost on the dashboard is almost always this.
+</Warning>
+
+## Getting started
+
+<Card title="Install" icon="download" href="/costgraph/self-hosted/install">
+  What you need, the values file, and connecting your clusters.
+</Card>

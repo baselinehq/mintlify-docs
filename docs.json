@@ -29,6 +29,7 @@
         "groups": [
           {
             "group": "Get Started",
+            "icon": "rocket",
             "pages": [
               "index",
               "concepts/how-it-works",
@@ -37,6 +38,7 @@
           },
           {
             "group": "CostGraph Operator",
+            "icon": "dharmachakra",
             "pages": [
               "costgraph/operator/overview",
               "costgraph/operator/configuration",
@@ -46,6 +48,7 @@
           },
           {
             "group": "CostGraph Agent",
+            "icon": "microchip",
             "pages": [
               "costgraph/agent",
               "costgraph/agent/recommendations",
@@ -62,6 +65,7 @@
           },
           {
             "group": "Self-Hosted",
+            "icon": "server",
             "pages": [
               "costgraph/self-hosted/overview",
               "costgraph/self-hosted/install"
@@ -73,43 +77,85 @@
             "pages": [
               "costgraph/integrations/overview",
               "costgraph/integrations/focus-push",
-              "costgraph/integrations/anthropic",
-              "costgraph/integrations/ai-gateways",
-              "costgraph/integrations/aws",
-              "costgraph/integrations/blacksmith",
-              "costgraph/integrations/buildkite",
-              "costgraph/integrations/cherryservers",
-              "costgraph/integrations/clickhouse",
-              "costgraph/integrations/cloudflare",
-              "costgraph/integrations/confluent",
-              "costgraph/integrations/costgraph",
-              "costgraph/integrations/cursor",
-              "costgraph/integrations/datadog",
-              "costgraph/integrations/daytona",
-              "costgraph/integrations/depot",
-              "costgraph/integrations/digitalocean",
-              "costgraph/integrations/elevenlabs",
-              "costgraph/integrations/gcp",
-              "costgraph/integrations/github",
-              "costgraph/integrations/grafanacloud",
-              "costgraph/integrations/hatchet",
-              "costgraph/integrations/helicone",
-              "costgraph/integrations/linode",
-              "costgraph/integrations/litellm",
-              "costgraph/integrations/modal",
-              "costgraph/integrations/newapi",
-              "costgraph/integrations/openai",
-              "costgraph/integrations/openrouter",
-              "costgraph/integrations/ovhcloud",
-              "costgraph/integrations/planetscale",
-              "costgraph/integrations/rediscloud",
-              "costgraph/integrations/respanai",
-              "costgraph/integrations/runpod",
-              "costgraph/integrations/scaleway",
-              "costgraph/integrations/stackit",
-              "costgraph/integrations/truefoundry",
-              "costgraph/integrations/vercel",
-              "costgraph/integrations/xai"
+              {
+                "group": "Cloud",
+                "icon": "cloud",
+                "pages": [
+                  "costgraph/integrations/aws",
+                  "costgraph/integrations/gcp",
+                  "costgraph/integrations/digitalocean",
+                  "costgraph/integrations/ovhcloud",
+                  "costgraph/integrations/stackit",
+                  "costgraph/integrations/scaleway",
+                  "costgraph/integrations/linode",
+                  "costgraph/integrations/cherryservers",
+                  "costgraph/integrations/vercel",
+                  "costgraph/integrations/modal",
+                  "costgraph/integrations/runpod",
+                  "costgraph/integrations/depot",
+                  "costgraph/integrations/daytona"
+                ]
+              },
+              {
+                "group": "AI / LLM",
+                "icon": "robot",
+                "pages": [
+                  "costgraph/integrations/anthropic",
+                  "costgraph/integrations/openai",
+                  "costgraph/integrations/openrouter",
+                  "costgraph/integrations/helicone",
+                  "costgraph/integrations/respanai",
+                  "costgraph/integrations/cursor",
+                  "costgraph/integrations/xai",
+                  "costgraph/integrations/litellm",
+                  "costgraph/integrations/truefoundry",
+                  "costgraph/integrations/newapi",
+                  "costgraph/integrations/ai-gateways",
+                  "costgraph/integrations/elevenlabs"
+                ]
+              },
+              {
+                "group": "Databases",
+                "icon": "database",
+                "pages": [
+                  "costgraph/integrations/planetscale",
+                  "costgraph/integrations/rediscloud",
+                  "costgraph/integrations/clickhouse"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart-column",
+                "pages": [
+                  "costgraph/integrations/confluent"
+                ]
+              },
+              {
+                "group": "CI & Dev Tools",
+                "icon": "code-branch",
+                "pages": [
+                  "costgraph/integrations/github",
+                  "costgraph/integrations/blacksmith",
+                  "costgraph/integrations/buildkite",
+                  "costgraph/integrations/hatchet"
+                ]
+              },
+              {
+                "group": "Networking",
+                "icon": "network-wired",
+                "pages": [
+                  "costgraph/integrations/cloudflare"
+                ]
+              },
+              {
+                "group": "Observability & Governance",
+                "icon": "gauge",
+                "pages": [
+                  "costgraph/integrations/datadog",
+                  "costgraph/integrations/grafanacloud",
+                  "costgraph/integrations/costgraph"
+                ]
+              }
             ]
           }
         ]

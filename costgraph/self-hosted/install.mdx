@@ -41,7 +41,8 @@ accounts; their cost data stays in your network.
   </Step>
 
   <Step title="Write a values file">
-    ```yaml my-values.yaml
+    ```shell
+    cat > my-values.yaml <<'EOF'
     controlPlane:
       apiKey: bl_...
 
@@ -66,10 +67,13 @@ accounts; their cost data stays in your network.
       tls:
         - secretName: costgraph-tls
           hosts: [costgraph.internal.example.com]
+    EOF
     ```
 
-    `appBaseURL` must be the address people actually open in a browser, not an
-    internal Service DNS name. It shapes the links in invitation email.
+    <Note>
+      `appBaseURL` must be the address people actually open in a browser, not an
+      internal Service DNS name. It shapes the links in invitation email.
+    </Note>
   </Step>
 
   <Step title="Install">
@@ -209,16 +213,22 @@ kubectl label node/node-1 \
   costgraph.ai/pricing-id.compute="$COMPUTE_ID" --overwrite
 ```
 
-<Card title="Pricing IDs" icon="tag" href="/costgraph/operator/on-prem-pricing">
-  Registering rates, the label spellings each platform accepts, and how a rate
-  is inherited from a node to the volumes on it.
-</Card>
+<Accordion title="What is a pricing ID and why would I need it?">
+  A pricing ID is a rate you register once — what a piece of hardware you own
+  actually costs you — and then tag onto the resources that bill at it. Without
+  one, hardware you own is measured but has nothing to price against.
 
-<Note>
-  Labels are inherited: tagging a node prices the volumes attached to it, so you
-  rarely need to label every object. A node is in no namespace, so labelling a
-  namespace never changes a node's own rate.
-</Note>
+  <Card title="Pricing IDs" icon="tag" href="/costgraph/operator/on-prem-pricing">
+    Registering rates, the label spellings each platform accepts, and how a rate
+    is inherited from a node to the volumes on it.
+  </Card>
+
+  <Note>
+    Labels are inherited: tagging a node prices the volumes attached to it, so you
+    rarely need to label every object. A node is in no namespace, so labelling a
+    namespace never changes a node's own rate.
+  </Note>
+</Accordion>
 
 ## Operating
 

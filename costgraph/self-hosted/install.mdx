@@ -142,10 +142,34 @@ global:
     --docker-password=<your deployment API key>
   ```
 
-  Then point each component at it as well - `global.imagePullSecrets` does not
-  reach the components rendered by the shared application chart. The render
-  fails with a message naming the component if you miss one. See
-  [using your own registry credentials](/costgraph/self-hosted/values#using-your-own-registry-credentials).
+  Then name it on each component too. `global.imagePullSecrets` does not reach
+  the components rendered by the shared application chart, so it has to be
+  repeated; the render fails with a message naming the component if you miss
+  one.
+
+  ```yaml
+  global:
+    imagePullSecrets:
+      - name: costgraph-registry
+  backend:
+    deployment:
+      imagePullSecrets:
+        - name: costgraph-registry
+  dashboard:
+    deployment:
+      imagePullSecrets:
+        - name: costgraph-registry
+  ingestionApi:
+    deployment:
+      imagePullSecrets:
+        - name: costgraph-registry
+  aggregator:
+    deployment:
+      imagePullSecrets:
+        - name: costgraph-registry
+  ```
+
+  See [using your own registry credentials](/costgraph/self-hosted/values#using-your-own-registry-credentials).
 </Note>
 
 ## Network access it needs

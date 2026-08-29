@@ -291,17 +291,26 @@ If you must deploy through Argo CD, pick one of:
   let the chart adopt them. Better still, do not use the bundled database: point
   `global.postgres.existingSecret` at a Secret you manage, and the generated
   password stops being part of the problem.
-- **Tell Argo to ignore the drift.** Configure `ignoreDifferences` on that
-  Secret's `data` so a re-render never writes new values back:
+- **Tell Argo to ignore the drift.** `ignoreDifferences` on its own only
+  changes what Argo compares, not what it applies, so a sync still overwrites
+  the Secret. Pair it with `RespectIgnoreDifferences=true`:
 
   ```yaml
-  ignoreDifferences:
-    - group: ""
-      kind: Secret
-      name: costgraph-selfhosted-generated
-      jsonPointers:
-        - /data
+  spec:
+    ignoreDifferences:
+      - group: ""
+        kind: Secret
+        name: costgraph-selfhosted-generated
+        jsonPointers:
+          - /data
+    syncPolicy:
+      syncOptions:
+        - RespectIgnoreDifferences=true
   ```
+
+  This protects an existing Secret, never one Argo is creating for the first
+  time. `costgraph-selfhosted-generated` must already exist before the first
+  sync, so this option is a complement to pre-creating it, not an alternative.
 
 The generated Secret carries `helm.sh/resource-policy: keep`, so it survives a
 `helm uninstall`. That protects it from deletion; it does not protect it from a
@@ -318,9 +327,10 @@ value passed inline is stored in values and in Helm release history.
 </ParamField>
 
 <ParamField body="global.controlPlane.existingSecret" type="string">
-  Name of a Secret you manage holding `control-plane-api-key` (and
-  `pricing-api-key` if you were issued a separate pricing key). Takes precedence
-  over `apiKey`. Requires `global.imagePullSecrets`, since the chart cannot read
+  Name of a Secret you manage holding `control-plane-api-key` and
+  `pricing-api-key`. Copy the control-plane key into `pricing-api-key` unless
+  you were issued a separate pricing key; the backend does not start without
+  it. Takes precedence over `apiKey`. Requires `global.imagePullSecrets`, since the chart cannot read
   a Secret to build the registry pull secret from.
 </ParamField>
 

@@ -14,7 +14,7 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     0.2.0 was tagged but never published: the chart repository's release job was failing at the time, and 0.3.0 superseded it. Its only change, moving vmalert to a shared definition, is part of 0.3.0. Nothing was released between 0.1.0 and 0.3.0.
 </Note>
 
-<Update label="2026-08-29" description="costgraph-selfhosted v0.5.0">
+<Update label="2026-08-29" description="costgraph-selfhosted v0.4.0">
     ### Breaking Changes
 
     <Warning>
@@ -38,10 +38,6 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     - The bundled Redis ran under the `default` service account, and the two bundled datastores mounted a service account token they never used
     - The ingestion API and the aggregator now run with the same container hardening as their siblings: no privilege escalation, a read-only root filesystem, and all capabilities dropped
 </Update>
-
-<Note>
-    0.4.0 was tagged but never published: 0.5.0 superseded it before a release ran. Nothing was released between 0.3.0 and 0.5.0.
-</Note>
 
 <Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
     ### Breaking Changes

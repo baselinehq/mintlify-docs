@@ -2,14 +2,19 @@
 sidebar_position: 1
 title: Changelogs
 ---
-Releases of the `costgraph-selfhosted` chart. Published versions are in the [index.yaml](http://charts.costgraph.ai/index.yaml); release notes are on the [chart repository](https://github.com/BaselineHQ/costgraph-charts).
+Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own infrastructure. Helm release notes are on our [chart repository](https://github.com/BaselineHQ/costgraph-charts); view the [index.yaml](http://charts.costgraph.ai/index.yaml) for the latest published versions.
 
-We publish a changelog for every minor release, and call out breaking changes in any release.
+## SLA
+- We will provide changelogs for major and minor releases of the chart
+- Customers will be made aware of any breaking changes in any release cycle
+- Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.1">
-    Fixes an evaluation install: with the bundled database the backend did not start. Installs using your own Postgres were unaffected.
+    ### Fixed
+    - The backend failed to start against the bundled database
 </Update>
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.0">
-    Install this or later. Each component is configured under its own key with a `deployment` block - see the [values reference](/costgraph/self-hosted/values). Earlier versions are superseded.
+    ### Changed
+    - Each component is configured under its own key with a `deployment` block, or `statefulSet` for the bundled datastores. See the [values reference](/costgraph/self-hosted/values)
 </Update>

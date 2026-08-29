@@ -9,124 +9,18 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
 - Customers will be made aware of any breaking changes in any release cycle
 - Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
 
-
-<Note>
-    0.2.0 was tagged but never published: the chart repository's release job was failing at the time, and 0.3.0 superseded it. Its only change, moving vmalert to a shared definition, is part of 0.3.0. Nothing was released between 0.1.0 and 0.3.0.
-</Note>
-
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.1">
-    ### Fixes
-
-    - **The backend could not reach the bundled database.** On an install using `global.postgres.bundled.enabled`, the release Secret carried the connection URL but not the password the backend reads alongside it, so the backend authenticated with an empty password and stayed in `CrashLoopBackOff` reporting `password authentication failed`. Both now come from the same generated password, so they cannot disagree.
-
-      This affected evaluation installs only. An install pointed at your own Postgres was never affected, because that path always wrote the password.
-
+    Fixes an evaluation install: with the bundled database the backend authenticated with an empty password and did not start. Installs pointed at your own Postgres were unaffected.
 </Update>
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.0">
-    ### Breaking Changes
-
-    <Warning>
-        Two things need action before you upgrade. A values file written for 0.3.0 still parses against this release and is then ignored, so settings silently fall back to defaults -- work through the migration table in the [values reference](/costgraph/self-hosted/values). And two objects cannot be upgraded in place; delete them first, as described below. Neither holds data.
-    </Warning>
-
-    - **Every component now takes the same shape.** A component is configured under its own key with `enabled`, `applicationName`, and a `deployment:` block -- or `statefulSet:` for the bundled Postgres and metrics store. The inner keys are identical either way, so sizing or disabling any component is the same operation. The full old-to-new mapping is in the values reference.
-
-    - **Images move to the component.** `global.image` is gone. Each component reads its image from its own workload block: `<component>.deployment.image.{repository,tag,pullPolicy}`, or `<component>.statefulSet.image.*` for the bundled Postgres and metrics store. Previously the same setting lived in three different places depending on the component.
-
-    - **`aggregator.vmalert` becomes the top-level `vmalert` component**, with its own `enabled` and `deployment` block.
-
-    - **Removed because nothing read them:** `global.nodeSelector`, `global.tolerations`, `global.affinity`, `global.podAnnotations`. Scheduling is set per component under its workload block.
-
-    - **Supplying your own registry credentials changed.** Setting `global.imagePullSecrets` while a component still names the chart's own registry Secret now fails the render with an explanation, rather than deploying pods that reference a Secret the chart no longer creates. Point each component's `deployment.imagePullSecrets` at your Secret.
-
-    - **The backend Deployment's pod selector changed.** It was `app.kubernetes.io/component`, `app.kubernetes.io/instance` and `app.kubernetes.io/name`; it is now `app.kubernetes.io/name` and `application.stakater.com/workload-class`, because the backend is rendered by the shared application chart like the other components. `spec.selector` is immutable, so the upgrade fails with `field is immutable`.
-
-      Delete it first, then upgrade. The Deployment holds no state and is recreated by the release:
-
-      ```sh
-      kubectl delete deployment <backend.applicationName> --namespace <your namespace>
-      ```
-
-    - **The bundled metrics Service is now headless.** `costgraph-selfhosted-victoria-metrics` is the governing Service of a StatefulSet, so it now sets `clusterIP: None` to give the pod a stable DNS name. `spec.clusterIP` is immutable, so an existing Service must go first. This applies only if you run the bundled metrics store; the Postgres Service was already headless in 0.3.0 and is unaffected.
-
-      ```sh
-      kubectl delete service <victoriametrics.applicationName> --namespace <your namespace>
-      ```
-
-    - **A Secret named by `global.controlPlane.existingSecret` must now carry `pricing-api-key`.** The backend reads its pricing credential from that key rather than reusing `control-plane-api-key`. If you were not issued a separate pricing key, copy the control-plane key into it. Without the key the backend and the migration job stay in `CreateContainerConfigError`.
-
-      ```sh
-      kubectl patch secret <your-secret> --namespace <your namespace> \
-        -p "{\"stringData\":{\"pricing-api-key\":\"<your deployment API key>\"}}"
-      ```
-
-    ### Updates
-    - `app.kubernetes.io/version` carried a placeholder string rather than the image tag on every object. It now carries the tag
-    - The chart's configuration guards had stopped running, so a missing API key or a malformed `appBaseURL` rendered without complaint and failed later at runtime. They run again
-    - The migration job requested no CPU or memory because it read a value that had been removed. It now takes the backend's `deployment.resources`
-    - The bundled Redis ran under the `default` service account, and the two bundled datastores mounted a service account token they never used
-    - The ingestion API and the aggregator now run with the same container hardening as their siblings: no privilege escalation, a read-only root filesystem, and all capabilities dropped
-
-    - **An external Postgres now works.** `DB_PASSWORD` was pinned to the bundled Postgres Secret, which is not created when you bring your own database, so the backend could not start against an external one. It now resolves through `global.postgres.existingSecret` like `DB_URL` already did.
-    - **`global.redis.existingSecret` is honoured.** The setting was documented and accepted by validation, but nothing ever read the Secret, so a managed Redis whose URL carries a password produced an empty `REDIS_URL` and no error. The URL now travels as a Secret, the way the Postgres URL does, and has been removed from the ConfigMap because it can carry a credential.
-    - **The pre-upgrade migration job starts.** It supplied only the database and control-plane credentials, but the backend validates its full configuration before it reaches the migration step, so the job failed and aborted every upgrade on an external Postgres.
-    - **The bundled Postgres Secret follows `postgres.applicationName`.** Overriding that name left the StatefulSet and the preflight job pointing at a Secret that did not exist.
+    Every component is now configured the same way, under its own key with a `deployment` block (or `statefulSet` for the bundled datastores). A values file written for an earlier version still parses and is then ignored, so start from the [values reference](/costgraph/self-hosted/values).
 </Update>
 
 <Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
-    ### Breaking Changes
-
-    <Warning>
-        Read the first item before upgrading. The Postgres and metrics StatefulSets are renamed, and a renamed StatefulSet does not adopt the volumes of the old one. Upgrading without acting will start both databases against empty storage.
-    </Warning>
-
-    - **Every object is renamed and no longer carries the release name.** Objects were `<release>-costgraph-selfhosted...`; they are now `costgraph-selfhosted...`. The chart is installed once per namespace, so the prefix distinguished nothing, and components rendered by the shared application chart cannot reproduce it.
-
-      The two StatefulSets, `costgraph-selfhosted-postgres` and `costgraph-selfhosted-victoria-metrics`, are affected. **Their PersistentVolumeClaims are not deleted**, but the renamed StatefulSets will not claim them and will provision empty volumes instead.
-
-      If you run the bundled Postgres or the bundled metrics store, take a backup first, then either point the release at the existing volumes or restore into the new ones. If you run your own Postgres and metrics store, which is what we recommend for production, nothing here affects your data.
-
-    - **Shared values move under `global`.** A values file using the old paths still parses, and the settings are then ignored, so an install can silently fall back to bundled defaults. Every moved key:
-
-      | Before | After |
-      | --- | --- |
-      | `postgres.*` | `global.postgres.*` |
-      | `redis.url`, `redis.existingSecret`, `redis.bundled.*` | `global.redis.*` |
-      | `metricsStore.*` | `global.metricsStore.*` |
-      | `controlPlane.*` | `global.controlPlane.*` |
-      | `appBaseURL` | `global.appBaseURL` |
-      | `corsAllowedOrigins` | `global.corsAllowedOrigins` |
-      | `pricingApiKey` | `global.pricingApiKey` |
-      | `analytics.*` | `global.analytics.*` |
-      | `image.*` | `global.image.*` |
-      | `imagePullSecrets` | `global.imagePullSecrets` |
-      | `podSecurityContext`, `securityContext` | `global.podSecurityContext`, `global.securityContext` |
-      | `nodeSelector`, `tolerations`, `affinity` | `global.nodeSelector`, `global.tolerations`, `global.affinity` |
-      | `podAnnotations` | `global.podAnnotations` |
-
-    - **Per-component resources move under `deployment`.** Also silent: the old paths parse and are ignored, and the container then runs with no requests or limits.
-
-      | Before | After |
-      | --- | --- |
-      | `aggregator.resources` | `aggregator.deployment.resources` |
-      | `ingestionApi.resources` | `ingestionApi.deployment.resources` |
-      | `redis.bundled.resources` | `redis.deployment.resources` |
-
-    ### Updates
-    - The bundled Redis, vmalert, the aggregator and the ingestion API are rendered from shared chart definitions rather than templates unique to this chart, so they no longer drift from the same components in our own deployment
-    - vmalert gains a Service per rule set, so `/api/v1/rules` can be reached when a rule is producing no samples. There was no way to reach it before
-    - vmalert reads the recording rules from the aggregator image rather than a ConfigMap built from a copy of them, so the rules cannot fall behind the aggregator that consumes them
-    - The bundled Redis no longer mounts a service account token
-    - Configuration changes roll the affected Deployments again: the pods carry a hash of the values that produced them
+    Objects no longer carry the Helm release name, and settings shared between components move under `global`. Superseded by 0.4.0.
 </Update>
 
 <Update label="2026-08-27" description="costgraph-selfhosted v0.1.0">
-    ### Breaking Changes
-    - N/A. First release.
-
-    ### Updates
-    - CostGraph running in your own infrastructure: the API, dashboard, ingestion API, aggregator and vmalert, with Postgres, Redis and a VictoriaMetrics store optionally bundled for evaluation
-    - Postgres, Redis and the metrics store each take either a URL you provide, a Secret you manage, or a bundled instance. For production we recommend pointing the release at datastores you operate, so cost history outlives a Helm release
-    - A preflight check runs before an upgrade and reports a database the release cannot use, rather than failing partway through
+    First release. CostGraph in your own infrastructure: the API, dashboard, ingestion API, aggregator and vmalert, with Postgres, Redis and a metrics store optionally bundled for evaluation.
 </Update>

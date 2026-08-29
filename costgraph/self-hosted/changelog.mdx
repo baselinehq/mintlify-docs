@@ -2,25 +2,14 @@
 sidebar_position: 1
 title: Changelogs
 ---
-Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own infrastructure. Helm release notes are on our [chart repository](https://github.com/BaselineHQ/costgraph-charts); view the [index.yaml](http://charts.costgraph.ai/index.yaml) for the latest published versions.
+Releases of the `costgraph-selfhosted` chart. Published versions are in the [index.yaml](http://charts.costgraph.ai/index.yaml); release notes are on the [chart repository](https://github.com/BaselineHQ/costgraph-charts).
 
-## SLA
-- We will provide changelogs for major and minor releases of the chart
-- Customers will be made aware of any breaking changes in any release cycle
-- Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
+We publish a changelog for every minor release, and call out breaking changes in any release.
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.1">
-    Fixes an evaluation install: with the bundled database the backend authenticated with an empty password and did not start. Installs pointed at your own Postgres were unaffected.
+    Fixes an evaluation install: with the bundled database the backend did not start. Installs using your own Postgres were unaffected.
 </Update>
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.0">
-    Every component is now configured the same way, under its own key with a `deployment` block (or `statefulSet` for the bundled datastores). A values file written for an earlier version still parses and is then ignored, so start from the [values reference](/costgraph/self-hosted/values).
-</Update>
-
-<Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
-    Objects no longer carry the Helm release name, and settings shared between components move under `global`. Superseded by 0.4.0.
-</Update>
-
-<Update label="2026-08-27" description="costgraph-selfhosted v0.1.0">
-    First release. CostGraph in your own infrastructure: the API, dashboard, ingestion API, aggregator and vmalert, with Postgres, Redis and a metrics store optionally bundled for evaluation.
+    Install this or later. Each component is configured under its own key with a `deployment` block - see the [values reference](/costgraph/self-hosted/values). Earlier versions are superseded.
 </Update>

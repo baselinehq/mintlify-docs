@@ -27,8 +27,12 @@ From your side:
   succeeds and warns you.
 </Warning>
 
-Sign-in needs no configuration. Your users sign in with their CostGraph
-accounts; their cost data stays in your network.
+Sign-in needs no configuration, but a new deployment starts with no
+organisation and no users. The first person to use it opens the dashboard and
+chooses **Create an account**, which creates the organisation and makes them
+its owner; everyone else is invited from Settings. An email that already has a
+CostGraph account elsewhere is fine, because the account here belongs to this
+deployment. Their cost data stays in your network.
 
 ## Install
 
@@ -182,6 +186,7 @@ Outbound HTTPS (443) to these hosts:
 | `cognito-idp.us-east-2.amazonaws.com` | verifying sign-in |
 | `registry.costgraph.ai` | pulling the images |
 | `pkg-containers.githubusercontent.com` | the image layers |
+| `docker.io`, `production.cloudflare.docker.com` | vmalert, and the bundled Postgres, Redis and metrics store if you enable them |
 | `us.i.posthog.com` | anonymous product analytics, unless `global.analytics.enabled: false` |
 
 Nothing needs to reach the deployment from outside your network.

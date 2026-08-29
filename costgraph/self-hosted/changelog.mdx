@@ -14,6 +14,15 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     0.2.0 was tagged but never published: the chart repository's release job was failing at the time, and 0.3.0 superseded it. Its only change, moving vmalert to a shared definition, is part of 0.3.0. Nothing was released between 0.1.0 and 0.3.0.
 </Note>
 
+<Update label="2026-08-29" description="costgraph-selfhosted v0.4.1">
+    ### Fixes
+
+    - **The backend could not reach the bundled database.** On an install using `global.postgres.bundled.enabled`, the release Secret carried the connection URL but not the password the backend reads alongside it, so the backend authenticated with an empty password and stayed in `CrashLoopBackOff` reporting `password authentication failed`. Both now come from the same generated password, so they cannot disagree.
+
+      This affected evaluation installs only. An install pointed at your own Postgres was never affected, because that path always wrote the password.
+
+</Update>
+
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.0">
     ### Breaking Changes
 

@@ -47,6 +47,22 @@ STACKIT at any time and the connection stops; nothing else is affected.
 Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
 
+### If you have STACKIT's FOCUS report
+
+STACKIT publishes its own FOCUS report, in beta, to an S3-compatible Object Storage
+bucket - `part_000X.csv.gz`, daily at 12:00 UTC, a new file every million records.
+Ask STACKIT support to enable it.
+
+That report is worth having: it carries a row per **resource**, where the Cost API we
+pull describes spend per project and service. Resource-level rows are what let
+CostGraph name the machine behind a charge and compare it against what the same shape
+costs elsewhere.
+
+Send it with the push endpoint, converting each row to a FOCUS record and paging the
+parts with `batch_id` and `row_offset`. Two things in that file we repair rather than
+reject, so you do not need to pre-process them: `ChargeDescription` is empty on every
+row, and the service categories are STACKIT's own names rather than the FOCUS ones.
+
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into

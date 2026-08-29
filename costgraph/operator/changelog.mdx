@@ -16,37 +16,56 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-08-28" description="costgraph-operator v0.5.0">
     ### Breaking Changes
-    - **`helm upgrade` fails until the two operator Deployments are deleted.** `costgraph-operator-kubernetes` and `costgraph-operator-prometheus` are now rendered by a shared chart, and their `spec.selector` changes as a result. A Deployment's selector is immutable, so Kubernetes rejects the patch rather than replacing the object. Delete both before upgrading; they are stateless and are recreated immediately:
+    - **`helm upgrade` fails until the operator Deployments are deleted.** `costgraph-operator-kubernetes`, `costgraph-operator-prometheus`, `costgraph-operator-ai-gateway` and the `costgraph-operator-flowtrace` DaemonSet are now rendered by a shared chart, and their `spec.selector` changes as a result. A selector is immutable, so Kubernetes rejects the patch rather than replacing the object. Delete them before upgrading; they are stateless and are recreated immediately:
 
       ```sh
       kubectl -n <namespace> delete deployment \
         <release>-costgraph-operator-kubernetes \
-        <release>-costgraph-operator-prometheus
+        <release>-costgraph-operator-prometheus \
+        <release>-costgraph-operator-ai-gateway
+      kubectl -n <namespace> delete daemonset \
+        <release>-costgraph-operator-flowtrace
       helm upgrade <release> costgraph/costgraph-operator
       ```
 
-      No metrics are lost. The operators resume from the cluster's current state on restart, and the collectors that hold data are DaemonSets, which are unaffected.
-    - **Values under `operatorKubernetes` and `operatorPrometheus` move beneath `deployment`.** A values file that sets them at the old paths still parses, but the settings no longer apply and the chart's defaults are used instead. Nothing errors, so check any override you rely on:
+      Omit the ones you do not run - `aiGatewayScraper` is off by default. No metrics are lost: the operators resume from the cluster's current state on restart.
+
+    - **Objects no longer carry the release name.**
+
+      | Was | Now |
+      | --- | --- |
+      | `<release>-costgraph-operator-prometheus` (Deployment) | `costgraph-operator-prometheus` |
+      | `<release>-costgraph-operator-flowtrace` (DaemonSet) | `costgraph-operator-flowtrace` |
+      | `<release>-costgraph-operator-ai-gateway` (Deployment) | `costgraph-operator-ai-gateway` |
+      | `<fullname>-credentials` (Secret) | `costgraph-operator-credentials` |
+
+      Each component's objects are named from its `applicationName`. `fullnameOverride` no longer reaches them: it now affects only the ClusterRole (`<fullname>-view`), the ClusterRoleBinding and the ServiceAccount.
+
+    - **Every component's workload settings move beneath a `deployment:` or `daemonSet:` block.** A values file that sets them at the old paths still parses, but the settings no longer apply and the chart's defaults are used instead. Nothing errors, so check any override you rely on:
 
       | Before | After |
       | --- | --- |
-      | `operatorKubernetes.image.tag` | `operatorKubernetes.deployment.image.tag` |
-      | `operatorKubernetes.replicas` | `operatorKubernetes.deployment.replicas` |
-      | `operatorKubernetes.resources` | `operatorKubernetes.deployment.resources` |
-      | `operatorKubernetes.enabled` | `operatorKubernetes.deployment.enabled` |
-      | `operatorKubernetes.nodeSelector` | `operatorKubernetes.deployment.nodeSelector` |
-      | `operatorKubernetes.tolerations` | `operatorKubernetes.deployment.tolerations` |
-      | `operatorKubernetes.affinity` | `operatorKubernetes.deployment.affinity` |
-      | `operatorKubernetes.podAnnotations` | `operatorKubernetes.deployment.additionalPodAnnotations` |
-      | `operatorKubernetes.podLabels` | `operatorKubernetes.deployment.podLabels` |
-      | `operatorKubernetes.securityContext` | `operatorKubernetes.deployment.securityContext` |
+      | `operatorPrometheus.image.tag` | `operatorPrometheus.deployment.image.tag` |
+      | `operatorPrometheus.replicas` | `operatorPrometheus.deployment.replicas` |
+      | `operatorPrometheus.resources` | `operatorPrometheus.deployment.resources` |
+      | `operatorPrometheus.env` (list) | `operatorPrometheus.deployment.env` (map) |
+      | `operatorPrometheus.securityContext` | `operatorPrometheus.deployment.securityContext` |
+      | `operatorPrometheus.nodeSelector` / `.tolerations` / `.affinity` | the same key under `operatorPrometheus.deployment` |
+      | `operatorPrometheus.podAnnotations` / `.podLabels` | the same key under `operatorPrometheus.deployment` |
 
-      The same mapping applies to `operatorPrometheus`. Settings under `config`, and the top-level `global` and `rbac` values, are unchanged.
+      The same mapping applies to `operatorKubernetes` and `aiGatewayScraper`. For `flowtrace` the block is `daemonSet:` rather than `deployment:`, and it takes `image`, `resources`, `priorityClassName`, `tolerations` and the scheduling keys.
+
+      `enabled` stays at component level on all four - `<component>.deployment.enabled` (or `.daemonSet.enabled`) is a second, narrower switch that keeps the configuration and drops the pods. `flowtrace.maxUnavailable` and `operatorPrometheus.scrapeTargets` also stay at component level. Settings under `config`, and the top-level `global` and `rbac` values, are otherwise unchanged.
+
+    - **`global.namespace` is removed.** It was read by a helper looking at a path that did not exist, so setting it never had an effect. The release namespace is used.
+
+    - **`env` is now a map, not a list.** `env.LOG_LEVEL.value: info` rather than `- name: LOG_LEVEL`. A map means `--set` can override one variable without clobbering its siblings. A list at the new path is not read.
 
     ### Updates
-    - The two operator Deployments are rendered from a shared definition rather than a template each, so they no longer drift apart in the fields that should match
-    - The flowtrace DaemonSet, the ClusterRole and its bindings, the ServiceAccount, the credentials Secret and every bundled exporter are unchanged
-</Update>
+    - All four CostGraph components - `operatorKubernetes`, `operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - are rendered from one shared definition and take one values shape, so they no longer drift apart in the fields that should match, and enabling, sizing or scheduling any of them is the same operation. The same contract covers the `costgraph-selfhosted` chart; see the [values reference](/costgraph/self-hosted/values)
+    - `operatorPrometheus` and `aiGatewayScraper` gain a `pprof` container port declaration, and `aiGatewayScraper` gains an explicit `replicas`
+    - `flowtrace` withholds its service account token by default, keeping a privileged per-node pod off the chart's cluster-wide read ClusterRole
+    - The ClusterRole and its bindings, the ServiceAccount, the RBAC values and every bundled exporter are unchanged
 
 <Update label="2026-08-17" description="costgraph-operator v0.3.0">
     ### Breaking Changes

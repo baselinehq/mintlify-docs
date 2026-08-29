@@ -27,32 +27,146 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
   Base URL of the CostGraph API.
 </ParamField>
 
-<ParamField body="global.namespace" type="string" default="costgraph">
-  Namespace the operator runs in.
+<ParamField body="global.remoteWriteURL" type="string">
+  Where cluster metrics are sent. A self-hosted install points this at its own
+  ingestion endpoint; left unset, metrics go to hosted CostGraph.
 </ParamField>
+
+<ParamField body="imagePullSecrets" type="array">
+  Top level, not under `global`. It does not reach the component workloads - see
+  the component pattern below.
+</ParamField>
+
+<ParamField body="nameOverride" type="string">
+  Overrides the chart name used in the generated labels.
+</ParamField>
+
+<ParamField body="fullnameOverride" type="string">
+  Affects the ClusterRole (`<fullname>-view`), the ClusterRoleBinding and the
+  ServiceAccount only. Every component's objects are named from its own
+  `applicationName`.
+</ParamField>
+
+## The component pattern
+
+All four CostGraph components in this chart - `operatorKubernetes`,
+`operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - take the same shape:
+
+```yaml
+<component>:
+  enabled: true
+  applicationName: costgraph-operator-...
+  deployment:            # daemonSet: for flowtrace
+    enabled: true
+    replicas: 1
+    image:
+      repository: ...
+      tag: ...
+      pullPolicy: IfNotPresent
+    imagePullSecrets: []
+    resources: {}
+    env: {}
+    ports: [...]
+    containerSecurityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  config:                # the only component-specific block
+    remoteWriteURL: ""
+```
+
+The inner keys mean the same thing in each, and `daemonSet:` differs only where
+Kubernetes forces it to: `replicas` is ignored, and `strategy` becomes
+`updateStrategy`. Enabling, sizing or scheduling any component is therefore the
+same operation.
+
+`enabled` gates the whole component. `<component>.deployment.enabled` (or
+`.daemonSet.enabled`) is the narrower switch that keeps the configuration and
+drops the pods.
+
+<Note>
+  `env` is a **map**, not a list: `env.LOG_LEVEL.value: info`, or
+  `env.API_KEY.valueFrom.secretKeyRef`. A map means `--set` can override one
+  variable without clobbering its siblings.
+</Note>
+
+Two keys stay at component level rather than moving into the workload block,
+because they are not pod settings: `flowtrace.maxUnavailable` (rollout speed)
+and `operatorPrometheus.scrapeTargets`.
+
+<Warning>
+  Object names no longer carry the release name. `operatorPrometheus` is
+  `costgraph-operator-prometheus`, `flowtrace` is `costgraph-operator-flowtrace`, `aiGatewayScraper` is
+  `costgraph-operator-ai-gateway`, and the credentials Secret is
+  `costgraph-operator-credentials`. See the
+  [migration tables](/costgraph/self-hosted/values#migrating-an-existing-values-file).
+</Warning>
+
+The same contract covers the self-hosted chart. See the
+[values reference](/costgraph/self-hosted/values) for the full description,
+including the three value tiers and the Argo CD caveat.
 
 ## Resource exporter
 
-`operatorKubernetes` watches cluster resources and exports them to CostGraph.
+`operatorKubernetes` watches cluster resources and exports them to CostGraph. It
+is rendered by [stakater/application](https://github.com/stakater/application),
+so its workload settings sit under `operatorKubernetes.deployment`.
 
 <ParamField body="operatorKubernetes.enabled" type="boolean" default="true">
-  Deploy the resource exporter.
+  Deploy the resource exporter. Wired as the `condition` on the dependency, so
+  turning it off renders nothing at all.
 </ParamField>
 
-<ParamField body="operatorKubernetes.replicas" type="number" default="1">
-  Keep at `1` — the exporter is not designed to run multiple replicas.
+<ParamField body="operatorKubernetes.applicationName" type="string" default="costgraph-operator-kubernetes">
+  Name its objects take.
 </ParamField>
 
-<ParamField body="operatorKubernetes.resources" type="object">
+<ParamField body="operatorKubernetes.deployment.enabled" type="boolean" default="true">
+  Narrower switch: keeps the configuration, drops the pods.
+</ParamField>
+
+<ParamField body="operatorKubernetes.deployment.replicas" type="number" default="1">
+  Keep at `1` - the exporter is not designed to run multiple replicas.
+</ParamField>
+
+<ParamField body="operatorKubernetes.deployment.image" type="object">
+  `repository`, `tag` and `pullPolicy` for the exporter image.
+</ParamField>
+
+<Warning>
+  The published resource exporter image is `linux/amd64` only. On an arm64 node
+  the pod stays in `ImagePullBackOff` with `no match for platform in manifest`,
+  which reads as a missing image rather than an unsupported architecture.
+
+  Schedule it onto amd64 nodes until a multi-architecture release is published:
+
+  ```yaml
+  operatorKubernetes:
+    deployment:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+  ```
+
+  The metrics scraper is already multi-architecture and needs no such pin.
+</Warning>
+
+<ParamField body="operatorKubernetes.deployment.imagePullSecrets" type="array">
+  The chart's top-level `imagePullSecrets` does not reach this Deployment, so a
+  private exporter image needs the secret repeated here.
+</ParamField>
+
+<ParamField body="operatorKubernetes.deployment.resources" type="object">
   Resource requests and limits.
 </ParamField>
 
-<ParamField body="operatorKubernetes.nodeSelector / tolerations / affinity" type="object">
+<ParamField body="operatorKubernetes.deployment.nodeSelector / tolerations / affinity" type="object">
   Standard pod scheduling controls.
 </ParamField>
 
-<ParamField body="operatorKubernetes.env" type="array">
-  Additional environment variables.
+<ParamField body="operatorKubernetes.deployment.env" type="object">
+  Additional environment variables, as a map of name to `value` or `valueFrom`,
+  so a single variable can be overridden with `--set` without clobbering its
+  siblings.
 </ParamField>
 
 ## Operational/Compute Metrics scraper
@@ -61,6 +175,11 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 <ParamField body="operatorPrometheus.enabled" type="boolean" default="true">
   Deploy the operational/compute metrics scraper.
+</ParamField>
+
+<ParamField body="operatorPrometheus.deployment" type="object">
+  Its workload: `image`, `replicas` (keep at `1`), `resources`, `env`, `ports`
+  and the scheduling keys.
 </ParamField>
 
 <ParamField body="operatorPrometheus.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
@@ -91,6 +210,10 @@ operator's scraped metrics.
   Deploy the AI gateway scraper.
 </ParamField>
 
+<ParamField body="aiGatewayScraper.deployment" type="object">
+  Its workload, same keys as `operatorPrometheus.deployment`.
+</ParamField>
+
 <ParamField body="aiGatewayScraper.config.remoteWritePath" type="string" default="/api/v1/write/short">
   Short-retention tier. Recording rules distil these series before anything
   reaches 90-day retention.
@@ -119,8 +242,27 @@ metric-name filter.
   Deploy the network metrics scraper.
 </ParamField>
 
+<ParamField body="flowtrace.daemonSet" type="object">
+  Its workload. Same keys as a `deployment:` block, minus `replicas`. The
+  defaults set `containerSecurityContext.privileged` and `runAsUser: 0`, which
+  resolving container identity from other processes' `/proc` entries requires,
+  and withhold the service account token because no Kubernetes API access is
+  needed.
+</ParamField>
+
+<ParamField body="flowtrace.daemonSet.priorityClassName" type="string">
+  `system-node-critical` is appropriate here but is namespace-restricted on some
+  clusters, so it is left unset rather than defaulted.
+</ParamField>
+
+<ParamField body="flowtrace.maxUnavailable" type="string" default="1">
+  Rollout speed. Raise it on large fleets, for example `"10%"`.
+</ParamField>
+
 <ParamField body="flowtrace.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
-  Remote-write endpoint for collected metrics.
+  Remote-write endpoint for collected metrics. The values file ships it empty:
+  the chart falls back to `global.remoteWriteURL`, and to
+  `https://tsdb.costgraph.ai` when that is empty too.
 </ParamField>
 
 <ParamField body="flowtrace.config.remoteWritePath" type="string" default="/api/v1/write/short">
@@ -175,7 +317,7 @@ Each entry accepts:
 
 ## Bundled exporters
 
-The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `\flowtrace` if you do not need network tracing.
+The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `flowtrace` if you do not need network tracing.
 
 <ParamField body="kube-state-metrics.enabled" type="boolean" default="true">
   Kubernetes object-level metrics (pods, deployments, nodes).
@@ -186,7 +328,11 @@ The chart pulls in the metrics sources as subcharts. Disable any you already run
 </ParamField>
 
 <ParamField body="prometheus-node-exporter.enabled" type="boolean" default="true">
-  Host-level metrics (CPU, memory, disk, network) on port `9100`.
+  Host-level metrics (CPU, memory, disk, network). The port defaults to `9101`
+  rather than the upstream `9100`, because the subchart binds a hostPort and
+  `9100` collides with a node exporter the cluster already runs. The operator's
+  scrape target follows `prometheus-node-exporter.service.port`, so change it
+  there only.
 </ParamField>
 
 <ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
@@ -207,11 +353,16 @@ global:
   existingSecret: ""
   existingSecretKey: ""
   backendURL: "https://api.costgraph.ai"
-  namespace: "costgraph"
+  remoteWriteURL: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   create: true
   automount: true
+  name: costgraph-operator
 
 kube-state-metrics:
   enabled: true
@@ -226,8 +377,8 @@ cadvisor:
 prometheus-node-exporter:
   enabled: true
   service:
-    port: 9100
-    targetPort: 9100
+    port: 9101
+    targetPort: 9101
 
 dcgm-exporter:
   enabled: false
@@ -237,19 +388,38 @@ dcgm-exporter:
 
 operatorKubernetes:
   enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 10m
-      memory: 64Mi
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  env: []
+  applicationName: costgraph-operator-kubernetes
+  deployment:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/baselinehq/costgraph-operator-kubernetes
+      tag: "v0.1.0"
+      pullPolicy: IfNotPresent
+    imagePullSecrets: []
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    env: {}
 
 operatorPrometheus:
   enabled: true
-  replicas: 1
+  applicationName: costgraph-operator-prometheus
+  deployment:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/baselinehq/costgraph-operator-prometheus
+      tag: "v0.4.0"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
   config:
     remoteWriteURL: "https://tsdb.costgraph.ai"
     remoteWritePath: "/api/v1/write"
@@ -268,7 +438,7 @@ operatorPrometheus:
     node-exporter:
       enabled: true
       labelSelector: "app.kubernetes.io/name=prometheus-node-exporter"
-      port: 9100
+      port: 9101
       nodeMetrics: true
     kubelet:
       enabled: true
@@ -281,11 +451,25 @@ operatorPrometheus:
       labelSelector: "app.kubernetes.io/name=dcgm-exporter"
       port: 9400
       nodeMetrics: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 64Mi
-  env: []
+
+aiGatewayScraper:
+  enabled: false
+  applicationName: costgraph-operator-ai-gateway
+  deployment:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/baselinehq/costgraph-operator-prometheus
+      tag: "v0.4.0"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+  config:
+    remoteWriteURL: ""
+    remoteWritePath: "/api/v1/write/short"
+    httpTimeout: "30s"
 
 # flowtrace runs on every node and tolerates all taints by default, 
 # requires BTF and cgroup v2, and enters CrashLoopBackOff on incompatible nodes. 
@@ -294,27 +478,35 @@ operatorPrometheus:
 
 flowtrace:
   enabled: true
+  applicationName: costgraph-operator-flowtrace
+  daemonSet:
+    enabled: true
+    image:
+      repository: ghcr.io/baselinehq/costgraph-operator-prometheus
+      tag: "v0.4.0"
+      pullPolicy: IfNotPresent
+    containerSecurityContext:
+      privileged: true
+      runAsUser: 0
+    automountServiceAccountToken: false
+    priorityClassName: ""
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+    tolerations:
+      - operator: Exists
+    nodeSelector: {}
+    affinity: {}
   config:
-    remoteWriteURL: "https://tsdb.costgraph.ai"
+    remoteWriteURL: ""
     remoteWritePath: "/api/v1/write/short"
     pushInterval: "4m"
     includeHostFlows: false
     httpTimeout: "30s"
   maxUnavailable: 1
-  priorityClassName: ""
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      memory: 256Mi
-  tolerations:
-    - operator: Exists
-  nodeSelector: {}
-  affinity: {}
-  podAnnotations: {}
-  podLabels: {}
-  env: []
 ```
 </Accordion>
 

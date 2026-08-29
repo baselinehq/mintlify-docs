@@ -23,7 +23,7 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
 
     - **Every component now takes the same shape.** A component is configured under its own key with `enabled`, `applicationName`, and a `deployment:` block -- or `statefulSet:` for the bundled Postgres and metrics store. The inner keys are identical either way, so sizing or disabling any component is the same operation. The full old-to-new mapping is in the values reference.
 
-    - **Images move to the component.** `global.image` is gone. Each component reads `<component>.deployment.image.{repository,tag,pullPolicy}`. Previously the same setting lived in three different places depending on the component.
+    - **Images move to the component.** `global.image` is gone. Each component reads its image from its own workload block: `<component>.deployment.image.{repository,tag,pullPolicy}`, or `<component>.statefulSet.image.*` for the bundled Postgres and metrics store. Previously the same setting lived in three different places depending on the component.
 
     - **`aggregator.vmalert` becomes the top-level `vmalert` component**, with its own `enabled` and `deployment` block.
 
@@ -36,26 +36,26 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
       Delete it first, then upgrade. The Deployment holds no state and is recreated by the release:
 
       ```sh
-      kubectl delete deployment costgraph-selfhosted --namespace costgraph
+      kubectl delete deployment <backend.applicationName> --namespace <your namespace>
       ```
 
     - **The bundled metrics Service is now headless.** `costgraph-selfhosted-victoria-metrics` is the governing Service of a StatefulSet, so it now sets `clusterIP: None` to give the pod a stable DNS name. `spec.clusterIP` is immutable, so an existing Service must go first. This applies only if you run the bundled metrics store; the Postgres Service was already headless in 0.3.0 and is unaffected.
 
       ```sh
-      kubectl delete service costgraph-selfhosted-victoria-metrics --namespace costgraph
+      kubectl delete service <victoriametrics.applicationName> --namespace <your namespace>
       ```
 
     - **A Secret named by `global.controlPlane.existingSecret` must now carry `pricing-api-key`.** The backend reads its pricing credential from that key rather than reusing `control-plane-api-key`. If you were not issued a separate pricing key, copy the control-plane key into it. Without the key the backend and the migration job stay in `CreateContainerConfigError`.
 
       ```sh
-      kubectl patch secret <your-secret> --namespace costgraph \
+      kubectl patch secret <your-secret> --namespace <your namespace> \
         -p "{\"stringData\":{\"pricing-api-key\":\"<your deployment API key>\"}}"
       ```
 
     ### Updates
     - `app.kubernetes.io/version` carried a placeholder string rather than the image tag on every object. It now carries the tag
     - The chart's configuration guards had stopped running, so a missing API key or a malformed `appBaseURL` rendered without complaint and failed later at runtime. They run again
-    - The migration job requested no CPU or memory because it read a value that had been removed. It now takes the backend's
+    - The migration job requested no CPU or memory because it read a value that had been removed. It now takes the backend's `deployment.resources`
     - The bundled Redis ran under the `default` service account, and the two bundled datastores mounted a service account token they never used
     - The ingestion API and the aggregator now run with the same container hardening as their siblings: no privilege escalation, a read-only root filesystem, and all capabilities dropped
 

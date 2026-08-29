@@ -245,7 +245,9 @@ metric-name filter.
 </ParamField>
 
 <ParamField body="flowtrace.config.remoteWriteURL" type="string" default="https://tsdb.costgraph.ai">
-  Remote-write endpoint for collected metrics.
+  Remote-write endpoint for collected metrics. The values file ships it empty:
+  the chart falls back to `global.remoteWriteURL`, and to
+  `https://tsdb.costgraph.ai` when that is empty too.
 </ParamField>
 
 <ParamField body="flowtrace.config.remoteWritePath" type="string" default="/api/v1/write/short">

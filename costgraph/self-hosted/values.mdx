@@ -561,11 +561,10 @@ All four CostGraph components - `operatorKubernetes`, `operatorPrometheus`,
 | `operatorPrometheus.image` / `.replicas` / `.resources` / `.env` / `.securityContext` / `.nodeSelector` / `.tolerations` / `.affinity` / `.podAnnotations` / `.podLabels` | the same key under `operatorPrometheus.deployment` |
 | `aiGatewayScraper.image` / `.resources` / `.env` / scheduling keys | the same key under `aiGatewayScraper.deployment` |
 | `flowtrace.image` / `.resources` / `.priorityClassName` / `.tolerations` / `.env` / scheduling keys | the same key under `flowtrace.daemonSet` |
-| `global.namespace` | removed - it was read by a helper pointing at a path that did not exist, and never had an effect. The release namespace is used. |
+| `global.namespace` | removed - it never had an effect. The release namespace is used. |
 
-`flowtrace.maxUnavailable` stays at component level, because it is a rollout
-setting rather than a pod setting, and `operatorPrometheus.scrapeTargets` stays
-at component level too. `enabled` stays at component level on all four;
+`flowtrace.maxUnavailable` and `operatorPrometheus.scrapeTargets` stay at
+component level. `enabled` stays at component level on all four;
 `<component>.deployment.enabled` / `.daemonSet.enabled` is the narrower switch
 that drops the pods.
 

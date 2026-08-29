@@ -62,7 +62,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - **`env` is now a map, not a list.** `env.LOG_LEVEL.value: info` rather than `- name: LOG_LEVEL`. A map means `--set` can override one variable without clobbering its siblings. A list at the new path is not read.
 
     ### Updates
-    - All four CostGraph components - `operatorKubernetes`, `operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - are rendered from one shared definition and take one values shape, so they no longer drift apart in the fields that should match, and enabling, sizing or scheduling any of them is the same operation. The same contract covers the `costgraph-selfhosted` chart; see the [values reference](/costgraph/self-hosted/values)
+    - All four CostGraph components - `operatorKubernetes`, `operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - are rendered from one shared definition and take one values shape, and enabling, sizing or scheduling any of them is the same operation. The same contract covers the `costgraph-selfhosted` chart; see the [values reference](/costgraph/self-hosted/values)
     - `operatorPrometheus` and `aiGatewayScraper` gain a `pprof` container port declaration, and `aiGatewayScraper` gains an explicit `replicas`
     - `flowtrace` withholds its service account token by default, keeping a privileged per-node pod off the chart's cluster-wide read ClusterRole
     - The ClusterRole and its bindings, the ServiceAccount, the RBAC values and every bundled exporter are unchanged

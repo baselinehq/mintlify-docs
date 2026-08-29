@@ -313,8 +313,7 @@ If you must deploy through Argo CD, pick one of:
   sync, so this option is a complement to pre-creating it, not an alternative.
 
 The generated Secret carries `helm.sh/resource-policy: keep`, so it survives a
-`helm uninstall`. That protects it from deletion; it does not protect it from a
-re-render that overwrites it, which is why the two options above are needed.
+`helm uninstall`. That protects it from deletion, not from a re-render that overwrites it.
 
 ## Credentials and external services
 
@@ -444,8 +443,7 @@ Services by port number.
 <ParamField body="doctor.enabled" type="boolean">
   A preflight Job that runs before install and upgrade and fails the release
   with the real reason if the database cannot support the schema. Turn it off
-  only if the database is provisioned after the release. It is the Job that has
-  to omit `serviceAccountName`, which is why `costgraph-common` renders it.
+  only if the database is provisioned after the release.
 </ParamField>
 
 ## Component blocks
@@ -573,9 +571,7 @@ that drops the pods.
 
 ### Object names lose the release prefix
 
-Both charts assume one release per namespace, so the release-name prefix
-distinguished nothing - and components rendered by `application` cannot
-reproduce it. These are live objects being renamed, so plan the upgrade.
+These are live objects being renamed, so plan the upgrade.
 
 In `costgraph-operator`:
 

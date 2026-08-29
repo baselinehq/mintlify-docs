@@ -95,10 +95,8 @@ because they are not pod settings: `flowtrace.maxUnavailable` (rollout speed)
 and `operatorPrometheus.scrapeTargets`.
 
 <Warning>
-  Object names no longer carry the release name. The chart is installed once per
-  namespace, and components rendered by `application` cannot reproduce the
-  prefix. `operatorPrometheus` is `costgraph-operator-prometheus`, `flowtrace` is
-  `costgraph-operator-flowtrace`, `aiGatewayScraper` is
+  Object names no longer carry the release name. `operatorPrometheus` is
+  `costgraph-operator-prometheus`, `flowtrace` is `costgraph-operator-flowtrace`, `aiGatewayScraper` is
   `costgraph-operator-ai-gateway`, and the credentials Secret is
   `costgraph-operator-credentials`. See the
   [migration tables](/costgraph/self-hosted/values#migrating-an-existing-values-file).

@@ -269,9 +269,8 @@ kubectl label node/node-1 \
 
 ## Operating
 
-Resources are named `costgraph-selfhosted`, independent of the release name:
-one release per namespace is how this chart is deployed, so the release prefix
-bought nothing. `helm status costgraph` prints them.
+Resources are named `costgraph-selfhosted`, independent of the release name.
+`helm status costgraph` prints them.
 
 Check health at any time. This reads the database and makes no outbound call:
 

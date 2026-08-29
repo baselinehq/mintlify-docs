@@ -14,6 +14,35 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     0.2.0 was tagged but never published: the chart repository's release job was failing at the time, and 0.3.0 superseded it. Its only change, moving vmalert to a shared definition, is part of 0.3.0. Nothing was released between 0.1.0 and 0.3.0.
 </Note>
 
+<Update label="2026-08-29" description="costgraph-selfhosted v0.5.0">
+    ### Breaking Changes
+
+    <Warning>
+        A values file written for 0.3.0 still parses against this release and is then ignored, so settings silently fall back to defaults. Work through the migration table in the [values reference](/costgraph/self-hosted/values) before upgrading.
+    </Warning>
+
+    - **Every component now takes the same shape.** A component is configured under its own key with `enabled`, `applicationName`, and a `deployment:` block -- or `statefulSet:` for the bundled Postgres and metrics store. The inner keys are identical either way, so sizing or disabling any component is the same operation. The full old-to-new mapping is in the values reference.
+
+    - **Images move to the component.** `global.image` is gone. Each component reads `<component>.deployment.image.{repository,tag,pullPolicy}`. Previously the same setting lived in three different places depending on the component.
+
+    - **`aggregator.vmalert` becomes the top-level `vmalert` component**, with its own `enabled` and `deployment` block.
+
+    - **Removed because nothing read them:** `global.nodeSelector`, `global.tolerations`, `global.affinity`, `global.podAnnotations`. Scheduling is set per component under its workload block.
+
+    - **Supplying your own registry credentials changed.** Setting `global.imagePullSecrets` while a component still names the chart's own registry Secret now fails the render with an explanation, rather than deploying pods that reference a Secret the chart no longer creates. Point each component's `deployment.imagePullSecrets` at your Secret.
+
+    ### Updates
+    - `app.kubernetes.io/version` carried a placeholder string rather than the image tag on every object. It now carries the tag
+    - The chart's configuration guards had stopped running, so a missing API key or a malformed `appBaseURL` rendered without complaint and failed later at runtime. They run again
+    - The migration job requested no CPU or memory because it read a value that had been removed. It now takes the backend's
+    - The bundled Redis ran under the `default` service account, and the two bundled datastores mounted a service account token they never used
+    - The ingestion API and the aggregator now run with the same container hardening as their siblings: no privilege escalation, a read-only root filesystem, and all capabilities dropped
+</Update>
+
+<Note>
+    0.4.0 was tagged but never published: 0.5.0 superseded it before a release ran. Nothing was released between 0.3.0 and 0.5.0.
+</Note>
+
 <Update label="2026-08-28" description="costgraph-selfhosted v0.3.0">
     ### Breaking Changes
 

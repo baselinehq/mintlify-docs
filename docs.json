@@ -33,6 +33,7 @@
             "pages": [
               "index",
               "concepts/how-it-works",
+              "concepts/tenancy",
               "costgraph/billing"
             ]
           },

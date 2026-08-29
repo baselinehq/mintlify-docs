@@ -141,6 +141,11 @@ global:
     --docker-username=x \
     --docker-password=<your deployment API key>
   ```
+
+  Then point each component at it as well - `global.imagePullSecrets` does not
+  reach the components rendered by the shared application chart. The render
+  fails with a message naming the component if you miss one. See
+  [using your own registry credentials](/costgraph/self-hosted/values#using-your-own-registry-credentials).
 </Note>
 
 ## Network access it needs

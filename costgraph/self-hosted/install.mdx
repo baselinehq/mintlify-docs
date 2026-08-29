@@ -43,20 +43,21 @@ accounts; their cost data stays in your network.
   <Step title="Write a values file">
     ```shell
     cat > my-values.yaml <<'EOF'
-    controlPlane:
-      apiKey: bl_...
+    global:
+      controlPlane:
+        apiKey: bl_...
 
-    appBaseURL: https://costgraph.internal.example.com
+      appBaseURL: https://costgraph.internal.example.com
 
-    postgres:
-      url: postgres://costgraph@pg.internal:5432/costgraph?sslmode=require
-      password: ...
+      postgres:
+        url: postgres://costgraph@pg.internal:5432/costgraph?sslmode=require
+        password: ...
 
-    redis:
-      url: redis://redis.internal:6379
+      redis:
+        url: redis://redis.internal:6379
 
-    metricsStore:
-      url: http://victoria-metrics.internal:8428
+      metricsStore:
+        url: http://victoria-metrics.internal:8428
 
     ingress:
       enabled: true
@@ -71,7 +72,7 @@ accounts; their cost data stays in your network.
     ```
 
     <Note>
-      `appBaseURL` must be the address people actually open in a browser, not an
+      `global.appBaseURL` must be the address people actually open in a browser, not an
       internal Service DNS name. It shapes the links in invitation email.
     </Note>
   </Step>
@@ -95,15 +96,16 @@ three blocks with `bundled.enabled: true` on each and the chart runs them
 in-cluster:
 
 ```yaml
-postgres:
-  bundled:
-    enabled: true
-redis:
-  bundled:
-    enabled: true
-metricsStore:
-  bundled:
-    enabled: true
+global:
+  postgres:
+    bundled:
+      enabled: true
+  redis:
+    bundled:
+      enabled: true
+  metricsStore:
+    bundled:
+      enabled: true
 ```
 
 <Warning>
@@ -119,17 +121,18 @@ For production, put credentials in Secrets you manage and reference them with
 Helm release history:
 
 ```yaml
-controlPlane:
-  existingSecret: costgraph-control-plane
-postgres:
-  existingSecret: costgraph-postgres
-redis:
-  existingSecret: costgraph-redis
+global:
+  controlPlane:
+    existingSecret: costgraph-control-plane
+  postgres:
+    existingSecret: costgraph-postgres
+  redis:
+    existingSecret: costgraph-redis
 ```
 
 <Note>
-  When you use `controlPlane.existingSecret`, create the image pull secret
-  yourself as well and set `imagePullSecrets`:
+  When you use `global.controlPlane.existingSecret`, create the image pull
+  secret yourself as well and set `global.imagePullSecrets`:
 
   ```shell
   kubectl create secret docker-registry costgraph-registry \
@@ -150,7 +153,7 @@ Outbound HTTPS (443) to these hosts:
 | `cognito-idp.us-east-2.amazonaws.com` | verifying sign-in |
 | `registry.costgraph.ai` | pulling the images |
 | `pkg-containers.githubusercontent.com` | the image layers |
-| `us.i.posthog.com` | anonymous product analytics, unless `analytics.enabled: false` |
+| `us.i.posthog.com` | anonymous product analytics, unless `global.analytics.enabled: false` |
 
 Nothing needs to reach the deployment from outside your network.
 
@@ -232,14 +235,14 @@ kubectl label node/node-1 \
 
 ## Operating
 
-Resources are named `<release>-costgraph-selfhosted`. The examples below assume
-`helm install costgraph ...`; `helm status costgraph` prints them with your own
-release name filled in.
+Resources are named `costgraph-selfhosted`, independent of the release name:
+one release per namespace is how this chart is deployed, so the release prefix
+bought nothing. `helm status costgraph` prints them.
 
 Check health at any time. This reads the database and makes no outbound call:
 
 ```shell
-kubectl exec -n costgraph deploy/costgraph-costgraph-selfhosted -- \
+kubectl exec -n costgraph deploy/costgraph-selfhosted -- \
   selfhost-doctor -offline
 ```
 
@@ -247,18 +250,24 @@ If support asks for a diagnostic bundle. It contains no secrets and no cost
 data:
 
 ```shell
-kubectl exec -n costgraph deploy/costgraph-costgraph-selfhosted -- \
+kubectl exec -n costgraph deploy/costgraph-selfhosted -- \
   selfhost-doctor -bundle -offline
 ```
 
 ## The one thing you must not delete
 
 On first install the chart generates encryption keys into a Secret named
-`<release>-costgraph-selfhosted-generated`. Everything you have saved is tied to
-them.
+`costgraph-selfhosted-generated`. Everything you have saved is tied to them.
 
 Helm keeps this Secret across upgrades and uninstalls, so normally you need do
 nothing. But it cannot be regenerated.
+
+<Warning>
+  This preservation is done with Helm's `lookup`, which only reads the cluster
+  under `helm install` and `helm upgrade`. Argo CD renders with `helm template`,
+  which has no cluster access, so under Argo these keys are regenerated on every
+  sync. See [Install path](/costgraph/self-hosted/values#install-path-use-helm-upgrade-not-argo-cd).
+</Warning>
 
 <Warning>
   If that Secret is deleted, every API key your team issued stops working and
@@ -271,7 +280,7 @@ nothing. But it cannot be regenerated.
 </Warning>
 
 ```shell
-kubectl get secret costgraph-costgraph-selfhosted-generated \
+kubectl get secret costgraph-selfhosted-generated \
   -n costgraph -o yaml > costgraph-keys-backup.yaml
 ```
 
@@ -302,3 +311,8 @@ helm show readme costgraph/costgraph-selfhosted
 ```shell
 helm show values costgraph/costgraph-selfhosted
 ```
+
+<Card title="Values reference" icon="sliders" href="/costgraph/self-hosted/values">
+  The component pattern, the three value tiers, and how to enable or size a
+  single component.
+</Card>

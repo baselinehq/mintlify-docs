@@ -1,0 +1,385 @@
+---
+title: Values Reference
+description: "How the CostGraph Helm charts are configured: the component pattern, the value tiers, and the install-path caveat"
+---
+
+The CostGraph charts (`costgraph-selfhosted` and `costgraph-operator`) share one
+configuration contract. Every component in them is declared the same way, is
+enabled the same way, and is sized the same way, whichever Kubernetes object it
+ends up rendering. This page describes that contract so you can configure any
+component without learning a new shape for each one.
+
+## How a component is rendered
+
+Two things render objects in these charts.
+
+**[stakater/application](https://github.com/stakater/application) 9.3.1** is the
+base renderer for Deployments and Services. Components are declared as *aliases*
+of it in `Chart.yaml` and configured entirely from values. In
+`costgraph-selfhosted` those aliases are `backend`, `dashboard`, `ingestionApi`,
+`aggregator` and `redis`; in `costgraph-operator` it is `operatorKubernetes`.
+
+```yaml Chart.yaml
+dependencies:
+  - name: application
+    version: 9.3.1
+    repository: https://stakater.github.io/stakater-charts
+    alias: aggregator
+    condition: aggregator.enabled
+```
+
+**`costgraph-common`** is a library chart layered on top. It renders what
+`application` cannot, and nothing it does not have to.
+
+<Note>
+  You never call `costgraph-common` yourself. It is a library chart consumed by
+  the two application charts; it exists in this document only to explain why
+  some components are rendered outside `application` while keeping the same
+  values shape.
+</Note>
+
+## The component pattern
+
+A component is a top-level key in `values.yaml`. Under it, the workload lives in
+a block named after the Kubernetes kind it produces, and the inner keys of that
+block are the same in every case:
+
+```yaml
+<component>:
+  enabled: true          # gate for the whole component
+  image:
+    repository: ...
+    tag: ...
+  service:
+    ports: [...]
+  deployment:            # or statefulSet: / daemonSet:
+    enabled: true
+    replicas: 2
+    image:
+      repository: ...
+      tag: ...
+      pullPolicy: IfNotPresent
+    resources:
+      requests: { cpu: ..., memory: ... }
+      limits:   { memory: ... }
+    env: {}
+    ports: [...]
+    volumes: {}
+    volumeMounts: {}
+    readinessProbe: {}
+    livenessProbe: {}
+```
+
+`replicas`, `image`, `resources`, `env`, `ports`, `volumes`, `volumeMounts`,
+`securityContext`, `containerSecurityContext`, `imagePullSecrets`,
+`nodeSelector`, `tolerations`, `affinity`, `podAnnotations` and `podLabels` mean
+the same thing under `deployment:`, under `statefulSet:` and under `daemonSet:`.
+The kind changes; the vocabulary does not. `replicas` is the only key that a
+DaemonSet ignores, and `volumeClaimTemplates` and `serviceName` are the only
+keys a StatefulSet adds.
+
+<Note>
+  `env` is a **map**, not a list: `env.LOG_LEVEL.value: info`, or
+  `env.DB_URL.valueFrom.secretKeyRef`. A map means `--set` can override one
+  variable without clobbering its siblings.
+</Note>
+
+### Enabling and disabling
+
+`<component>.enabled` gates the component. For an `application` alias the gate is
+wired as the `condition` on the dependency in `Chart.yaml`, so a disabled
+component renders nothing at all rather than rendering and being filtered.
+
+```bash
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --set aggregator.enabled=false
+```
+
+The `backend` component has no `enabled` key: an install without the API is not
+a working install, so it is always rendered.
+
+`<component>.deployment.enabled` is a second, narrower switch: it keeps the
+component's Service and configuration but drops the pods.
+
+## The three value tiers
+
+**`global.*` holds facts about the deployment**, not about any one component:
+connection strings, credentials, base URLs, the shared image reference. A
+subchart can only see `global`, so anything more than one component reads has to
+live there. In `costgraph-selfhosted` that is `global.postgres`,
+`global.metricsStore`, `global.redis`, `global.controlPlane`,
+`global.appBaseURL`, `global.corsAllowedOrigins`, `global.pricingApiKey`,
+`global.image` and `global.imagePullSecrets`.
+
+**Per-component blocks hold what differs**: the component's own image, replica
+count, resources, environment and probes.
+
+**Shared pod-spec defaults live under `global` too** -
+`global.podSecurityContext`, `global.securityContext`, `global.nodeSelector`,
+`global.tolerations`, `global.affinity` and `global.podAnnotations` - and a
+component overrides any of them in its own workload block.
+
+<Warning>
+  `application` does not template `imagePullSecrets`, so `global.imagePullSecrets`
+  does not reach an alias component. Each component repeats the pull secret in
+  its own `<component>.deployment.imagePullSecrets`. If you supply your own
+  registry credentials, replace that entry on each component you deploy.
+</Warning>
+
+## Deploying or sizing a single component
+
+Because every component reads the same keys, one component is changed without
+touching the rest.
+
+Run only part of the stack:
+
+```bash
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --set dashboard.enabled=false \
+  --set ingestionApi.enabled=false
+```
+
+Size just one component:
+
+```bash
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --set backend.deployment.replicas=4 \
+  --set backend.deployment.resources.requests.cpu=1
+```
+
+Pin one component to a different image without moving the others:
+
+```bash
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --set aggregator.image.tag=sha-abc1234
+```
+
+## What costgraph-common adds
+
+Each of these exists because `application` cannot express it, not because a
+second renderer was wanted.
+
+| It renders | Why it is not `application` |
+| --- | --- |
+| StatefulSets and DaemonSets | `application` renders Deployments only. The bundled Postgres and the bundled metrics store need stable storage; the network tracer needs one pod per node. |
+| A preserved-value Secret | Keys listed for preservation are read back from the live Secret and only generated on a first install. See the caveat below. |
+| A `dockerconfigjson` registry Secret | Built from the deployment API key the chart already holds, so an install needs no separate `kubectl create secret docker-registry` step. |
+| An Ingress with numeric backend ports | `application` can only address its own Service **by port name**. One host fanning out to several Services on numeric ports cannot be expressed there. |
+| An unsuffixed ConfigMap | `application` forces the name to `<appName>-<suffix>`, so a ConfigMap another chart mounts, or whose name a consumer hardcodes, cannot be named there. |
+| A Job with no `serviceAccountName` | A pre-install hook Job runs *before* the ServiceAccount exists, and `application` always writes the field. It also has no `ttlSecondsAfterFinished`, so a hook Job could not clean itself up. |
+
+All of them take the same values vocabulary as the `application` components, so
+`global.postgres.bundled.resources` sizes the bundled database exactly the way
+`backend.deployment.resources` sizes the API.
+
+## Install path: use helm upgrade, not Argo CD
+
+<Warning>
+  The chart preserves generated credentials by reading the **live** Secret with
+  Helm's `lookup` function. `lookup` returns data only under `helm install` and
+  `helm upgrade`. It returns nothing under `helm template`, which has no cluster
+  access.
+
+  Argo CD renders manifests with `helm template`. Under Argo, the preservation
+  branch never fires, so `api-key-secret`, `integrations-encryption-key` and the
+  bundled Postgres password are **regenerated on every sync**. That invalidates
+  every issued API key and makes already-encrypted integration credentials
+  unreadable.
+</Warning>
+
+This is verifiable: two consecutive `helm template` runs of the same chart, with
+the same values, produce different values for `api-key-secret`. Two consecutive
+`helm upgrade` runs do not.
+
+The supported install path is `helm install` / `helm upgrade`.
+
+If you must deploy through Argo CD, pick one of:
+
+- **Pre-create the Secrets out of band.** Create
+  `costgraph-selfhosted-generated` (keys `api-key-secret` and
+  `integrations-encryption-key`) and, if you use the bundled database,
+  `costgraph-selfhosted-postgres` (key `password`) before the first sync, and
+  let the chart adopt them. Better still, do not use the bundled database: point
+  `global.postgres.existingSecret` at a Secret you manage, and the generated
+  password stops being part of the problem.
+- **Tell Argo to ignore the drift.** Configure `ignoreDifferences` on that
+  Secret's `data` so a re-render never writes new values back:
+
+  ```yaml
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: costgraph-selfhosted-generated
+      jsonPointers:
+        - /data
+  ```
+
+The generated Secret carries `helm.sh/resource-policy: keep`, so it survives a
+`helm uninstall`. That protects it from deletion; it does not protect it from a
+re-render that overwrites it, which is why the two options above are needed.
+
+## Credentials and external services
+
+Every credential the charts accept has an `existingSecret` form. Prefer it: a
+value passed inline is stored in values and in Helm release history.
+
+<ParamField body="global.controlPlane.apiKey" type="string">
+  Deployment API key issued during onboarding. Also authenticates image pulls
+  from `registry.costgraph.ai`.
+</ParamField>
+
+<ParamField body="global.controlPlane.existingSecret" type="string">
+  Name of a Secret you manage holding `control-plane-api-key` (and
+  `pricing-api-key` if you were issued a separate pricing key). Takes precedence
+  over `apiKey`.
+</ParamField>
+
+<ParamField body="global.postgres.url" type="string">
+  Connection string for an external Postgres.
+</ParamField>
+
+<ParamField body="global.postgres.existingSecret" type="string">
+  Name of a Secret you manage holding `postgres-url` and `postgres-password`.
+  Takes precedence over `url` and `password`.
+</ParamField>
+
+<ParamField body="global.postgres.runMigrations" type="boolean">
+  Apply pending database migrations on start. Leave on unless you apply them as
+  a separate step. Default is in `values.yaml`.
+</ParamField>
+
+<ParamField body="global.postgres.bundled.enabled" type="boolean">
+  Run a Postgres StatefulSet inside the release instead of using an external
+  database. Sized with `global.postgres.bundled.storage`,
+  `global.postgres.bundled.storageClass` and
+  `global.postgres.bundled.resources`. Not recommended for production, and see
+  the Argo CD caveat above: its password is a generated value.
+</ParamField>
+
+<ParamField body="global.metricsStore.url" type="string">
+  URL of an external VictoriaMetrics or Prometheus-compatible store.
+</ParamField>
+
+<ParamField body="global.metricsStore.bundled.enabled" type="boolean">
+  Run VictoriaMetrics inside the release. Retention is
+  `global.metricsStore.bundled.retentionPeriod` (months); storage is
+  `global.metricsStore.bundled.storage` and
+  `global.metricsStore.bundled.storageClass`.
+</ParamField>
+
+<ParamField body="global.redis.url" type="string">
+  Redis connection URL. Use `global.redis.existingSecret` (key `redis-url`)
+  instead when the URL contains a password, so it is not stored in a ConfigMap
+  in plain text.
+</ParamField>
+
+<ParamField body="global.redis.bundled.enabled" type="boolean">
+  Run the bundled Redis. This is the `condition` on the `redis` alias, so
+  leaving it off renders nothing.
+</ParamField>
+
+<ParamField body="global.appBaseURL" type="string" required>
+  The URL your users open CostGraph on. Must be the address people actually
+  reach in a browser, not an internal Service DNS name. Also the default allowed
+  browser origin.
+</ParamField>
+
+<ParamField body="global.corsAllowedOrigins" type="string">
+  Browser origins allowed to call the API, comma-separated. Defaults to
+  `appBaseURL`.
+</ParamField>
+
+<ParamField body="global.image.repository" type="string">
+  Backend image repository. `global.image.tag` and `global.image.pullPolicy`
+  complete the reference.
+</ParamField>
+
+<ParamField body="global.analytics.enabled" type="boolean">
+  Anonymous product analytics. Set to `false` to send nothing.
+</ParamField>
+
+## Ingress
+
+The Ingress is rendered by `costgraph-common` so its paths can address several
+Services by port number.
+
+<ParamField body="ingress.enabled" type="boolean">
+  Render the Ingress.
+</ParamField>
+
+<ParamField body="ingress.className" type="string">
+  Ingress class.
+</ParamField>
+
+<ParamField body="ingress.annotations" type="object">
+  Annotations on the Ingress object.
+</ParamField>
+
+<ParamField body="ingress.hosts" type="array">
+  Hosts, each with its own `paths`. The API and remote-write paths are added
+  automatically for whichever of `backend`, `dashboard` and `ingestionApi` are
+  enabled.
+</ParamField>
+
+<ParamField body="ingress.tls" type="array">
+  Standard Kubernetes Ingress TLS blocks.
+</ParamField>
+
+## Preflight
+
+<ParamField body="doctor.enabled" type="boolean">
+  A preflight Job that runs before install and upgrade and fails the release
+  with the real reason if the database cannot support the schema. Turn it off
+  only if the database is provisioned after the release. It is the Job that has
+  to omit `serviceAccountName`, which is why `costgraph-common` renders it.
+</ParamField>
+
+## Component blocks
+
+<ParamField body="backend" type="object">
+  The API. `backend.deployment.replicas`, `backend.deployment.resources`,
+  `backend.deployment.env`, `backend.service.ports`. Its image comes from
+  `global.image`, since other components reference the same build.
+</ParamField>
+
+<ParamField body="dashboard" type="object">
+  The web UI. `dashboard.enabled`, `dashboard.image.repository`,
+  `dashboard.image.tag`, and `dashboard.apiBaseURL` when the API is served from
+  a different host than `global.appBaseURL`. `dashboard.cognitoOAuthDomain` and
+  `dashboard.graphAiBaseURL` are empty unless CostGraph has set those up for
+  your deployment.
+</ParamField>
+
+<ParamField body="ingestionApi" type="object">
+  Receives metrics from the CostGraph operator running in your clusters.
+  `ingestionApi.enabled`, `ingestionApi.logLevel`, and
+  `ingestionApi.maxBodyBytes` - raise the last if clusters with many nodes
+  report remote-write bodies rejected as too large.
+</ParamField>
+
+<ParamField body="aggregator" type="object">
+  Turns raw samples into per-workload costs. Without it, metrics arrive but cost
+  breakdowns stay empty. `aggregator.features` toggles the cost dimensions
+  computed (`ENABLE_GPU`, `ENABLE_HPA`, `ENABLE_NETWORK_POLICY`,
+  `ENABLE_EPHEMERAL_STORAGE`, `ENABLE_DISK_IOPS`); turning one off drops it from
+  the dashboard. `aggregator.vmalert.image` and `aggregator.vmalert.resources`
+  configure its rule evaluator.
+</ParamField>
+
+<ParamField body="redis" type="object">
+  The bundled Redis, gated by `global.redis.bundled.enabled`. Configure an
+  external Redis under `global.redis` instead.
+</ParamField>
+
+<ParamField body="deploymentName" type="string">
+  Label for this deployment in the CostGraph dashboard, so several of them can
+  be told apart. Defaults to the Helm release name.
+</ParamField>
+
+<Card title="Install" icon="download" href="/costgraph/self-hosted/install">
+  Prerequisites, a starting values file, and what to point at your own address.
+</Card>
+
+<Card title="Operator configuration" icon="gear" href="/costgraph/operator/configuration">
+  The same contract, applied to the chart that runs in each measured cluster.
+</Card>

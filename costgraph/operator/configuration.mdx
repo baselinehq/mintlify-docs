@@ -31,28 +31,54 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
   Namespace the operator runs in.
 </ParamField>
 
+## The component pattern
+
+Every component in this chart follows one values shape. A component is a
+top-level key; its workload lives in a block named after the Kubernetes kind it
+produces (`deployment:` for a Deployment, `daemonSet:` for a DaemonSet), and the
+inner keys - `replicas`, `image`, `resources`, `env`, `ports`, `nodeSelector`,
+`tolerations`, `affinity` - mean the same thing in each. Enabling, sizing or
+scheduling any component is therefore the same operation.
+
+The same contract covers the self-hosted chart. See the
+[values reference](/costgraph/self-hosted/values) for the full description,
+including the three value tiers and the Argo CD caveat.
+
 ## Resource exporter
 
-`operatorKubernetes` watches cluster resources and exports them to CostGraph.
+`operatorKubernetes` watches cluster resources and exports them to CostGraph. It
+is rendered by [stakater/application](https://github.com/stakater/application),
+so its workload settings sit under `operatorKubernetes.deployment`.
 
-<ParamField body="operatorKubernetes.enabled" type="boolean" default="true">
+<ParamField body="operatorKubernetes.deployment.enabled" type="boolean" default="true">
   Deploy the resource exporter.
 </ParamField>
 
-<ParamField body="operatorKubernetes.replicas" type="number" default="1">
-  Keep at `1` — the exporter is not designed to run multiple replicas.
+<ParamField body="operatorKubernetes.deployment.replicas" type="number" default="1">
+  Keep at `1` - the exporter is not designed to run multiple replicas.
 </ParamField>
 
-<ParamField body="operatorKubernetes.resources" type="object">
+<ParamField body="operatorKubernetes.deployment.image" type="object">
+  `repository`, `tag` and `pullPolicy` for the exporter image.
+</ParamField>
+
+<ParamField body="operatorKubernetes.deployment.imagePullSecrets" type="array">
+  The chart's top-level `imagePullSecrets` does not reach this Deployment, so a
+  private exporter image needs the secret repeated here.
+</ParamField>
+
+<ParamField body="operatorKubernetes.deployment.resources" type="object">
   Resource requests and limits.
 </ParamField>
 
-<ParamField body="operatorKubernetes.nodeSelector / tolerations / affinity" type="object">
+<ParamField body="operatorKubernetes.deployment.nodeSelector / tolerations / affinity" type="object">
   Standard pod scheduling controls.
 </ParamField>
 
-<ParamField body="operatorKubernetes.env" type="array">
-  Additional environment variables.
+<ParamField body="operatorKubernetes.deployment.env" type="object">
+  Additional environment variables, as a map of name to `value` or `valueFrom`,
+  so a single variable can be overridden with `--set` without clobbering its
+  siblings.
 </ParamField>
 
 ## Operational/Compute Metrics scraper
@@ -175,7 +201,7 @@ Each entry accepts:
 
 ## Bundled exporters
 
-The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `\flowtrace` if you do not need network tracing.
+The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `flowtrace` if you do not need network tracing.
 
 <ParamField body="kube-state-metrics.enabled" type="boolean" default="true">
   Kubernetes object-level metrics (pods, deployments, nodes).
@@ -186,7 +212,11 @@ The chart pulls in the metrics sources as subcharts. Disable any you already run
 </ParamField>
 
 <ParamField body="prometheus-node-exporter.enabled" type="boolean" default="true">
-  Host-level metrics (CPU, memory, disk, network) on port `9100`.
+  Host-level metrics (CPU, memory, disk, network). The port defaults to `9101`
+  rather than the upstream `9100`, because the subchart binds a hostPort and
+  `9100` collides with a node exporter the cluster already runs. The operator's
+  scrape target follows `prometheus-node-exporter.service.port`, so change it
+  there only.
 </ParamField>
 
 <ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
@@ -226,8 +256,8 @@ cadvisor:
 prometheus-node-exporter:
   enabled: true
   service:
-    port: 9100
-    targetPort: 9100
+    port: 9101
+    targetPort: 9101
 
 dcgm-exporter:
   enabled: false
@@ -236,16 +266,23 @@ dcgm-exporter:
   tolerations: []
 
 operatorKubernetes:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 10m
-      memory: 64Mi
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  env: []
+  applicationName: costgraph-operator-kubernetes
+  deployment:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/baselinehq/costgraph-operator-kubernetes
+      tag: "v0.1.0"
+      pullPolicy: IfNotPresent
+    imagePullSecrets: []
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    env: {}
 
 operatorPrometheus:
   enabled: true
@@ -268,7 +305,7 @@ operatorPrometheus:
     node-exporter:
       enabled: true
       labelSelector: "app.kubernetes.io/name=prometheus-node-exporter"
-      port: 9100
+      port: 9101
       nodeMetrics: true
     kubelet:
       enabled: true

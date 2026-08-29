@@ -1,0 +1,46 @@
+---
+title: "Sub-accounts and Tenancy"
+---
+
+A **sub-account** is the unit inside a provider that a charge belongs to. It answers "who is this spend for" in a way the provider itself recognises: a GCP project, a Grafana stack, a GitHub user, one of your own customers behind an AI gateway.
+
+CostGraph stores it on every cost row as the FOCUS `SubAccountId`, with `SubAccountName` as the human label and `SubAccountType` as the kind of thing the id names.
+
+## The type is provider-relative
+
+There is no fixed list of sub-account types. Each provider names its own tenancy unit, and CostGraph keeps the provider's word for it rather than flattening everything into one term.
+
+| Provider | Type | What the id is |
+| --- | --- | --- |
+| AWS | `Management` | The account id under the payer |
+| GCP | `Project` | The project id |
+| DigitalOcean, Scaleway | `Project` | The project slug or UUID |
+| Grafana Cloud | `Stack` | The stack hostname |
+| GitHub | `User` | The member's login |
+| CostGraph | `Tenant` | Your tenant, on your own CostGraph bill |
+| AI gateways | `sub_account` | Whatever customer id the gateway labelled the request with |
+
+Providers that publish their own FOCUS export set the type themselves, so the exact word is theirs, not ours. Other integrations map their hierarchy on the way in: [Datadog](/costgraph/integrations/datadog) treats the paying org as the billing account and each sub-org as a sub-account, and [Cursor](/costgraph/integrations/cursor) uses the member's email address.
+
+This is why the dashboard shows the type next to the name. `acme` on its own is ambiguous; `Project acme` is not.
+
+## Where it comes from
+
+- **Provider integrations** set it during ingestion, either straight from the provider's own FOCUS export or by mapping the provider's hierarchy.
+- **AI gateways** read the customer label off each request. See [AI gateways](/costgraph/integrations/ai-gateways), including the `costgraph.ai/sub-account` annotation that fills in where the gateway reported none.
+- **FOCUS push** lets you set it yourself, per row. See [Multi-tenancy with SubAccountId](/costgraph/integrations/focus-push). `SubAccountId` is part of row identity, so two customers on the same SKU and period stay separate, and replays update in place.
+
+## On the dashboard
+
+Turn on the **Sub-accounts** column in the cost breakdown. Each row then shows its largest sub-accounts as chips, and expanding one adds a row per sub-account.
+
+Those rows carry the same measures as the row above them, not just dollars: usage quantity and unit, unit price, and billed, list and contracted cost. That is the point of tenancy in CostGraph - what a customer cost you is only half the question, and what they consumed is the half that says whether the cost is justified. A tenant whose spend doubled while its usage stayed flat is a rate problem; one whose usage doubled with it is simply growth.
+
+Two measures are deliberately withheld when they would be arithmetic rather than fact. A rolled-up "N more" line reports a quantity only when every sub-account inside it shares one usage unit, and a unit price only when that quantity exists - summing hours and gigabytes into one number, or dividing by it, would invent a figure the bill does not contain.
+
+Two things are worth knowing about how the breakdown reads:
+
+- **Rows with no tenancy show a dash.** Plenty of spend legitimately has no sub-account. A provider that reports none, or an account-level fee that belongs to nobody in particular, is shown as blank rather than invented.
+- **"Unassigned" only appears where something else is attributed.** When part of a row carries a sub-account and part does not, the remainder is called out, because that gap is the difference between your bill and what tenancy can explain. When nothing in the row is attributed, there is no gap to report.
+
+You can also group by sub-account directly, or filter to one, from the same panel.

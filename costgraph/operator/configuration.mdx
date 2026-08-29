@@ -135,6 +135,23 @@ so its workload settings sit under `operatorKubernetes.deployment`.
   `repository`, `tag` and `pullPolicy` for the exporter image.
 </ParamField>
 
+<Warning>
+  The published resource exporter image is `linux/amd64` only. On an arm64 node
+  the pod stays in `ImagePullBackOff` with `no match for platform in manifest`,
+  which reads as a missing image rather than an unsupported architecture.
+
+  Schedule it onto amd64 nodes until a multi-architecture release is published:
+
+  ```yaml
+  operatorKubernetes:
+    deployment:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+  ```
+
+  The metrics scraper is already multi-architecture and needs no such pin.
+</Warning>
+
 <ParamField body="operatorKubernetes.deployment.imagePullSecrets" type="array">
   The chart's top-level `imagePullSecrets` does not reach this Deployment, so a
   private exporter image needs the secret repeated here.

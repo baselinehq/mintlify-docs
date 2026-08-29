@@ -186,7 +186,7 @@ Outbound HTTPS (443) to these hosts:
 | `cognito-idp.us-east-2.amazonaws.com` | verifying sign-in |
 | `registry.costgraph.ai` | pulling the images |
 | `pkg-containers.githubusercontent.com` | the image layers |
-| `docker.io`, `production.cloudflare.docker.com` | vmalert, and the bundled Postgres, Redis and metrics store if you enable them |
+| `registry-1.docker.io`, `auth.docker.io`, `production.cloudfront.docker.com`, `production.cloudflare.docker.com` | vmalert, and the bundled Postgres, Redis and metrics store if you enable them |
 | `us.i.posthog.com` | anonymous product analytics, unless `global.analytics.enabled: false` |
 
 Nothing needs to reach the deployment from outside your network.

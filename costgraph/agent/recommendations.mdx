@@ -3,14 +3,14 @@ title: Recommendations
 description: "How CostGraph turns agent metrics into rightsizing, idle, and cross-cloud recommendations"
 ---
 
-CostGraph turns the metrics your [agent](/costgraph/agent) collects into recommendations: downsize, upsize, terminate, or leave as-is. The recommendation is deliberately conservative — capacity safety always beats savings, and weak or contradictory evidence produces no recommendation.
+CostGraph turns the metrics your [agent](/costgraph/agent) collects into recommendations: downsize, upsize, terminate, or leave as-is. The recommendation is deliberately conservative - capacity safety always beats savings, and weak or contradictory evidence produces no recommendation.
 
 ## What it observes
 
 Recommendations are computed from agent metrics over a rolling window:
 
-- **Observation window** — the last 168 hours, with the most recent 24 hours tracked separately for recency.
-- **Idle window** — a 7-day window, since terminating a VM demands stronger evidence.
+- **Observation window** - the last 168 hours, with the most recent 24 hours tracked separately for recency.
+- **Idle window** - a 7-day window, since terminating a VM demands stronger evidence.
 
 Across that window it summarizes each signal by percentile (p50/p95/p99):
 
@@ -24,9 +24,9 @@ Across that window it summarizes each signal by percentile (p50/p95/p99):
 
 ## Data-quality gates
 
-Before any sizing happens, a VM must clear every gate below. If it fails one, CostGraph returns no recommendation and tells you why — this is the usual reason a VM shows no suggestion:
+Before any sizing happens, a VM must clear every gate below. If it fails one, CostGraph returns no recommendation and tells you why - this is the usual reason a VM shows no suggestion:
 
-- **Coverage ≥ 70%** of the expected samples in the window. Sparse data → no recommendation.
+- **Coverage >= 70%** of the expected samples in the window. Sparse data -> no recommendation.
 - **All required metrics present.** A missing metric stops sizing entirely.
 - **Current price known.** Candidate economics are meaningless without the baseline.
 - **Internally consistent metrics.** Impossible or self-contradictory load (e.g. a huge run queue with near-zero CPU) is rejected as unreliable.
@@ -35,17 +35,17 @@ Before any sizing happens, a VM must clear every gate below. If it fails one, Co
 
 **CPU** is sized from observed cores used(load is a pressure signal, but it can be inflated by IO waits or pinned work). Required vCPU is the larger of:
 
-- `ceil(p95 cores used / 0.85)` — keep the p95 at ~85% of the new vCPU count, and
-- `ceil(p99 cores used / 0.95)` — keep the p99 at ~95%.
+- `ceil(p95 cores used / 0.85)` - keep the p95 at ~85% of the new vCPU count, and
+- `ceil(p99 cores used / 0.95)` - keep the p99 at ~95%.
 
 A utilization **target** (default **65%**, bounded 50-80%) sets the headroom. CostGraph tightens that target for bursty workloads (high p99/p50 ratio), very small instances, and hosts seeing CPU steal from noisy neighbors.
 
-**Memory** must cover the observed p99 peak *and* projected growth — a linear trend extrapolated across the projection window plus a cushion — divided by a **75%** target utilization, with a peak-plus-safety-margin floor so a VM is never sized below its measured peak.
+**Memory** must cover the observed p99 peak *and* projected growth - a linear trend extrapolated across the projection window plus a cushion - divided by a **75%** target utilization, with a peak-plus-safety-margin floor so a VM is never sized below its measured peak.
 
 ## The recommendation it makes
 
 <ParamField body="Downsize">
-  A cheaper instance safely fits the computed requirements and clears every guard — same CPU architecture, a minimum monthly saving, and sanity limits (for example, it won't drop a large instance straight to a single vCPU).
+  A cheaper instance safely fits the computed requirements and clears every guard - same CPU architecture, a minimum monthly saving, and sanity limits (for example, it won't drop a large instance straight to a single vCPU).
 </ParamField>
 
 <ParamField body="Upsize">
@@ -66,13 +66,13 @@ A utilization **target** (default **65%**, bounded 50-80%) sets the headroom. Co
 
 ## Idle detection
 
-A VM is flagged to **terminate** only when *all* of these hold across the 7-day window — and then hold again in a second confirmation window:
+A VM is flagged to **terminate** only when *all* of these hold across the 7-day window - and then hold again in a second confirmation window:
 
-- CPU utilization p95 ≤ **5%** and cores used p95 ≤ **0.1**
-- Memory p99 ≤ **20%** of the instance's RAM
-- Network throughput p95 ≤ **~1 KB/s**
-- Disk utilization p95 ≤ **1%**
-- Network and disk signals each have ≥ 70% coverage
+- CPU utilization p95 <= **5%** and cores used p95 <= **0.1**
+- Memory p99 <= **20%** of the instance's RAM
+- Network throughput p95 <= **~1 KB/s**
+- Disk utilization p95 <= **1%**
+- Network and disk signals each have >= 70% coverage
 
 ## Cross-cloud recommendations
 

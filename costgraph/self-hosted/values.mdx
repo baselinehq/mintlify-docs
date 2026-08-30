@@ -9,38 +9,6 @@ enabled the same way, and is sized the same way, whichever Kubernetes object it
 ends up rendering. This page describes that contract so you can configure any
 component without learning a new shape for each one.
 
-## How a component is rendered
-
-Two things render objects in these charts.
-
-**[stakater/application](https://github.com/stakater/application) 9.3.1** is the
-base renderer for Deployments and Services. Components are declared as *aliases*
-of it in `Chart.yaml` and configured entirely from values. In
-`costgraph-selfhosted` those aliases are `backend`, `dashboard`, `ingestionApi`,
-`aggregator` and `redis`; in `costgraph-operator` it is `operatorKubernetes`.
-
-```yaml Chart.yaml
-dependencies:
-  - name: application
-    version: 9.3.1
-    repository: https://stakater.github.io/stakater-charts
-    alias: aggregator
-    condition: aggregator.enabled
-```
-
-**`costgraph-common`** is a library chart layered on top. It renders what
-`application` cannot, and nothing it does not have to: the StatefulSets
-(`postgres`, `victoriametrics`), the vmalert Deployments, the flowtrace
-DaemonSet in the operator chart, the Ingress, the ConfigMaps, the Secrets and
-the hook Jobs.
-
-<Note>
-  You never call `costgraph-common` yourself. It is a library chart consumed by
-  the two application charts; it exists in this document only to explain why
-  some components are rendered outside `application` while keeping the same
-  values shape.
-</Note>
-
 ## The component pattern
 
 A component is a top-level key in `values.yaml`. Under it, the workload lives in
@@ -126,8 +94,7 @@ Every image is a literal on its own component's workload block:
   pullPolicy: IfNotPresent
 ```
 
-There is no shared image value and no per-component alias root. Pinning one
-component never moves another.
+There is no shared image value. Pinning one component never moves another.
 
 ```bash
 helm upgrade costgraph costgraph/costgraph-selfhosted \
@@ -136,9 +103,8 @@ helm upgrade costgraph costgraph/costgraph-selfhosted \
 
 ### Enabling and disabling
 
-`<component>.enabled` gates the component. For an `application` alias the gate is
-wired as the `condition` on the dependency in `Chart.yaml`, so a disabled
-component renders nothing at all rather than rendering and being filtered.
+`<component>.enabled` gates the component. A disabled component renders nothing
+at all rather than rendering and being filtered.
 
 ```bash
 helm upgrade costgraph costgraph/costgraph-selfhosted \
@@ -152,10 +118,8 @@ Service and configuration but drops the pods.
 The three bundled datastores are the exception. `postgres`, `redis` and
 `victoriametrics` are switched on by `global.postgres.bundled.enabled`,
 `global.redis.bundled.enabled` and `global.metricsStore.bundled.enabled` rather
-than by an `enabled` key of their own, because the helpers that build the
-connection URLs are called from subchart aliases and a subchart can only read
-`global`. Everything else about their shape lives in their own top-level block,
-like every other component.
+than by an `enabled` key of their own. Everything else about their shape lives
+in their own top-level block, like every other component.
 
 <Warning>
   `backend.enabled` exists and defaults to `true`, but an install without the
@@ -165,8 +129,8 @@ like every other component.
 ## The three value tiers
 
 **`global.*` holds facts about the deployment**, not about any one component:
-connection strings, credentials, base URLs. A subchart can only see `global`, so
-anything more than one component reads has to live there. In
+connection strings, credentials, base URLs. Anything more than one component
+reads has to live there. In
 `costgraph-selfhosted` that is `global.postgres`, `global.metricsStore`,
 `global.redis`, `global.controlPlane`, `global.appBaseURL`,
 `global.corsAllowedOrigins`, `global.pricingApiKey`, `global.analytics` and
@@ -185,9 +149,8 @@ components and have no block of their own. Components carry their own
 ### Using your own registry credentials
 
 <Warning>
-  `application` does not template `imagePullSecrets`, so `global.imagePullSecrets`
-  does not reach an alias component. Each component names its pull secret in its
-  own `<component>.deployment.imagePullSecrets`.
+  `global.imagePullSecrets` does not reach every component. Each component names
+  its pull secret in its own `<component>.deployment.imagePullSecrets`.
 
   Because getting this half-right is silent, the chart checks it. Setting
   `global.imagePullSecrets` while `backend`, `dashboard`, `ingestionApi` or
@@ -246,20 +209,6 @@ helm upgrade costgraph costgraph/costgraph-selfhosted \
   --set backend.deployment.replicas=4 \
   --set backend.deployment.resources.requests.cpu=1
 ```
-
-## What costgraph-common adds
-
-Each of these exists because `application` cannot express it, not because a
-second renderer was wanted.
-
-| It renders | Why it is not `application` |
-| --- | --- |
-| StatefulSets and DaemonSets | `application` renders Deployments only. The bundled Postgres and the bundled metrics store need stable storage; the network tracer needs one pod per node. |
-| A preserved-value Secret | Keys listed for preservation are read back from the live Secret and only generated on a first install. See the caveat below. |
-| A `dockerconfigjson` registry Secret | Built from the deployment API key the chart already holds, so an install needs no separate `kubectl create secret docker-registry` step. |
-| An Ingress with numeric backend ports | `application` can only address its own Service **by port name**. One host fanning out to several Services on numeric ports cannot be expressed there. |
-| An unsuffixed ConfigMap | `application` forces the name to `<appName>-<suffix>`, so a ConfigMap another chart mounts, or whose name a consumer hardcodes, cannot be named there. |
-| A Job with no `serviceAccountName` | A pre-install hook Job runs *before* the ServiceAccount exists, and `application` always writes the field. It also has no `ttlSecondsAfterFinished`, so a hook Job could not clean itself up. |
 
 ## Install path: use helm upgrade, not Argo CD
 
@@ -382,7 +331,7 @@ value passed inline is stored in values and in Helm release history.
 
 <ParamField body="global.redis.bundled.enabled" type="boolean">
   Run the Redis described by the `redis` component. This is the `condition` on
-  the `redis` alias, so leaving it off renders nothing.
+  the `redis` component, so leaving it off renders nothing.
 </ParamField>
 
 <ParamField body="global.appBaseURL" type="string" required>
@@ -407,13 +356,12 @@ value passed inline is stored in values and in Helm release history.
 
 <ParamField body="global.imagePullSecrets" type="array">
   Pull secrets for the components this chart renders itself. Does **not** reach
-  the `application` aliases - see the render-time check above.
+  every component - see the render-time check above.
 </ParamField>
 
 ## Ingress
 
-The Ingress is rendered by `costgraph-common` so its paths can address several
-Services by port number.
+The Ingress fans one host out to several Services by port number.
 
 <ParamField body="ingress.enabled" type="boolean">
   Render the Ingress. The render fails if this is on and `ingress.hosts` is
@@ -486,10 +434,9 @@ Services by port number.
   themselves come from the aggregator image, so
   `aggregator.deployment.image.tag` is required whenever vmalert is enabled.
 
-  It has no `service:` or `rbac:` block. `costgraph-common` renders a Service
-  for each of the two Deployments itself, so `/api/v1/rules` is reachable even
-  when a rule produces no samples, and vmalert runs with no ServiceAccount of
-  its own.
+  It has no `service:` or `rbac:` block. A Service is rendered for each of the
+  two Deployments, so `/api/v1/rules` is reachable even when a rule produces no
+  samples, and vmalert runs with no ServiceAccount of its own.
 </ParamField>
 
 <ParamField body="redis" type="object">
@@ -532,7 +479,7 @@ the chart defaults. Check every override you rely on against these tables.
 | Before | Now |
 | --- | --- |
 | `global.image.repository` / `.tag` / `.pullPolicy` | `backend.deployment.image.repository` / `.tag` / `.pullPolicy` |
-| `<component>.image.*` (alias root) | `<component>.deployment.image.*` |
+| `<component>.image.*` (component root) | `<component>.deployment.image.*` |
 | `global.nodeSelector`, `global.tolerations`, `global.affinity`, `global.podAnnotations` | removed - set them on the component's workload block |
 | `aggregator.vmalert.*` | `vmalert.*` (top-level component, with `enabled`, `applicationName`, `deployment`) |
 | `global.postgres.bundled.image` | `postgres.statefulSet.image.repository` + `.tag` |

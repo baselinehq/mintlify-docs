@@ -39,6 +39,10 @@ Confluent Cloud at any time and the connection stops; nothing else is affected.
 Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
 
+You do not have to write the converter yourself.
+[Run the exporter](/costgraph/integrations/exporter) in your own environment with
+`--provider confluent` and it reads this provider and pushes the records for you.
+
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into

@@ -45,6 +45,20 @@ mid-period. Credentials are encrypted at rest and used only to read your account
 Send the records to CostGraph as FOCUS instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
 
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads Cherry Servers on
+a schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider cherryservers --sink costgraph
+```
+
+Your Cherry Servers credential stays where you put it, and only the finished FOCUS
+records reach CostGraph. [Run the exporter](/costgraph/integrations/exporter) covers
+the three ways to run it and the variables it reads.
+
 ## What CostGraph does with it
 
 Records land as raw billing rows, are normalised into line items, and roll up into

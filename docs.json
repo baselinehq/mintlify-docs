@@ -80,6 +80,8 @@
             "pages": [
               "costgraph/integrations/overview",
               "costgraph/integrations/focus-push",
+              "costgraph/integrations/exporter",
+              "costgraph/integrations/exporter-reference",
               {
                 "group": "Cloud",
                 "icon": "cloud",

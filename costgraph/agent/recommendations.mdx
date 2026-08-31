@@ -68,10 +68,10 @@ A utilization **target** (default **65%**, bounded 50-80%) sets the headroom. Co
 
 A VM is flagged to **terminate** only when *all* of these hold across the 7-day window - and then hold again in a second confirmation window:
 
-- CPU utilization p95 <= **5%** and cores used p95 <= **0.1**
-- Memory p99 <= **20%** of the instance's RAM
-- Network throughput p95 <= **~1 KB/s**
-- Disk utilization p95 <= **1%**
+- CPU utilization p95 \<= **5%** and cores used p95 \<= **0.1**
+- Memory p99 \<= **20%** of the instance's RAM
+- Network throughput p95 \<= **~1 KB/s**
+- Disk utilization p95 \<= **1%**
 - Network and disk signals each have >= 70% coverage
 
 ## Cross-cloud recommendations

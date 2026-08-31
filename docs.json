@@ -57,6 +57,15 @@
             ]
           },
           {
+            "group": "Virtual Tags",
+            "icon": "tags",
+            "pages": [
+              "costgraph/virtual-tags/overview",
+              "costgraph/virtual-tags/usage",
+              "costgraph/virtual-tags/graph-ai"
+            ]
+          },
+          {
             "group": "MCP",
             "icon": "plug",
             "pages": [

@@ -1,0 +1,153 @@
+---
+title: Amazon Web Services
+description: "Connect an AWS account to CostGraph for FOCUS-based cost, allocation, and cross-provider recommendations"
+---
+
+CostGraph reads your AWS spend from a **FOCUS Data Export** delivered to S3. Unlike
+Google Cloud, AWS exposes a full API for this, so the entire setup is automated - one
+CloudShell command (or a short Terraform module) creates the export and the read role.
+
+## What you enable
+
+A single **FOCUS 1.2 Data Export** (`FOCUS_1_2_AWS`) written as Parquet to an S3
+bucket. It carries billed and effective cost, usage, credits, and commitment
+(Savings Plans / Reserved Instances) columns in the normalized FOCUS schema.
+
+## Setup in CloudShell (recommended)
+
+The connect dialog shows a one-line command. Open **AWS CloudShell** in the management
+(payer) account and run it:
+
+```sh
+curl -sSL https://setup.costgraph.ai/integrations/aws.sh \
+  | COSTGRAPH_EXTERNAL_ID="org_..." sh
+```
+
+CloudShell already carries your console credentials, so nothing is stored or pasted
+anywhere else. The script creates the read role (trusting CostGraph's identity, locked
+to your external ID), the export bucket with public access blocked and encryption on,
+and the FOCUS 1.2 Data Export. It is idempotent - rerun it safely.
+
+It prints four values. Paste them into the connect form:
+
+```
+ROLE_ARN=arn:aws:iam::123456789012:role/CostGraph-Reader
+BUCKET=costgraph-focus-123456789012
+REGION=us-east-1
+PREFIX=focus-1-2
+```
+
+<Note>
+The external ID is issued by CostGraph and ties the role to your organization. It stops
+anyone else who learns your role ARN from assuming it. Never edit it out of the command.
+</Note>
+
+Set `COSTGRAPH_BUCKET` to use an existing bucket, or `COSTGRAPH_EXPORT_REGION` if you
+are in a different partition (GovCloud, China).
+
+## Setup with Terraform
+
+Prefer infrastructure as code? Apply the equivalent below instead of the script. The
+export is created in **us-east-1** (where AWS billing data lives), so
+`aws_bcmdataexports_export` must be managed by an AWS provider configured for that
+region. If your root provider targets another region, add an aliased one and point the
+export at it.
+
+```hcl
+provider "aws" {
+  alias  = "billing"
+  region = "us-east-1"
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_s3_bucket" "focus" {
+  bucket = "costgraph-focus-export-${data.aws_caller_identity.current.account_id}"
+}
+
+resource "aws_s3_bucket_policy" "focus" {
+  bucket = aws_s3_bucket.focus.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "EnableAWSDataExportsWrite"
+      Effect    = "Allow"
+      Principal = { Service = "bcm-data-exports.amazonaws.com" }
+      Action    = ["s3:PutObject"]
+      Resource  = ["${aws_s3_bucket.focus.arn}/*"]
+      Condition = {
+        StringLike   = { "aws:SourceArn" = "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*" }
+        StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }
+      }
+    }]
+  })
+}
+
+resource "aws_bcmdataexports_export" "focus" {
+  provider = aws.billing
+
+  export {
+    name = "costgraph-focus-1-2"
+    data_query { query_statement = "SELECT * FROM FOCUS_1_2_AWS" }
+    destination_configurations {
+      s3_destination {
+        s3_bucket = aws_s3_bucket.focus.id
+        s3_prefix = "focus-1-2"
+        s3_region = "us-east-1"
+        s3_output_configurations {
+          output_type = "CUSTOM"
+          format      = "PARQUET"
+          compression = "PARQUET"
+          overwrite   = "OVERWRITE_REPORT"
+        }
+      }
+    }
+    refresh_cadence { frequency = "SYNCHRONOUS" }
+  }
+}
+```
+
+First Parquet files land within about 24 hours.
+
+## Read access
+
+CostGraph reads the export bucket with a cross-account role granting `s3:GetObject` and
+`s3:ListBucket` on the export prefix. The connect flow provides the exact trust policy
+and external ID.
+
+## Connect in CostGraph
+
+1. Open **Integrations** and choose **Amazon Web Services**.
+2. Run the CloudShell command shown there (or apply the Terraform above).
+3. Paste the `ROLE_ARN`, `BUCKET`, `REGION`, and `PREFIX` the script printed, then
+   connect.
+4. CostGraph assumes the role, validates it can read the export, and starts the first
+   sync.
+
+## Push it yourself
+
+If you would rather not grant a cross-account role,
+[run the exporter](/costgraph/integrations/exporter) in your own account instead.
+It reads the same Data Export from S3 and pushes the records, so nothing but the
+FOCUS rows leaves your account:
+
+```yaml
+provider: objectstore
+sink: costgraph
+OBJECTSTORE_BUCKET: my-focus-export
+OBJECTSTORE_PREFIX: focus-1-2/
+OBJECTSTORE_LAYOUT: manifest
+```
+
+No keys: give the exporter's role `s3:ListBucket` and `s3:GetObject` on the
+export bucket and it uses the role it runs as. `manifest` reads exactly the
+files the export names, which is what AWS writes beside the data.
+
+## What CostGraph does with it
+
+- **Cost**: FOCUS line items normalized to the same canonical model as every other
+  provider, keeping billed and effective cost, credits, and commitment attribution.
+- **Reconciliation**: allocated plus unallocated cost is checked to equal the invoice
+  per billing account per month.
+- **Allocation**: spend attributed by resource, tag, and account, with an explicit
+  unallocated bucket for tax, shared, and commitment costs.

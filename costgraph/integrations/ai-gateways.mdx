@@ -1,0 +1,217 @@
+---
+title: AI gateways
+description: "Price token usage from gateways that report telemetry instead of dollars"
+---
+
+Most integrations read a bill. An AI gateway running in your own cluster has no
+bill to read: it measures the tokens it routes and reports them as metrics.
+CostGraph reads those metrics, prices them, and lands the result beside every
+other cost.
+
+This is its own way to connect, alongside pull, push, and exports:
+
+<CardGroup cols={3}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call the provider once a day.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records. Credentials never leave your infrastructure.
+  </Card>
+  <Card title="We read your telemetry" icon="chart-line">
+    Your gateway already measures token usage. No credentials at all.
+  </Card>
+</CardGroup>
+
+## Supported gateways
+
+| Gateway | Attribute usage to your customers |
+| --- | --- |
+| Envoy AI Gateway | Yes, from a request header |
+| Solo.io agentgateway | Yes, from any request expression |
+| Apache APISIX | Yes, already on every metric |
+| vLLM | Per workload only, see below |
+
+Each was run and measured rather than read about: every one reports tokens
+differently, and two of them do not follow the OpenTelemetry GenAI conventions
+at all. CostGraph normalises that for you.
+
+## Connect
+
+1. Open **Settings -> Integrations** and pick your gateway.
+2. Name the connection and pick the tenant this usage belongs to.
+3. Select the cluster the gateway runs in.
+4. Select **Connect**.
+
+Enable the AI gateway scraper in your operator values once:
+
+```yaml
+aiGatewayScraper:
+  enabled: true
+```
+
+That is the whole cluster-side setup. **You do not add scrape targets.**
+CostGraph serves them from the connections you create, so connecting another
+gateway later changes nothing in your Helm values.
+
+A connection is picked up within five minutes of being created; the scraper
+refreshes its served targets on that interval rather than at start only.
+
+<Note>
+  A served target always carries a metric-name filter, so it only ever collects
+  the token metrics it was configured for. A target you set yourself in
+  `operatorPrometheus.scrapeTargets` always wins over a served one.
+</Note>
+
+<Warning>
+  **agentgateway has no stock scrape location.** Its token metrics come from the
+  per-Gateway data plane, not the control plane, and those pods live in whichever
+  namespace you created the Gateway in. So there is nothing for CostGraph to
+  default to: an agentgateway connection must name the namespace and the pod
+  label selector when you connect, or nothing can ever be scraped. Every other
+  gateway defaults to its stock location, and you only supply these to override
+  a non-standard deployment.
+</Warning>
+
+## Attribute usage to your customers
+
+If you resell access, tell your gateway to label each request with your
+customer's id. CostGraph reads that label into the FOCUS sub-account columns, so
+per-customer usage shows up wherever you already group by sub-account.
+
+<AccordionGroup>
+  <Accordion title="Envoy AI Gateway">
+    Map a request header onto the metrics. This is a controller-wide setting, so
+    every gateway that controller manages shares the mapping.
+
+    ```bash
+    helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
+      --version v1.1.0 -n envoy-ai-gateway-system \
+      --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
+    ```
+
+    The attribute `customer.id` arrives as the label `customer_id` - dots become
+    underscores on the Prometheus side.
+  </Accordion>
+
+  <Accordion title="Solo.io agentgateway">
+    Add a metric attribute computed from the request. On Kubernetes this goes in
+    an AgentgatewayPolicy. The value is a CEL expression, so the identifier can
+    come from a header, a JWT claim, or anything else in the request.
+
+    ```yaml
+    spec:
+      frontend:
+        metrics:
+          attributes:
+            add:
+              - name: customer
+                expression: request.headers["x-customer-id"]
+    ```
+  </Accordion>
+
+  <Accordion title="Apache APISIX">
+    Nothing to configure. Give each customer its own APISIX consumer; the
+    `consumer` label is already on every LLM metric, because consumers are
+    APISIX's own auth identities.
+
+    APISIX only starts reporting LLM metrics after the first AI request passes
+    through it, so an empty scrape before any traffic is expected.
+  </Accordion>
+
+  <Accordion title="vLLM">
+    Not available per request. vLLM is a model server, not an auth boundary, and
+    reports only the model name - no configuration changes that.
+
+    Either front it with a gateway that can attribute per request, or run one
+    deployment per customer and annotate the workload:
+
+    ```bash
+    kubectl annotate deployment/llama-serving \
+      costgraph.ai/sub-account=acme-corp
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  The annotation fills in a customer only where the gateway did not report one
+  itself. A gateway that labels each request wins, so annotating a shared
+  gateway does not collapse its customers onto one sub-account. Annotate the
+  workload only where per-request attribution is not available.
+</Note>
+
+## How usage is priced
+
+Rates resolve in order, and the first match wins:
+
+1. **Your own rate**, if the workload carries a `costgraph.ai/pricing-id.model`
+   label. Register the rate once in the pricing marketplace and tag with the id
+   it returns. See [Pricing IDs](/costgraph/operator/on-prem-pricing).
+2. **A hosted reference rate** for the same model, from the model catalog. This
+   answers "what would this have cost on someone else's API".
+3. **Your own amortized rate**, for a model you serve yourself. CostGraph divides
+   what the serving namespace cost that day by the tokens it served that day, so
+   a self-hosted model prices at what it actually cost you to run rather than at
+   somebody else's list price.
+
+A pin that names a rate which no longer exists leaves the usage **unpriced**, and
+never silently falls back to a market rate. A plausible wrong number is worse
+than no number.
+
+<Note>
+  Only token usage prices today. Images, audio seconds and characters are
+  captured and stored now, and will price once the catalog carries rates for
+  them - nothing is lost in the meantime.
+</Note>
+
+## Send usage yourself
+
+If your gateway runs outside a CostGraph-managed cluster, send the usage
+directly instead. The rows are FOCUS 1.2 shaped with the cost columns left
+empty, because CostGraph prices them:
+
+```bash
+curl -X POST https://api.costgraph.ai/api/v1/tenant/billing/focus/usage \
+  -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "fpc_...",
+    "focus_version": "1.2",
+    "charge_period_start": "2026-08-20T00:00:00Z",
+    "charge_period_end": "2026-08-21T00:00:00Z",
+    "rows": [{
+      "SkuId": "meta/llama-3.3-70b",
+      "SkuMeter": "meta/llama-3.3-70b/output",
+      "ConsumedQuantity": "20000",
+      "ConsumedUnit": "tokens"
+    }]
+  }'
+```
+
+The key needs the **`focus:write`** scope.
+
+<Warning>
+  A row that already carries `BilledCost`, `EffectiveCost`, `ListCost` or
+  `ContractedCost` is rejected. If your gateway computes its own spend, use
+  [Push FOCUS data](/costgraph/integrations/focus-push) instead, which takes
+  conformant records and stores them as they are.
+</Warning>
+
+## Send from anything else
+
+CostGraph reads one metric family. Anything that can write it can be a source -
+a Prometheus server, an OpenTelemetry Collector, Grafana Alloy - whether or not
+it runs on Kubernetes:
+
+```
+costgraph_gen_ai_usage_total{
+  costgraph_model,        # the model whose rate applies
+  costgraph_usage_kind,   # input, output, cached_input, reasoning, image, ...
+  costgraph_unit,         # tokens, images, seconds, characters
+  costgraph_gateway,      # which connection this belongs to
+  costgraph_sub_account,  # your customer, when you attribute usage
+}
+```
+
+Remote-write it to `https://tsdb.costgraph.ai/api/v1/write` with an API key in
+the `X-API-Key` header. A gateway CostGraph has never heard of works this way
+with no changes on our side.

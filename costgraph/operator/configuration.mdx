@@ -221,7 +221,7 @@ operator's scraped metrics.
 It takes **no** `scrapeTargets`. Targets are served by CostGraph from the
 connections you create in **Settings -> Integrations**, fetched at start and
 refreshed while it runs, so connecting a gateway never edits these values. See
-[AI gateways](/costgraph/integrations/pull/ai-gateways).
+[AI gateways](/costgraph/integrations/telemetry/ai-gateways).
 
 A target you define yourself in `operatorPrometheus.scrapeTargets` always wins
 over a served one, and a served target is only applied when it carries a

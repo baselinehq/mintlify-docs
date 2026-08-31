@@ -151,7 +151,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/datadog
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
-| `DATADOG_ACCESS_TOKEN` | yes | yes | Datadog access token scoped to usage_read and billing_read (Personal Settings -> Access Tokens): a service access token (ddsat_) for an unattended sync, or a personal access token (ddpat_). For an unattended sync create a service access token with expiration set to Never so it does not lapse. It must belong to the parent organization. |
+| `DATADOG_ACCESS_TOKEN` | yes | yes | Datadog access token scoped to usage_read and billing_read (Personal Settings -> Access Tokens): a service access token (ddsat_) for an unattended sync, or a personal access token (ddpat_). For an unattended sync use a service access token with a defined expiry, and rotate it before it lapses. It must belong to the parent organization. |
 | `DATADOG_SITE` | no | no | Datadog site the account lives on, e.g. datadoghq.com, datadoghq.eu, us3.datadoghq.com, us5.datadoghq.com, ap1.datadoghq.com. Sets the API host. Defaults to datadoghq.com. |
 
 ## Daytona

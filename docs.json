@@ -169,6 +169,13 @@
                   "costgraph/integrations/grafanacloud",
                   "costgraph/integrations/costgraph"
                 ]
+              },
+              {
+                "group": "Billing",
+                "icon": "file-invoice-dollar",
+                "pages": [
+                  "costgraph/integrations/autumn"
+                ]
               }
             ]
           }

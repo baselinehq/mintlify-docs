@@ -1,0 +1,80 @@
+---
+title: Autumn
+description: "Bill your customers for the cloud spend CostGraph attributes to them"
+---
+
+Most integrations bring cost data **into** CostGraph. Autumn is the opposite
+direction: CostGraph reports each of your customers' attributed cloud spend to
+your [Autumn](https://useautumn.com) account every night, and Autumn turns it
+into invoices through Stripe. You resell or charge back cloud infrastructure;
+CostGraph decides who spent what, Autumn bills them for it.
+
+## How it fits together
+
+1. A **virtual tag** decides which customer each charge belongs to. You write
+   the rules; every value the tag produces is an Autumn customer id.
+2. A **meter** binds that tag key to one meter in your Autumn account. Each
+   night CostGraph reports every customer's attributed spend for each settled
+   day to that meter.
+3. **Autumn prices and invoices.** Attach a price to the meter in Autumn and
+   your customers are billed for exactly the spend CostGraph attributed to them.
+
+Spend is reported in **integer cents**. When you price the meter in Autumn,
+price per cent, or use Autumn's billing units to group 100 units into one
+priced dollar. Autumn does not know what unit a meter carries, so nothing on
+its side will catch a price set as if the values were dollars.
+
+## Connect
+
+1. In your Autumn dashboard, open **Developer -> Secret keys** and copy a key.
+   Use a live key to bill for real; a sandbox key exercises the whole flow
+   without invoicing anyone.
+2. In CostGraph, open **Integrations** and choose **Autumn**.
+3. Paste the key and connect. CostGraph verifies the key against Autumn before
+   saving anything, and stores it encrypted.
+
+## Choose who gets billed
+
+Create a virtual tag key whose values are your Autumn customer ids, and only
+the customers you bill. Spend the tag does not match is never reported.
+
+<Warning>
+Autumn creates a customer the first time it sees an id, so a mistyped tag
+value quietly becomes a new billable customer there. Check the tag's values
+before binding it to a meter, and watch the report history after rule changes.
+</Warning>
+
+Because a bound tag key drives invoices, CostGraph protects days that were
+already reported: rules on that key cannot be reordered, and new or edited
+rules must start from a date that has not been reported yet. Close an old rule
+with an end date instead of editing it in place.
+
+## What lands in Autumn
+
+Each customer-day is one usage event on your meter, carrying properties you
+can group by in Autumn:
+
+| Property | What it tells you |
+|----------|-------------------|
+| `usage_date` | The day the spend belongs to |
+| `correction` | Whether this event adjusts a day reported earlier |
+| `previous_total` / `new_total` | What the day's total was, and is now |
+| `currency` | The currency the meter is denominated in |
+
+<Note>
+Cloud providers restate recent spend, so CostGraph holds each day for two days
+before reporting it, then keeps reconciling the last 35 days. Autumn bills
+every event into the customer's **current** cycle, so a correction to an old
+day shows up on the next invoice - `usage_date` is how you and your customer
+see which day it belongs to.
+</Note>
+
+## Day to day
+
+- The nightly run reports only what changed, so an unchanged day sends nothing.
+- **Resync** on the connection runs a report immediately.
+- A day is held back rather than reported wrong when its spend mixes
+  currencies, or a quantity meter meets an unexpected unit. Held days and the
+  reason are visible in the report history.
+- Deactivating a meter stops reporting but keeps its history, so reactivating
+  resumes from what was already sent instead of double-billing the window.

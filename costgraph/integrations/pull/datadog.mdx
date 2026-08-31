@@ -1,0 +1,69 @@
+---
+title: Datadog
+description: "Bring your Datadog subscription spend into CostGraph, pulled by us or pushed by you"
+---
+
+Datadog reports your own Datadog bill broken down by organization and product,
+so spend is attributed per product and, in a multi-org account, per sub-org.
+
+CostGraph reads Datadog as **FOCUS 1.2** records at a grain of month x
+organization x product x charge type.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call Datadog once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **Datadog**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the keys Datadog needs
+   and explains the permission each one requires. You supply an **API key** and
+   an **application key** scoped to `usage_read` and `billing_read`, both created
+   by a parent-org admin (the cost endpoints are parent-org only). If your
+   account is not on US1, set the Datadog **site**.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+<Note>
+Use a long-lived API key rather than a personal access token for an unattended
+connection: a personal token is user-bound and expires. Credentials are
+encrypted at rest and used only to read billing data. Revoke either key in
+Datadog at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the cost report to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/push/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads Datadog on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider datadog --sink costgraph
+```
+
+Your Datadog credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/push/exporter) covers the three
+ways to run it and the variables it reads.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Datadog spend appears in Cost Overview and in anomaly
+detection alongside every other provider. In a multi-org account the paying
+organization is the billing account and each sub-org is a sub-account, so spend
+is attributed per tenant.

@@ -88,93 +88,105 @@
             "icon": "plug",
             "pages": [
               "costgraph/integrations/overview",
-              "costgraph/integrations/focus-push",
-              "costgraph/integrations/exporter",
-              "costgraph/integrations/exporter-reference",
               {
-                "group": "Cloud",
-                "icon": "cloud",
+                "group": "Pull",
+                "icon": "cloud-arrow-down",
                 "pages": [
-                  "costgraph/integrations/aws",
-                  "costgraph/integrations/gcp",
-                  "costgraph/integrations/digitalocean",
-                  "costgraph/integrations/ovhcloud",
-                  "costgraph/integrations/stackit",
-                  "costgraph/integrations/scaleway",
-                  "costgraph/integrations/linode",
-                  "costgraph/integrations/cherryservers",
-                  "costgraph/integrations/vercel",
-                  "costgraph/integrations/modal",
-                  "costgraph/integrations/runpod",
-                  "costgraph/integrations/depot",
-                  "costgraph/integrations/daytona"
+                  {
+                    "group": "Cloud",
+                    "icon": "cloud",
+                    "pages": [
+                      "costgraph/integrations/pull/aws",
+                      "costgraph/integrations/pull/gcp",
+                      "costgraph/integrations/pull/digitalocean",
+                      "costgraph/integrations/pull/ovhcloud",
+                      "costgraph/integrations/pull/stackit",
+                      "costgraph/integrations/pull/scaleway",
+                      "costgraph/integrations/pull/linode",
+                      "costgraph/integrations/pull/cherryservers",
+                      "costgraph/integrations/pull/vercel",
+                      "costgraph/integrations/pull/modal",
+                      "costgraph/integrations/pull/runpod",
+                      "costgraph/integrations/pull/depot",
+                      "costgraph/integrations/pull/daytona"
+                    ]
+                  },
+                  {
+                    "group": "AI / LLM",
+                    "icon": "robot",
+                    "pages": [
+                      "costgraph/integrations/pull/anthropic",
+                      "costgraph/integrations/pull/openai",
+                      "costgraph/integrations/pull/openrouter",
+                      "costgraph/integrations/pull/helicone",
+                      "costgraph/integrations/pull/respanai",
+                      "costgraph/integrations/pull/cursor",
+                      "costgraph/integrations/pull/xai",
+                      "costgraph/integrations/pull/litellm",
+                      "costgraph/integrations/pull/truefoundry",
+                      "costgraph/integrations/pull/newapi",
+                      "costgraph/integrations/pull/ai-gateways",
+                      "costgraph/integrations/pull/elevenlabs"
+                    ]
+                  },
+                  {
+                    "group": "Databases",
+                    "icon": "database",
+                    "pages": [
+                      "costgraph/integrations/pull/planetscale",
+                      "costgraph/integrations/pull/rediscloud",
+                      "costgraph/integrations/pull/clickhouse"
+                    ]
+                  },
+                  {
+                    "group": "Analytics",
+                    "icon": "chart-column",
+                    "pages": [
+                      "costgraph/integrations/pull/confluent"
+                    ]
+                  },
+                  {
+                    "group": "CI & Dev Tools",
+                    "icon": "code-branch",
+                    "pages": [
+                      "costgraph/integrations/pull/github",
+                      "costgraph/integrations/pull/blacksmith",
+                      "costgraph/integrations/pull/buildkite",
+                      "costgraph/integrations/pull/hatchet"
+                    ]
+                  },
+                  {
+                    "group": "Networking",
+                    "icon": "network-wired",
+                    "pages": [
+                      "costgraph/integrations/pull/cloudflare"
+                    ]
+                  },
+                  {
+                    "group": "Observability & Governance",
+                    "icon": "gauge",
+                    "pages": [
+                      "costgraph/integrations/pull/datadog",
+                      "costgraph/integrations/pull/grafanacloud",
+                      "costgraph/integrations/pull/costgraph"
+                    ]
+                  }
                 ]
               },
               {
-                "group": "AI / LLM",
-                "icon": "robot",
+                "group": "Push",
+                "icon": "cloud-arrow-up",
                 "pages": [
-                  "costgraph/integrations/anthropic",
-                  "costgraph/integrations/openai",
-                  "costgraph/integrations/openrouter",
-                  "costgraph/integrations/helicone",
-                  "costgraph/integrations/respanai",
-                  "costgraph/integrations/cursor",
-                  "costgraph/integrations/xai",
-                  "costgraph/integrations/litellm",
-                  "costgraph/integrations/truefoundry",
-                  "costgraph/integrations/newapi",
-                  "costgraph/integrations/ai-gateways",
-                  "costgraph/integrations/elevenlabs"
+                  "costgraph/integrations/push/focus-push",
+                  "costgraph/integrations/push/exporter",
+                  "costgraph/integrations/push/exporter-reference"
                 ]
               },
               {
-                "group": "Databases",
-                "icon": "database",
-                "pages": [
-                  "costgraph/integrations/planetscale",
-                  "costgraph/integrations/rediscloud",
-                  "costgraph/integrations/clickhouse"
-                ]
-              },
-              {
-                "group": "Analytics",
-                "icon": "chart-column",
-                "pages": [
-                  "costgraph/integrations/confluent"
-                ]
-              },
-              {
-                "group": "CI & Dev Tools",
-                "icon": "code-branch",
-                "pages": [
-                  "costgraph/integrations/github",
-                  "costgraph/integrations/blacksmith",
-                  "costgraph/integrations/buildkite",
-                  "costgraph/integrations/hatchet"
-                ]
-              },
-              {
-                "group": "Networking",
-                "icon": "network-wired",
-                "pages": [
-                  "costgraph/integrations/cloudflare"
-                ]
-              },
-              {
-                "group": "Observability & Governance",
-                "icon": "gauge",
-                "pages": [
-                  "costgraph/integrations/datadog",
-                  "costgraph/integrations/grafanacloud",
-                  "costgraph/integrations/costgraph"
-                ]
-              },
-              {
-                "group": "Billing",
+                "group": "Exports",
                 "icon": "file-invoice-dollar",
                 "pages": [
-                  "costgraph/integrations/autumn"
+                  "costgraph/integrations/exports/autumn"
                 ]
               }
             ]
@@ -462,6 +474,170 @@
     {
       "source": "/costgraph/focus-exporter/xai",
       "destination": "/costgraph/integrations/xai"
+    },
+    {
+      "source": "/costgraph/integrations/focus-push",
+      "destination": "/costgraph/integrations/push/focus-push"
+    },
+    {
+      "source": "/costgraph/integrations/exporter",
+      "destination": "/costgraph/integrations/push/exporter"
+    },
+    {
+      "source": "/costgraph/integrations/exporter-reference",
+      "destination": "/costgraph/integrations/push/exporter-reference"
+    },
+    {
+      "source": "/costgraph/integrations/autumn",
+      "destination": "/costgraph/integrations/exports/autumn"
+    },
+    {
+      "source": "/costgraph/integrations/aws",
+      "destination": "/costgraph/integrations/pull/aws"
+    },
+    {
+      "source": "/costgraph/integrations/gcp",
+      "destination": "/costgraph/integrations/pull/gcp"
+    },
+    {
+      "source": "/costgraph/integrations/digitalocean",
+      "destination": "/costgraph/integrations/pull/digitalocean"
+    },
+    {
+      "source": "/costgraph/integrations/ovhcloud",
+      "destination": "/costgraph/integrations/pull/ovhcloud"
+    },
+    {
+      "source": "/costgraph/integrations/stackit",
+      "destination": "/costgraph/integrations/pull/stackit"
+    },
+    {
+      "source": "/costgraph/integrations/scaleway",
+      "destination": "/costgraph/integrations/pull/scaleway"
+    },
+    {
+      "source": "/costgraph/integrations/linode",
+      "destination": "/costgraph/integrations/pull/linode"
+    },
+    {
+      "source": "/costgraph/integrations/cherryservers",
+      "destination": "/costgraph/integrations/pull/cherryservers"
+    },
+    {
+      "source": "/costgraph/integrations/vercel",
+      "destination": "/costgraph/integrations/pull/vercel"
+    },
+    {
+      "source": "/costgraph/integrations/modal",
+      "destination": "/costgraph/integrations/pull/modal"
+    },
+    {
+      "source": "/costgraph/integrations/runpod",
+      "destination": "/costgraph/integrations/pull/runpod"
+    },
+    {
+      "source": "/costgraph/integrations/depot",
+      "destination": "/costgraph/integrations/pull/depot"
+    },
+    {
+      "source": "/costgraph/integrations/daytona",
+      "destination": "/costgraph/integrations/pull/daytona"
+    },
+    {
+      "source": "/costgraph/integrations/anthropic",
+      "destination": "/costgraph/integrations/pull/anthropic"
+    },
+    {
+      "source": "/costgraph/integrations/openai",
+      "destination": "/costgraph/integrations/pull/openai"
+    },
+    {
+      "source": "/costgraph/integrations/openrouter",
+      "destination": "/costgraph/integrations/pull/openrouter"
+    },
+    {
+      "source": "/costgraph/integrations/helicone",
+      "destination": "/costgraph/integrations/pull/helicone"
+    },
+    {
+      "source": "/costgraph/integrations/respanai",
+      "destination": "/costgraph/integrations/pull/respanai"
+    },
+    {
+      "source": "/costgraph/integrations/cursor",
+      "destination": "/costgraph/integrations/pull/cursor"
+    },
+    {
+      "source": "/costgraph/integrations/xai",
+      "destination": "/costgraph/integrations/pull/xai"
+    },
+    {
+      "source": "/costgraph/integrations/litellm",
+      "destination": "/costgraph/integrations/pull/litellm"
+    },
+    {
+      "source": "/costgraph/integrations/truefoundry",
+      "destination": "/costgraph/integrations/pull/truefoundry"
+    },
+    {
+      "source": "/costgraph/integrations/newapi",
+      "destination": "/costgraph/integrations/pull/newapi"
+    },
+    {
+      "source": "/costgraph/integrations/ai-gateways",
+      "destination": "/costgraph/integrations/pull/ai-gateways"
+    },
+    {
+      "source": "/costgraph/integrations/elevenlabs",
+      "destination": "/costgraph/integrations/pull/elevenlabs"
+    },
+    {
+      "source": "/costgraph/integrations/planetscale",
+      "destination": "/costgraph/integrations/pull/planetscale"
+    },
+    {
+      "source": "/costgraph/integrations/rediscloud",
+      "destination": "/costgraph/integrations/pull/rediscloud"
+    },
+    {
+      "source": "/costgraph/integrations/clickhouse",
+      "destination": "/costgraph/integrations/pull/clickhouse"
+    },
+    {
+      "source": "/costgraph/integrations/confluent",
+      "destination": "/costgraph/integrations/pull/confluent"
+    },
+    {
+      "source": "/costgraph/integrations/github",
+      "destination": "/costgraph/integrations/pull/github"
+    },
+    {
+      "source": "/costgraph/integrations/blacksmith",
+      "destination": "/costgraph/integrations/pull/blacksmith"
+    },
+    {
+      "source": "/costgraph/integrations/buildkite",
+      "destination": "/costgraph/integrations/pull/buildkite"
+    },
+    {
+      "source": "/costgraph/integrations/hatchet",
+      "destination": "/costgraph/integrations/pull/hatchet"
+    },
+    {
+      "source": "/costgraph/integrations/cloudflare",
+      "destination": "/costgraph/integrations/pull/cloudflare"
+    },
+    {
+      "source": "/costgraph/integrations/datadog",
+      "destination": "/costgraph/integrations/pull/datadog"
+    },
+    {
+      "source": "/costgraph/integrations/grafanacloud",
+      "destination": "/costgraph/integrations/pull/grafanacloud"
+    },
+    {
+      "source": "/costgraph/integrations/costgraph",
+      "destination": "/costgraph/integrations/pull/costgraph"
     }
   ],
   "contextual": {

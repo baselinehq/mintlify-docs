@@ -78,7 +78,7 @@ answer covers everything you connected.
     Give us a read-only credential and your spend keeps itself current. This is how most
     providers work, and it is the fastest way to start.
   </Card>
-  <Card title="You push it" icon="cloud-arrow-up" href="/costgraph/integrations/focus-push">
+  <Card title="You push it" icon="cloud-arrow-up" href="/costgraph/integrations/push/focus-push">
     Send your billing data to us instead. Your credentials stay in your infrastructure,
     and it covers anything we cannot reach: an internal chargeback system, a warehouse
     job, a private cloud.
@@ -95,43 +95,43 @@ without changing anything that already works.
 ### Compute
 
 <CardGroup cols={3}>
-  <Card title="Amazon Web Services" icon="/images/logos/aws.svg" href="/costgraph/integrations/aws">
+  <Card title="Amazon Web Services" icon="/images/logos/aws.svg" href="/costgraph/integrations/pull/aws">
     Your AWS bill, down to the resource.
   </Card>
-  <Card title="Google Cloud" icon="/images/logos/gcp.svg" href="/costgraph/integrations/gcp">
+  <Card title="Google Cloud" icon="/images/logos/gcp.svg" href="/costgraph/integrations/pull/gcp">
     Your Google Cloud bill, down to the resource.
   </Card>
-  <Card title="DigitalOcean" icon="/images/logos/digitalocean.svg" href="/costgraph/integrations/digitalocean">
+  <Card title="DigitalOcean" icon="/images/logos/digitalocean.svg" href="/costgraph/integrations/pull/digitalocean">
     Droplets, volumes, load balancers, databases, spaces.
   </Card>
-  <Card title="OVHcloud" icon="/images/logos/ovhcloud.svg" href="/costgraph/integrations/ovhcloud">
+  <Card title="OVHcloud" icon="/images/logos/ovhcloud.svg" href="/costgraph/integrations/pull/ovhcloud">
     Every product on the bill, with Public Cloud usage per project.
   </Card>
-  <Card title="STACKIT" icon="/images/logos/stackit.svg" href="/costgraph/integrations/stackit">
+  <Card title="STACKIT" icon="/images/logos/stackit.svg" href="/costgraph/integrations/pull/stackit">
     Managed services, attributed per project.
   </Card>
-  <Card title="Scaleway" icon="/images/logos/scaleway.svg" href="/costgraph/integrations/scaleway">
+  <Card title="Scaleway" icon="/images/logos/scaleway.svg" href="/costgraph/integrations/pull/scaleway">
     Per project and per resource.
   </Card>
-  <Card title="Akamai Cloud (Linode)" icon="/images/logos/linode.svg" href="/costgraph/integrations/linode">
+  <Card title="Akamai Cloud (Linode)" icon="/images/logos/linode.svg" href="/costgraph/integrations/pull/linode">
     Every line item on the invoice.
   </Card>
-  <Card title="Cherry Servers" icon="/images/logos/cherryservers.svg" href="/costgraph/integrations/cherryservers">
+  <Card title="Cherry Servers" icon="/images/logos/cherryservers.svg" href="/costgraph/integrations/pull/cherryservers">
     Bare metal, priced per server.
   </Card>
-  <Card title="Vercel" icon="/images/logos/vercel.svg" href="/costgraph/integrations/vercel">
+  <Card title="Vercel" icon="/images/logos/vercel.svg" href="/costgraph/integrations/pull/vercel">
     Team spend, split by project.
   </Card>
-  <Card title="Modal" icon="/images/logos/modal.svg" href="/costgraph/integrations/modal">
+  <Card title="Modal" icon="/images/logos/modal.svg" href="/costgraph/integrations/pull/modal">
     Serverless GPU and compute, per function.
   </Card>
-  <Card title="RunPod" icon="/images/logos/runpod.svg" href="/costgraph/integrations/runpod">
+  <Card title="RunPod" icon="/images/logos/runpod.svg" href="/costgraph/integrations/pull/runpod">
     GPU pods and serverless, per GPU type.
   </Card>
-  <Card title="Depot" icon="/images/logos/depot.svg" href="/costgraph/integrations/depot">
+  <Card title="Depot" icon="/images/logos/depot.svg" href="/costgraph/integrations/pull/depot">
     Container build and runner minutes, with cache savings.
   </Card>
-  <Card title="Daytona" icon="/images/logos/daytona.svg" href="/costgraph/integrations/daytona">
+  <Card title="Daytona" icon="/images/logos/daytona.svg" href="/costgraph/integrations/pull/daytona">
     Dev sandboxes, priced per resource, with idle signals.
   </Card>
 </CardGroup>
@@ -142,40 +142,40 @@ Model spend sits next to infrastructure spend, so the AI line stops being a sepa
 argument at the end of the month.
 
 <CardGroup cols={3}>
-  <Card title="Anthropic" icon="/images/logos/anthropic.svg" href="/costgraph/integrations/anthropic">
+  <Card title="Anthropic" icon="/images/logos/anthropic.svg" href="/costgraph/integrations/pull/anthropic">
     Spend per model.
   </Card>
-  <Card title="OpenAI" icon="/images/logos/openai.svg" href="/costgraph/integrations/openai">
+  <Card title="OpenAI" icon="/images/logos/openai.svg" href="/costgraph/integrations/pull/openai">
     Spend per model.
   </Card>
-  <Card title="OpenRouter" icon="/images/logos/openrouter.svg" href="/costgraph/integrations/openrouter">
+  <Card title="OpenRouter" icon="/images/logos/openrouter.svg" href="/costgraph/integrations/pull/openrouter">
     One connection covers every model you route through it.
   </Card>
-  <Card title="Helicone" icon="/images/logos/helicone.svg" href="/costgraph/integrations/helicone">
+  <Card title="Helicone" icon="/images/logos/helicone.svg" href="/costgraph/integrations/pull/helicone">
     Gateway spend across every upstream provider.
   </Card>
-  <Card title="RespanAI" icon="shuffle" href="/costgraph/integrations/respanai">
+  <Card title="RespanAI" icon="shuffle" href="/costgraph/integrations/pull/respanai">
     Request spend across every routed model.
   </Card>
-  <Card title="Cursor" icon="/images/logos/cursor.svg" href="/costgraph/integrations/cursor">
+  <Card title="Cursor" icon="/images/logos/cursor.svg" href="/costgraph/integrations/pull/cursor">
     Team usage, per model and per member.
   </Card>
-  <Card title="xAI" icon="/images/logos/xai.svg" href="/costgraph/integrations/xai">
+  <Card title="xAI" icon="/images/logos/xai.svg" href="/costgraph/integrations/pull/xai">
     Grok spend per model.
   </Card>
-  <Card title="LiteLLM" icon="/images/logos/litellm.svg" href="/costgraph/integrations/litellm">
+  <Card title="LiteLLM" icon="/images/logos/litellm.svg" href="/costgraph/integrations/pull/litellm">
     Gateway spend per key, model, and team.
   </Card>
-  <Card title="TrueFoundry" icon="/images/logos/truefoundry.svg" href="/costgraph/integrations/truefoundry">
+  <Card title="TrueFoundry" icon="/images/logos/truefoundry.svg" href="/costgraph/integrations/pull/truefoundry">
     Enterprise LLM gateway spend, per model, with cache savings.
   </Card>
-  <Card title="New API" icon="/images/logos/newapi.svg" href="/costgraph/integrations/newapi">
+  <Card title="New API" icon="/images/logos/newapi.svg" href="/costgraph/integrations/pull/newapi">
     Self-hosted LLM gateway spend, per model and key.
   </Card>
-  <Card title="AI gateways" icon="/images/logos/agentgateway.svg" href="/costgraph/integrations/ai-gateways">
+  <Card title="AI gateways" icon="/images/logos/agentgateway.svg" href="/costgraph/integrations/pull/ai-gateways">
     Token usage from Envoy AI Gateway, agentgateway, APISIX, and vLLM, priced by us.
   </Card>
-  <Card title="ElevenLabs" icon="/images/logos/elevenlabs.svg" href="/costgraph/integrations/elevenlabs">
+  <Card title="ElevenLabs" icon="/images/logos/elevenlabs.svg" href="/costgraph/integrations/pull/elevenlabs">
     Character and credit usage, with unused-quota signals.
   </Card>
 </CardGroup>
@@ -183,16 +183,16 @@ argument at the end of the month.
 ### Databases
 
 <CardGroup cols={3}>
-  <Card title="Autumn" icon="/images/logos/autumn.svg" href="/costgraph/integrations/autumn">
+  <Card title="Autumn" icon="/images/logos/autumn.svg" href="/costgraph/integrations/exports/autumn">
     Bill your customers for the cloud spend CostGraph attributes to them.
   </Card>
-  <Card title="PlanetScale" icon="/images/logos/planetscale.svg" href="/costgraph/integrations/planetscale">
+  <Card title="PlanetScale" icon="/images/logos/planetscale.svg" href="/costgraph/integrations/pull/planetscale">
     Database spend, plus rightsizing for the databases behind it.
   </Card>
-  <Card title="Redis Cloud" icon="/images/logos/rediscloud.svg" href="/costgraph/integrations/rediscloud">
+  <Card title="Redis Cloud" icon="/images/logos/rediscloud.svg" href="/costgraph/integrations/pull/rediscloud">
     Per subscription and per database.
   </Card>
-  <Card title="ClickHouse" icon="/images/logos/clickhouse.svg" href="/costgraph/integrations/clickhouse">
+  <Card title="ClickHouse" icon="/images/logos/clickhouse.svg" href="/costgraph/integrations/pull/clickhouse">
     Usage cost per service, with idle/scale-to-zero signals.
   </Card>
 </CardGroup>
@@ -200,7 +200,7 @@ argument at the end of the month.
 ### Analytics
 
 <CardGroup cols={3}>
-  <Card title="Confluent Cloud" icon="/images/logos/confluent.svg" href="/costgraph/integrations/confluent">
+  <Card title="Confluent Cloud" icon="/images/logos/confluent.svg" href="/costgraph/integrations/pull/confluent">
     Kafka spend per cluster and environment.
   </Card>
 </CardGroup>
@@ -208,16 +208,16 @@ argument at the end of the month.
 ### Developer Tools
 
 <CardGroup cols={3}>
-  <Card title="GitHub" icon="/images/logos/github.svg" href="/costgraph/integrations/github">
+  <Card title="GitHub" icon="/images/logos/github.svg" href="/costgraph/integrations/pull/github">
     Actions minutes, Packages storage, Copilot seats.
   </Card>
-  <Card title="Blacksmith" icon="/images/logos/blacksmith.svg" href="/costgraph/integrations/blacksmith">
+  <Card title="Blacksmith" icon="/images/logos/blacksmith.svg" href="/costgraph/integrations/pull/blacksmith">
     GitHub Actions runner minutes, per runner size.
   </Card>
-  <Card title="Buildkite" icon="/images/logos/buildkite.svg" href="/costgraph/integrations/buildkite">
+  <Card title="Buildkite" icon="/images/logos/buildkite.svg" href="/costgraph/integrations/pull/buildkite">
     CI seats, with idle-seat signals.
   </Card>
-  <Card title="Hatchet" icon="/images/logos/hatchet.svg" href="/costgraph/integrations/hatchet">
+  <Card title="Hatchet" icon="/images/logos/hatchet.svg" href="/costgraph/integrations/pull/hatchet">
     Task-run cost per tenant, with failed-run waste.
   </Card>
 </CardGroup>
@@ -225,7 +225,7 @@ argument at the end of the month.
 ### Networking
 
 <CardGroup cols={3}>
-  <Card title="Cloudflare" icon="/images/logos/cloudflare.svg" href="/costgraph/integrations/cloudflare">
+  <Card title="Cloudflare" icon="/images/logos/cloudflare.svg" href="/costgraph/integrations/pull/cloudflare">
     Usage across every Cloudflare product.
   </Card>
 </CardGroup>
@@ -233,20 +233,20 @@ argument at the end of the month.
 ### Management and Governance
 
 <CardGroup cols={3}>
-  <Card title="Datadog" icon="/images/logos/datadog.svg" href="/costgraph/integrations/datadog">
+  <Card title="Datadog" icon="/images/logos/datadog.svg" href="/costgraph/integrations/pull/datadog">
     What Datadog itself costs you, by product.
   </Card>
-  <Card title="Grafana Cloud" icon="/images/logos/grafanacloud.svg" href="/costgraph/integrations/grafanacloud">
+  <Card title="Grafana Cloud" icon="/images/logos/grafanacloud.svg" href="/costgraph/integrations/pull/grafanacloud">
     Metrics, logs, traces, and profiles per stack.
   </Card>
-  <Card title="CostGraph" icon="/images/logos/costgraph.svg" href="/costgraph/integrations/costgraph">
+  <Card title="CostGraph" icon="/images/logos/costgraph.svg" href="/costgraph/integrations/pull/costgraph">
     Your CostGraph invoice, in the same view as everything else.
   </Card>
 </CardGroup>
 
 ### Anything else
 
-<Card title="Send your own data" icon="/images/logos/focus.svg" href="/costgraph/integrations/focus-push">
+<Card title="Send your own data" icon="/images/logos/focus.svg" href="/costgraph/integrations/push/focus-push">
   A provider we do not list, an internal chargeback system, a private cloud. Send it
   yourself and it behaves like any other connected source.
 </Card>

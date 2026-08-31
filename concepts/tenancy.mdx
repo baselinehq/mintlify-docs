@@ -17,15 +17,15 @@ There is no fixed list of sub-account types. Each provider names its own tenancy
 | CostGraph | `Tenant` | Your tenant, on your own CostGraph bill |
 | AI gateways | `sub_account` | The customer the gateway attributed the request to |
 
-Where a provider names the type itself, that word is theirs and we keep it. Elsewhere we follow the provider's own hierarchy: [Datadog](/costgraph/integrations/datadog) treats the paying org as the billing account and each sub-org as a sub-account, and [Cursor](/costgraph/integrations/cursor) uses the member's email address.
+Where a provider names the type itself, that word is theirs and we keep it. Elsewhere we follow the provider's own hierarchy: [Datadog](/costgraph/integrations/pull/datadog) treats the paying org as the billing account and each sub-org as a sub-account, and [Cursor](/costgraph/integrations/pull/cursor) uses the member's email address.
 
 This is why the dashboard shows the type next to the name. `acme` on its own is ambiguous; `Project acme` is not.
 
 ## Where it comes from
 
 - **Provider integrations** pick it up for you, following whatever hierarchy the provider exposes.
-- **AI gateways** attribute each request to the customer that made it. See [AI gateways](/costgraph/integrations/ai-gateways), which also covers labelling requests the gateway could not attribute itself.
-- **Pushing your own cost data** lets you set it per row, so two customers on the same product and period stay separate. See [multi-tenancy in FOCUS push](/costgraph/integrations/focus-push).
+- **AI gateways** attribute each request to the customer that made it. See [AI gateways](/costgraph/integrations/pull/ai-gateways), which also covers labelling requests the gateway could not attribute itself.
+- **Pushing your own cost data** lets you set it per row, so two customers on the same product and period stay separate. See [multi-tenancy in FOCUS push](/costgraph/integrations/push/focus-push).
 
 ## On the dashboard
 

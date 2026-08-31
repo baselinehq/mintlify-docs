@@ -1,0 +1,65 @@
+---
+title: GitHub
+description: "Bring GitHub billing usage into CostGraph, pulled by us or pushed by you"
+---
+
+GitHub bills Actions minutes, Packages storage, Copilot seats and more against one
+organization, so a single connection captures the lot.
+
+CostGraph reads GitHub as **FOCUS 1.2** records at a grain of day x product x SKU x
+repository, carrying both gross and net billed cost.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply a read-only token and we call GitHub once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **GitHub**.
+2. Name the connection, pick the tenant these charges belong to, and enter the
+   organization login whose billing you want.
+3. Supply a token with read access to the organization's billing.
+   [Create a classic token with the scopes prefilled](https://github.com/settings/tokens/new?scopes=repo,read:org,copilot&description=costgraph-billing),
+   or use a fine-grained personal access token with **Administration: read**
+   (plus **Copilot: read** for seat data).
+4. Select **Connect**.
+
+CostGraph verifies the token with a short fetch before saving, so a wrong value or a
+missing permission fails while you are still on the form.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke the token
+in GitHub at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/push/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads GitHub on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider github --sink costgraph
+```
+
+Your GitHub credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/push/exporter) covers the three
+ways to run it and the variables it reads.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there GitHub spend appears in Cost Overview and in anomaly detection
+alongside every other provider.

@@ -1,0 +1,65 @@
+---
+title: Cursor
+description: "Bring Cursor cost into CostGraph, pulled by us or pushed by you"
+---
+
+Cursor bills team usage per model, so spend is attributed per model and per team member.
+
+CostGraph reads Cursor as **FOCUS 1.2** records at a grain of day x model x user (charged spend).
+
+<Note>
+Member email addresses arrive with the records and appear as the sub-account on
+Cursor line items.
+</Note>
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call Cursor once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Let CostGraph pull
+
+1. Open **Settings -> Integrations** and pick **Cursor**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Fill in the values the form asks for. It lists exactly the variables Cursor
+   needs, marks which are optional, and explains the permission each one requires.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Cursor at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/push/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads Cursor on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider cursor --sink costgraph
+```
+
+Your Cursor credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/push/exporter) covers the three
+ways to run it and the variables it reads.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Cursor spend appears in Cost Overview and in anomaly
+detection alongside every other provider.

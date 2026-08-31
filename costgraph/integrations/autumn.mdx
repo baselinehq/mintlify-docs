@@ -45,8 +45,11 @@ its side will catch a price set as if the values were dollars.
 
 ## Choose who gets billed
 
-Create a virtual tag key whose values are your Autumn customer ids, and only
-the customers you bill. Spend the tag does not match is never reported.
+Create a virtual tag key named with an `autumn_` prefix, such as
+`autumn_customer`. The prefix is required: it marks the key as billing-bound,
+and only prefixed keys can be bound to a meter. Give it values that are your
+Autumn customer ids, and only the customers you bill. Spend the tag does not
+match is never reported.
 
 The match is the tag value itself: whatever value a rule assigns is the Autumn
 customer id the spend is reported under. If your customer in Autumn is
@@ -60,6 +63,13 @@ Any field works as the match: a linked account per customer, a resource name
 prefix, a project, or an existing tag. One rule per customer is the common
 shape; see [Virtual tags](/costgraph/virtual-tags/usage) for the rule builder
 and how overlapping rules resolve.
+
+To trace how a charge was attributed, follow the same path the export takes:
+the charge matches a rule on the `autumn_` key, the rule's tag value names the
+Autumn customer, each day's matched spend is summed per value, and the nightly
+run reports each sum to the meter under that customer id. Group the key on the
+cost overview to see exactly what each customer will be billed before it is
+reported.
 
 <Warning>
 Autumn creates a customer the first time it sees an id, so a mistyped tag

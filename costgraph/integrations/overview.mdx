@@ -71,7 +71,7 @@ Every provider you connect feeds the same place, so "what did we spend last mont
 why is it up?" stops being four consoles and a spreadsheet. It is one question, and the
 answer covers everything you connected.
 
-## Two ways to connect
+## Four ways to connect
 
 <CardGroup cols={2}>
   <Card title="CostGraph pulls it" icon="cloud-arrow-down">
@@ -83,10 +83,18 @@ answer covers everything you connected.
     and it covers anything we cannot reach: an internal chargeback system, a warehouse
     job, a private cloud.
   </Card>
+  <Card title="We read your telemetry" icon="chart-line" href="/costgraph/integrations/ai-gateways">
+    An AI gateway in your cluster has no bill to read. CostGraph reads its token
+    metrics through the operator and prices them against the model catalog.
+  </Card>
+  <Card title="CostGraph exports it" icon="file-invoice-dollar" href="/costgraph/integrations/exports/autumn">
+    The other direction: report each customer's attributed spend to your billing
+    platform, so you can bill them for it.
+  </Card>
 </CardGroup>
 
 <Note>
-Not sure which you want? Start with a pull connection. You can add a pushed source later
+Not sure which you want? Start with a pull connection. You can add the others later
 without changing anything that already works.
 </Note>
 
@@ -238,6 +246,14 @@ argument at the end of the month.
   </Card>
   <Card title="CostGraph" icon="/images/logos/costgraph.svg" href="/costgraph/integrations/costgraph">
     Your CostGraph invoice, in the same view as everything else.
+  </Card>
+</CardGroup>
+
+### Billing exports
+
+<CardGroup cols={3}>
+  <Card title="Autumn" icon="/images/logos/autumn.svg" href="/costgraph/integrations/exports/autumn">
+    Bill your customers for the cloud spend CostGraph attributes to them.
   </Card>
 </CardGroup>
 

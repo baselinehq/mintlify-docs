@@ -17,7 +17,7 @@ environment.
 Grain: day x model x token bucket (cost + tokens).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/anthropic
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/anthropic
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -32,7 +32,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/an
 Grain: day x org (billed CI runner spend), plus per-runner-type utilization signals.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/blacksmith
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ci/blacksmith
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -46,7 +46,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/bl
 Grain: month x user seat (billable unit) with per-user build activity as the active-vs-assigned value signal.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/buildkite
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ci/buildkite
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -61,7 +61,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/bu
 Grain: resource run-rate (server x project, prorated to the window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cherryservers
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/cherryservers
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -75,7 +75,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ch
 Grain: usage cost record (service x metric x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/clickhouse
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/databases/clickhouse
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -90,7 +90,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cl
 Grain: billable-usage line item (service x day, FOCUS-native fields).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloudflare
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/networking/cloudflare
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -104,7 +104,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cl
 Grain: billing line item (product x resource).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/confluent
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/analytics/confluent
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -119,7 +119,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/co
 Grain: billing period x workspace x meter, plus a row per fee, tax and credit.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/costgraph
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/observability/costgraph
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -133,7 +133,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/co
 Grain: day x model x user (charged spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cursor
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/cursor
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -147,7 +147,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cu
 Grain: cost report line item (org x product x charge type, monthly).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/datadog
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/observability/datadog
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -161,7 +161,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/da
 Grain: sandbox run-rate (sandbox x organization, prorated to the window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/daytona
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/daytona
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -175,7 +175,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/da
 Grain: usage cost record (product x project/repo x window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/depot
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/depot
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -193,7 +193,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/de
 Grain: invoice line item (product x resource).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/digitalocean
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/digitalocean
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -207,7 +207,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/di
 Grain: day x model, or day x member when workspace metrics on (credit usage) + plan quota snapshot.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/elevenlabs
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/elevenlabs
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -222,7 +222,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/el
 Grain: day x product x SKU x repository (gross/net billed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/github
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ci/github
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -236,7 +236,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/gi
 Grain: billed dimension x stack (per-stack attributed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/grafanacloud
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/observability/grafanacloud
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -250,7 +250,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/gr
 Grain: task-run cost record (tenant x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/hatchet
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ci/hatchet
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -267,7 +267,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ha
 Grain: day x model x upstream provider (request spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/helicone
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/helicone
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -282,7 +282,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/he
 Grain: invoice line item (service x resource, per invoice).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/linode
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/linode
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -296,7 +296,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/li
 Grain: day x model x virtual key (tracked spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/litellm
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/litellm
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -310,7 +310,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/li
 Grain: day x object (per-resource CPU/mem/GPU cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/modal
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/modal
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -325,7 +325,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/mo
 Grain: day x model x token (tracked quota spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/newapi
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/newapi
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -360,7 +360,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ob
 Grain: day x model x token bucket (billed cost + quantity).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/openai
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/openai
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -375,7 +375,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/op
 Grain: day x model x upstream provider (credit spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/openrouter
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/openrouter
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -389,7 +389,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/op
 Grain: invoice line item (service x resource, per bill).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ovhcloud
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/ovhcloud
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -403,7 +403,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ov
 
 Grain: invoice month x database x billing metric.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/planetscale
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/databases/planetscale
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -417,7 +417,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/pl
 Grain: cost-report line item (subscription/database x usage period).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/rediscloud
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/databases/rediscloud
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -431,7 +431,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/re
 Grain: day x model x upstream provider (request spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/respanai
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/respanai
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -446,7 +446,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/re
 Grain: billed cost record (pod/endpoint x GPU type x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/runpod
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/runpod
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -460,7 +460,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ru
 Grain: billing charge (project x SKU x resource), daily allocation.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/scaleway
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/scaleway
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -476,7 +476,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/sc
 Grain: cost report datapoint (project x service/SKU, daily).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/stackit
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/stackit
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -494,7 +494,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/st
 Grain: day x model x virtual account (gateway-computed spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/truefoundry
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/truefoundry
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -508,7 +508,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/tr
 Grain: day x service x project (FOCUS-native charges).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/vercel
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/cloud/vercel
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -522,7 +522,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ve
 Grain: day x model (billed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/xai
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/pull/ai/xai
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |

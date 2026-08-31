@@ -1,0 +1,530 @@
+---
+title: Exporter provider reference
+description: "Every provider the exporter reads, and the environment variables each one takes"
+---
+
+<Info>
+This page is generated from the exporter's provider registry, so the variables
+here are exactly the ones the code reads. Each provider is run with
+`--provider <name>`; a variable can come from a flag, the config file, or the
+environment.
+</Info>
+
+## Anthropic
+
+`--provider anthropic` - AI / LLM
+
+Grain: day x model x token bucket (cost + tokens).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/anthropic
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `ANTHROPIC_ADMIN_KEY` | yes | yes | Admin API key from the Anthropic Console (Settings -> Admin keys). Grants org-wide read of usage and cost reports. |
+| `ANTHROPIC_ORG_ID` | no | no | Organization the key belongs to. Only needed when the key can see more than one org; otherwise it is resolved for you. |
+| `ANTHROPIC_TENANT_GROUP` | no | no | Workspace field used to split charges into tenants. Leave empty to bill the whole organization as one tenant. |
+
+## Blacksmith
+
+`--provider blacksmith` - CI / build acceleration
+
+Grain: day x org (billed CI runner spend), plus per-runner-type utilization signals.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/blacksmith
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `BLACKSMITH_API_TOKEN` | yes | yes | Blacksmith organization token. Create it with `blacksmith org-token create`; an org-scoped token is required. |
+| `BLACKSMITH_ORG` | yes | no | The GitHub organization login exactly as it appears on GitHub, case-sensitive (e.g. RevylAI, not revylai). This is the org whose CI usage is exported. |
+
+## Buildkite
+
+`--provider buildkite` - Developer platform / CI
+
+Grain: month x user seat (billable unit) with per-user build activity as the active-vs-assigned value signal.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/buildkite
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `BUILDKITE_API_TOKEN` | yes | yes | Buildkite API access token (User Settings -> API Access Tokens) with the read_organizations, read_builds and read_user scopes. |
+| `BUILDKITE_ORG` | yes | no | Organization slug whose seats are exported the org in the buildkite.com/ path. |
+| `BUILDKITE_SEAT_PRICE` | no | no | Optional per-user monthly price in USD used to value each seat. Leave empty to report seats without a cost. |
+
+## Cherry Servers
+
+`--provider cherryservers` - Cloud (bare metal)
+
+Grain: resource run-rate (server x project, prorated to the window).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cherryservers
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CHERRY_TOKEN` | yes | yes | Cherry Servers API key (Dashboard -> API keys). |
+| `CHERRY_TEAM_ID` | no | no | Optional team id to export. When empty every team the token can read is exported. |
+
+## ClickHouse Cloud
+
+`--provider clickhouse` - Managed database
+
+Grain: usage cost record (service x metric x day).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/clickhouse
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CLICKHOUSE_KEY_ID` | yes | yes | ClickHouse Cloud API key id (Organization -> API keys). A read-only Developer key can read usage cost. |
+| `CLICKHOUSE_KEY_SECRET` | yes | yes | ClickHouse Cloud API key secret paired with the key id. |
+| `CLICKHOUSE_ORG_ID` | no | no | Optional organization id. When empty it is resolved automatically (the key belongs to one organization). |
+
+## Cloudflare
+
+`--provider cloudflare` - Cloud / edge
+
+Grain: billable-usage line item (service x day, FOCUS-native fields).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cloudflare
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | yes | yes | Cloudflare API token with the 'Billing Read' permission (account scope). |
+| `CLOUDFLARE_ACCOUNT_ID` | yes | no | Cloudflare account id whose billable usage is exported. |
+
+## Confluent Cloud
+
+`--provider confluent` - Streaming (Kafka)
+
+Grain: billing line item (product x resource).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/confluent
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CONFLUENT_CLOUD_API_KEY` | yes | yes | Cloud API key (not a cluster key) created under Confluent Cloud -> API keys, scoped to the organization. |
+| `CONFLUENT_CLOUD_API_SECRET` | yes | yes | Secret shown once when the Cloud API key is created. Pair it with the key above. |
+| `CONFLUENT_ORG_ID` | yes | no | Confluent organization ID whose billing the Cost API returns. Found in Settings -> Organization. |
+
+## CostGraph
+
+`--provider costgraph` - FinOps platform
+
+Grain: billing period x workspace x meter, plus a row per fee, tax and credit.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/costgraph
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `COSTGRAPH_API_KEY` | yes | yes | API key with the focus:read scope. Reads what your organization owes CostGraph. |
+| `COSTGRAPH_URL` | no | no | API base URL. Defaults to https://api.costgraph.ai. |
+
+## Cursor
+
+`--provider cursor` - AI coding agent
+
+Grain: day x model x user (charged spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cursor
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `CURSOR_API_KEY` | yes | yes | Cursor Team/Enterprise Admin API key (Cursor dashboard -> Settings -> Team -> API Keys). |
+| `CURSOR_TEAM` | no | no | Label for the billing account (your Cursor team name). Optional; defaults to "Cursor". |
+
+## Datadog
+
+`--provider datadog` - Observability
+
+Grain: cost report line item (org x product x charge type, monthly).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/datadog
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `DATADOG_ACCESS_TOKEN` | yes | yes | Datadog access token scoped to usage_read and billing_read (Personal Settings -> Access Tokens): a service access token (ddsat_) for an unattended sync, or a personal access token (ddpat_). For an unattended sync create a service access token with expiration set to Never so it does not lapse. It must belong to the parent organization. |
+| `DATADOG_SITE` | no | no | Datadog site the account lives on, e.g. datadoghq.com, datadoghq.eu, us3.datadoghq.com, us5.datadoghq.com, ap1.datadoghq.com. Sets the API host. Defaults to datadoghq.com. |
+
+## Daytona
+
+`--provider daytona` - Cloud (dev environments)
+
+Grain: sandbox run-rate (sandbox x organization, prorated to the window).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/daytona
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `DAYTONA_API_KEY` | yes | yes | Daytona API key (Dashboard -> Keys). |
+| `DAYTONA_ORGANIZATION_ID` | no | no | Optional organization id to scope the export. When empty the key's default organization is used. |
+
+## Depot
+
+`--provider depot` - Developer tools (CI/CD)
+
+Grain: usage cost record (product x project/repo x window).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/depot
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `DEPOT_API_TOKEN` | yes | yes | Depot organization token. Create it in Organization settings -> API tokens. |
+| `DEPOT_ORGANIZATION_ID` | no | no | Optional organization identifier used as a label. The token is already scoped to one organization; when unset the label is "depot". |
+| `DEPOT_BUILD_MINUTE_RATE` | no | no | Optional USD per container-build minute. Defaults to Depot's published 16 vCPU rate 0.04. |
+| `DEPOT_RUNNER_MINUTE_RATE` | no | no | Optional USD per GitHub Actions runner minute. Defaults to 0.008 (4 vCPU published rate). |
+| `DEPOT_SANDBOX_MINUTE_RATE` | no | no | Optional USD per agent-sandbox minute. Defaults to 0.006 (2 vCPU published rate). |
+| `DEPOT_STORAGE_GB_RATE` | no | no | Optional USD per cache/registry GB-month. Defaults to Depot's published 0.20. |
+
+## DigitalOcean
+
+`--provider digitalocean` - Cloud (IaaS)
+
+Grain: invoice line item (product x resource).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/digitalocean
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `DIGITALOCEAN_TOKEN` | yes | yes | Personal Access Token that can read billing (Account -> API -> Tokens). A classic read token works; a fine-grained token needs billing:read (and account:read to label the billing account). |
+| `DIGITALOCEAN_ACCOUNT_ID` | no | no | Optional label for the billing account. When empty it is resolved automatically. |
+
+## ElevenLabs
+
+`--provider elevenlabs` - AI / LLM
+
+Grain: day x model, or day x member when workspace metrics on (credit usage) + plan quota snapshot.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/elevenlabs
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `ELEVENLABS_API_KEY` | yes | yes | ElevenLabs API key with read access to usage and subscription. Created under Profile -> API keys. |
+| `ELEVENLABS_ACCOUNT_ID` | no | no | Label for the ElevenLabs workspace this key belongs to, used as the billing account id. Defaults to elevenlabs when unset. |
+| `ELEVENLABS_WORKSPACE_METRICS` | no | no | Set true to attribute usage per workspace member instead of per model. Needs a key with workspace read access; falls back to per-model if the key lacks it. Defaults to false. |
+
+## GitHub
+
+`--provider github` - Developer platform / CI
+
+Grain: day x product x SKU x repository (gross/net billed cost).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/github
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `GITHUB_TOKEN` | yes | yes | Token that can read the organization's billing. Classic PAT: the repo scope (billing usage and Copilot premium reports) plus read:org and copilot (Copilot seat roster). Fine-grained PAT: organization Administration: read (and Copilot read for seat data). |
+| `GITHUB_ORG` | yes | no | Organization login whose billing usage is exported the org in the github.com/ path. |
+
+## Grafana Cloud
+
+`--provider grafanacloud` - Observability
+
+Grain: billed dimension x stack (per-stack attributed cost).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/grafanacloud
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `GRAFANA_CLOUD_TOKEN` | yes | yes | Grafana Cloud Access Policy token (glc_) whose realm is the org and which carries billing read scopes (billing-metrics:read, org-billing-info:read, org-billing-rate:read, invoices:read, orgs:read). A stack service-account token (glsa_) does not work. |
+| `GRAFANA_CLOUD_ORG` | yes | no | Grafana Cloud organization slug the org in the grafana.com/orgs/ path whose billed usage is exported. |
+
+## Hatchet Cloud
+
+`--provider hatchet` - Task orchestration
+
+Grain: task-run cost record (tenant x day).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/hatchet
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `HATCHET_CLIENT_TOKEN` | yes | yes | One or more comma-separated Hatchet client tokens (Settings -> API Tokens), one per tenant; a client token is scoped to a single tenant so multiple tenants need multiple tokens. |
+| `HATCHET_SERVER_URL` | no | no | Optional API base URL override applied to every token. Defaults to the URL embedded in each token. |
+| `HATCHET_INCLUDED_RUNS` | no | no | Optional monthly free task-run allowance for the plan (Developer includes 100000). The free runs each month are not billed; only overage is rated. Applied to every tenant. |
+| `HATCHET_MONTHLY_BASE_FEE` | no | no | Optional plan platform fee in USD per calendar month (Team 500, Scale 1000, Developer 0). Applied to every tenant. |
+| `HATCHET_RUN_RATE` | no | no | Negotiated per-task-run price in USD for Dedicated/Enterprise Hatchet deployments (overrides the public $10 per 1,000,000 list rate). Leave empty for standard usage plans. Applied to every tenant. |
+
+## Helicone
+
+`--provider helicone` - AI gateway / observability
+
+Grain: day x model x upstream provider (request spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/helicone
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `HELICONE_API_KEY` | yes | yes | Helicone API key with read access to usage and cost. Created under Settings -> API keys. |
+| `HELICONE_ORG_ID` | yes | no | Organization whose spend is exported. Shown in the Helicone dashboard URL and under Settings -> Organization. |
+| `HELICONE_TENANT_PROPERTY` | no | no | Custom request property to break spend down by, e.g. customer_id. Leave empty to bill the org as one tenant. |
+
+## Akamai Cloud (Linode)
+
+`--provider linode` - Cloud (IaaS)
+
+Grain: invoice line item (service x resource, per invoice).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/linode
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `LINODE_TOKEN` | yes | yes | Linode / Akamai Cloud personal access token with the account:read_only scope (Profile -> API Tokens). |
+| `LINODE_ACCOUNT_ID` | no | no | Optional label for the billing account. When empty it is resolved automatically. |
+
+## LiteLLM
+
+`--provider litellm` - AI gateway
+
+Grain: day x model x virtual key (tracked spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/litellm
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `LITELLM_BASE_URL` | yes | no | Base URL of your LiteLLM proxy, e.g. https://litellm.mycompany.com. |
+| `LITELLM_MASTER_KEY` | yes | yes | LiteLLM proxy master key (sk-...). Required to read spend across all virtual keys. |
+
+## Modal
+
+`--provider modal` - Serverless GPU / compute
+
+Grain: day x object (per-resource CPU/mem/GPU cost).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/modal
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `MODAL_TOKEN_ID` | yes | yes | Token ID half of a Modal API token (modal token new, or Settings -> API tokens). |
+| `MODAL_TOKEN_SECRET` | yes | yes | Token secret half of the same Modal API token. Shown only at creation time. |
+| `MODAL_WORKSPACE_ID` | yes | no | Modal workspace whose compute charges are exported. Shown in the dashboard URL. |
+
+## New API
+
+`--provider newapi` - AI gateway
+
+Grain: day x model x token (tracked quota spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/newapi
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `NEWAPI_BASE_URL` | yes | no | Base URL of your new-api / one-api deployment, e.g. https://newapi.mycompany.com. |
+| `NEWAPI_ACCESS_TOKEN` | yes | yes | Dashboard access token (PAT) of an admin account, generated at Profile -> Security -> Access Token (not an inference sk- API key). Admin access is required to read usage across all users. |
+| `NEWAPI_QUOTA_PER_UNIT` | no | no | Quota credits per US dollar for USD conversion. Must match the deployment's QuotaPerUnit setting. Defaults to 500000 (new-api default). |
+
+## Bill published to storage
+
+`--provider objectstore` - Bill delivered to storage
+
+Grain: whatever the published bill carries (a row per resource, service and day for most providers).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/objectstore
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `OBJECTSTORE_BUCKET` | yes | no | Bucket the provider writes the bill into. |
+| `OBJECTSTORE_ENDPOINT` | no | no | S3-compatible endpoint, for example https://object.storage.eu01.stackit.schwarz. Leave empty for AWS S3. |
+| `OBJECTSTORE_REGION` | no | no | Region the bucket lives in. Defaults to us-east-1, which most S3-compatible stores ignore. |
+| `OBJECTSTORE_PREFIX` | no | no | Path within the bucket to read. Leave empty to read the whole bucket. |
+| `OBJECTSTORE_ACCESS_KEY_ID` | no | yes | Access key with read permission on the bucket. Leave empty on AWS to use the role or profile the exporter already runs as. |
+| `OBJECTSTORE_SECRET_ACCESS_KEY` | no | yes | Secret for the access key. |
+| `OBJECTSTORE_KIND` | no | no | Which storage this is: s3 (the default), azure, or local for a directory the exporter can read. Inferred from the endpoint where it can be. |
+| `OBJECTSTORE_LAYOUT` | no | no | How the provider arranges files: manifest when it publishes one naming its data files, latest-run when it rewrites a billing period on every run, or flat (the default) to read every file under the prefix. |
+
+## OpenAI
+
+`--provider openai` - AI / LLM
+
+Grain: day x model x token bucket (billed cost + quantity).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/openai
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `OPENAI_ADMIN_KEY` | yes | yes | Admin key from the OpenAI platform (Settings -> Admin keys) with the api.usage.read scope. Required for the org usage and costs endpoints; a normal project key will not work. |
+| `OPENAI_ORG_ID` | yes | no | Organization the charges belong to, in the form org-.... Found under Settings -> Organization. |
+| `OPENAI_TENANT_GROUP` | no | no | Project field used to split charges into tenants. Leave empty to bill the whole organization as one tenant. |
+
+## OpenRouter
+
+`--provider openrouter` - AI gateway
+
+Grain: day x model x upstream provider (credit spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/openrouter
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `OPENROUTER_MANAGEMENT_KEY` | yes | yes | Provisioning/management key from OpenRouter -> Settings -> Provisioning keys. Read access to activity and credits. |
+| `OPENROUTER_ORG_ID` | yes | no | OpenRouter organization whose activity is exported. |
+
+## OVHcloud
+
+`--provider ovhcloud` - Cloud (IaaS)
+
+Grain: invoice line item (service x resource, per bill).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/ovhcloud
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `OVH_CLIENT_ID` | yes | yes | OVHcloud OAuth2 service-account client id (region-prefixed, e.g. EU.xxxx / CA.xxxx / US.xxxx). Created under the OVHcloud manager. The prefix selects the API region. |
+| `OVH_CLIENT_SECRET` | yes | yes | OVHcloud OAuth2 service-account client secret paired with OVH_CLIENT_ID. |
+| `OVH_SERVICE_NAME` | no | no | Optional Public Cloud project id to scope current-month usage to. When empty, every project the token can see is included; the account bills are always exported. |
+
+## PlanetScale
+
+`--provider planetscale` - Managed database
+
+Grain: invoice month x database x billing metric.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/planetscale
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `PLANETSCALE_SERVICE_TOKEN_ID` | yes | yes | Short ID of a PlanetScale service token, shown next to the token in Settings -> Service tokens. |
+| `PLANETSCALE_SERVICE_TOKEN` | yes | yes | The service token value itself. It needs read_branch and organization billing access, and is already scoped to one organization, so no org ID is required. |
+
+## Redis Cloud
+
+`--provider rediscloud` - Managed database
+
+Grain: cost-report line item (subscription/database x usage period).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/rediscloud
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `REDISCLOUD_ACCOUNT_KEY` | yes | yes | Redis Cloud account-level API key (Account Settings -> enable the API). The account needs the Owner, Billing admin, or Viewer role, and the cost report is in limited availability (request access from Redis support). |
+| `REDISCLOUD_USER_KEY` | yes | yes | Redis Cloud user-level secret key (Account Settings -> API keys), paired with the account key. |
+
+## RespanAI
+
+`--provider respanai` - AI gateway / observability
+
+Grain: day x model x upstream provider (request spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/respanai
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `RESPANAI_API_KEY` | yes | yes | RespanAI (formerly KeywordsAI) API key with read access to usage and cost. |
+| `RESPANAI_ORG_ID` | yes | no | RespanAI organization whose spend is exported. |
+| `RESPANAI_TENANT_FIELD` | no | no | Request field to break spend down by, e.g. customer_identifier. Leave empty to bill the org as one tenant. |
+
+## RunPod
+
+`--provider runpod` - Cloud (GPU)
+
+Grain: billed cost record (pod/endpoint x GPU type x day).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/runpod
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `RUNPOD_API_KEY` | yes | yes | RunPod API key (Settings -> API Keys). |
+| `RUNPOD_ACCOUNT_ID` | no | no | Optional RunPod account id used as a label. When unset it is resolved automatically. |
+
+## Scaleway
+
+`--provider scaleway` - Cloud (IaaS)
+
+Grain: billing charge (project x SKU x resource), daily allocation.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/scaleway
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `SCALEWAY_SECRET_KEY` | yes | yes | IAM API key secret key with the BillingReadOnly permission set. |
+| `SCALEWAY_ORGANIZATION_ID` | no | no | Organization id whose charges are exported. When empty it is resolved from SCALEWAY_ACCESS_KEY automatically. |
+| `SCALEWAY_ACCESS_KEY` | yes | no | IAM API key access key (the public half, e.g. SCW...). Pairs with the secret key and resolves the organization when SCALEWAY_ORGANIZATION_ID is not set. |
+| `SCALEWAY_PROJECT_ID` | no | no | Optional project id to narrow the export to a single project. When empty, every project under the organization is exported. |
+
+## STACKIT
+
+`--provider stackit` - Cloud (IaaS)
+
+Grain: cost report datapoint (project x service/SKU, daily).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/stackit
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `STACKIT_SERVICE_ACCOUNT_KEY` | no | yes | Service account key JSON (the full key object with a credentials block). Provide this or STACKIT_SERVICE_ACCOUNT_KEY_PATH. |
+| `STACKIT_SERVICE_ACCOUNT_KEY_PATH` | no | no | Path to the service account key JSON file. Alternative to STACKIT_SERVICE_ACCOUNT_KEY. |
+| `STACKIT_PRIVATE_KEY` | no | yes | PEM-encoded RSA private key for the service account. Only needed when the key JSON has no embedded credentials.privateKey. Provide this or STACKIT_PRIVATE_KEY_PATH. |
+| `STACKIT_PRIVATE_KEY_PATH` | no | no | Path to the PEM-encoded RSA private key file. Alternative to STACKIT_PRIVATE_KEY. |
+| `STACKIT_CUSTOMER_ACCOUNT_ID` | yes | no | Customer account id whose costs are exported. The service account needs the cost-management.cost.reader role on it. |
+| `STACKIT_PROJECT_ID` | no | no | Optional project id to scope the export to a single project. When empty, every project under the customer account is exported. |
+
+## TrueFoundry
+
+`--provider truefoundry` - AI gateway
+
+Grain: day x model x virtual account (gateway-computed spend).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/truefoundry
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `TRUEFOUNDRY_BASE_URL` | yes | no | Control plane URL of your TrueFoundry deployment, e.g. https://your-org.truefoundry.cloud. |
+| `TRUEFOUNDRY_API_KEY` | yes | yes | TrueFoundry Personal Access Token or Virtual Account Token with read access to gateway metrics. |
+
+## Vercel
+
+`--provider vercel` - Frontend cloud / PaaS
+
+Grain: day x service x project (FOCUS-native charges).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/vercel
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `VERCEL_TOKEN` | yes | yes | Vercel access token (Account Settings -> Tokens) with a role that can read billing (Owner, Member, Billing, ...). |
+| `VERCEL_TEAM` | no | no | Team slug or id whose charges are exported. Optional: when the token sees exactly one team it is resolved automatically; set this to disambiguate. |
+
+## xAI
+
+`--provider xai` - AI / LLM
+
+Grain: day x model (billed cost).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/xai
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `XAI_MANAGEMENT_KEY` | yes | yes | xAI management key (xAI Console -> Settings -> Management Keys). Separate from the inference API key; billing usage requires a management key. |
+| `XAI_TEAM_ID` | yes | no | Team the charges belong to (xAI Console -> Settings). |

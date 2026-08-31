@@ -51,7 +51,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/buildki
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
 | `BUILDKITE_API_TOKEN` | yes | yes | Buildkite API access token (User Settings -> API Access Tokens) with the read_organizations, read_builds and read_user scopes. |
-| `BUILDKITE_ORG` | yes | no | Organization slug whose seats are exported the org in the buildkite.com/ path. |
+| `BUILDKITE_ORG` | yes | no | The organization slug in the buildkite.com/ URL path, whose seats are exported. |
 | `BUILDKITE_SEAT_PRICE` | no | no | Optional per-user monthly price in USD used to value each seat. Leave empty to report seats without a cost. |
 
 ## Cherry Servers
@@ -227,7 +227,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/github
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
 | `GITHUB_TOKEN` | yes | yes | Token that can read the organization's billing. Classic PAT: the repo scope (billing usage and Copilot premium reports) plus read:org and copilot (Copilot seat roster). Fine-grained PAT: organization Administration: read (and Copilot read for seat data). |
-| `GITHUB_ORG` | yes | no | Organization login whose billing usage is exported the org in the github.com/ path. |
+| `GITHUB_ORG` | yes | no | The organization login in the github.com/ URL path, whose billing usage is exported. |
 
 ## Grafana Cloud
 
@@ -241,7 +241,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/grafana
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
 | `GRAFANA_CLOUD_TOKEN` | yes | yes | Grafana Cloud Access Policy token (glc_) whose realm is the org and which carries billing read scopes (billing-metrics:read, org-billing-info:read, org-billing-rate:read, invoices:read, orgs:read). A stack service-account token (glsa_) does not work. |
-| `GRAFANA_CLOUD_ORG` | yes | no | Grafana Cloud organization slug the org in the grafana.com/orgs/ path whose billed usage is exported. |
+| `GRAFANA_CLOUD_ORG` | yes | no | The Grafana Cloud organization slug in the grafana.com/orgs/ URL path, whose billed usage is exported. |
 
 ## Hatchet Cloud
 
@@ -350,8 +350,8 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/objects
 | `OBJECTSTORE_PREFIX` | no | no | Path within the bucket to read. Leave empty to read the whole bucket. |
 | `OBJECTSTORE_ACCESS_KEY_ID` | no | yes | Access key with read permission on the bucket. Leave empty on AWS to use the role or profile the exporter already runs as. |
 | `OBJECTSTORE_SECRET_ACCESS_KEY` | no | yes | Secret for the access key. |
-| `OBJECTSTORE_KIND` | no | no | Which storage this is: s3 (the default), azure, or local for a directory the exporter can read. Inferred from the endpoint where it can be. |
-| `OBJECTSTORE_LAYOUT` | no | no | How the provider arranges files: manifest when it publishes one naming its data files, latest-run when it rewrites a billing period on every run, or flat (the default) to read every file under the prefix. |
+| `OBJECTSTORE_KIND` | no | no | The storage backend the bill lives in: s3 for AWS S3 or any S3-compatible store (the default), azure for Azure Blob Storage, or local for a directory on disk. Usually inferred from the endpoint, so you rarely set it. |
+| `OBJECTSTORE_LAYOUT` | no | no | How to tell which files make up a billing period: flat (the default) reads every file under the prefix; latest-run reads only the newest export when the provider rewrites the period on each run (STACKIT); manifest reads exactly the files a published manifest lists (AWS, Azure). |
 
 ## OpenAI
 

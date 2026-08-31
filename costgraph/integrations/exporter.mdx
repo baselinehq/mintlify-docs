@@ -113,12 +113,23 @@ The `objectstore` provider reads all of them. Point it at where the bill is:
 | S3-compatible (STACKIT, R2, MinIO, Ceph) | `OBJECTSTORE_ENDPOINT` and a read-only key pair |
 | Files you already have | `OBJECTSTORE_ENDPOINT=file:///bills` |
 
-`OBJECTSTORE_LAYOUT` says how the provider arranges the files. Prefer
-`manifest`, which reads exactly the files the export names - AWS and Azure both
-publish one, so nothing is inferred and a run that lands while the exporter is
-reading cannot be read half-written. Use `latest-run` for a provider that
-rewrites a whole billing period every run, such as STACKIT, and `flat` when the
-bucket holds one copy of each file.
+You do not normally set `OBJECTSTORE_KIND`: it is inferred from the endpoint
+(an `.blob.core.windows.net` host is Azure, a `file://` path is a directory,
+anything else is S3). Set it only to be explicit.
+
+`OBJECTSTORE_LAYOUT` answers one question: **given all the files in the bucket,
+which ones make up a billing period?** A provider does not always write one tidy
+file per month.
+
+| Layout | Reads | Use it for |
+| --- | --- | --- |
+| `flat` (default) | every file under the prefix | a bucket that holds one copy of each file |
+| `latest-run` | only the newest export of each period | a provider that rewrites the whole period on every run, like STACKIT |
+| `manifest` | exactly the files a published manifest lists | AWS Data Exports and Azure, which write a manifest naming their data files |
+
+Prefer `manifest` where the export publishes one: nothing is guessed from file
+names, and a run that lands while the exporter is reading cannot be read
+half-written.
 
 `.csv`, `.csv.gz` and `.parquet` are all read.
 

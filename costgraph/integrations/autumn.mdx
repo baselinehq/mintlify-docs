@@ -48,6 +48,19 @@ its side will catch a price set as if the values were dollars.
 Create a virtual tag key whose values are your Autumn customer ids, and only
 the customers you bill. Spend the tag does not match is never reported.
 
+The match is the tag value itself: whatever value a rule assigns is the Autumn
+customer id the spend is reported under. If your customer in Autumn is
+`acme-corp`, write a rule whose **Tag value** is `acme-corp`:
+
+| Field | Operator | Match value | Tag value |
+|-------|----------|-------------|-----------|
+| Account id | is | `416508157375` | `acme-corp` |
+
+Any field works as the match: a linked account per customer, a resource name
+prefix, a project, or an existing tag. One rule per customer is the common
+shape; see [Virtual tags](/costgraph/virtual-tags/usage) for the rule builder
+and how overlapping rules resolve.
+
 <Warning>
 Autumn creates a customer the first time it sees an id, so a mistyped tag
 value quietly becomes a new billable customer there. Check the tag's values

@@ -1,0 +1,120 @@
+---
+title: Azure
+description: "Connect an Azure billing scope to CostGraph from a FOCUS export in Blob Storage, with a Cloud Shell setup script"
+---
+
+CostGraph reads your Azure spend from a **FOCUS billing export** in Blob Storage. You
+create the export, the storage it lands in, and a read-only service principal, then
+CostGraph ingests it as normalized, reconciled cost. The Azure integration asks for
+Azure-named credentials (tenant, client, storage account); the generic Object Store
+integration accepts the same setup with storage-level variable names.
+
+One Cloud Shell script does all of it. Unlike Google Cloud, Azure exposes export
+creation over its REST API, so there is no manual console step.
+
+<Note>
+FOCUS exports need an **EA** or **MCA** billing scope (billing account, billing
+profile, invoice section, subscription, or resource group). Management groups and
+pay-as-you-go MOSP scopes do not support the FOCUS dataset.
+</Note>
+
+## Step 1: Run the setup script
+
+The connect dialog shows a one-line command. Open **Azure Cloud Shell** (Bash) and run
+it:
+
+```sh
+curl -sSL https://setup.costgraph.ai/integrations/azure.sh \
+  | COSTGRAPH_EXTERNAL_ID="org_..." sh
+```
+
+Cloud Shell already carries your credentials, so there is no login step. The script is
+idempotent, so rerun it safely after a partial failure. It needs permission to create
+a resource group, a storage account, and an app registration in your directory.
+
+It creates:
+
+| Resource | Default | Purpose |
+|----------|---------|---------|
+| Resource group | `costgraph-exports` | Holds the storage account |
+| Storage account + container | `cgfocus<suffix>` / `focus-exports` | Destination for the export |
+| Cost Management export | `costgraph-focus` | Daily FOCUS export, month-to-date, overwriting |
+| Service principal | `costgraph-billing-reader` | Read-only credential CostGraph connects with |
+
+The script also triggers the first export run. A first run can still take up to
+24 hours to produce files, so if the connect check finds nothing to read yet,
+wait for the first files in the container and connect again.
+
+Set `COSTGRAPH_SUBSCRIPTION_ID`, `COSTGRAPH_RESOURCE_GROUP`, `COSTGRAPH_LOCATION`,
+`COSTGRAPH_STORAGE_ACCOUNT`, or `COSTGRAPH_EXPORT_SCOPE` (for example
+`/providers/Microsoft.Billing/billingAccounts/<id>`) to override the defaults. Set
+`COSTGRAPH_EXPORT_DATA_VERSION` to `1.2-preview` for the preview FOCUS schema.
+
+## Step 2: Connect in CostGraph
+
+The script ends by printing the values to paste into the connect form:
+
+```
+AZURE_TENANT_ID=<tenant id>
+AZURE_CLIENT_ID=<client id>
+AZURE_CLIENT_SECRET=<client secret>
+AZURE_STORAGE_ACCOUNT=cgfocus....
+AZURE_CONTAINER=focus-exports
+AZURE_EXPORT_NAME=costgraph-focus
+```
+
+The Azure connect form asks for these by name, so each value has an obvious home.
+Save the client secret when it is printed; it is shown once. CostGraph validates it
+can read the export, then starts the first sync.
+
+## What it grants
+
+Doing it by hand instead? These are the exact, least-privilege grants:
+
+| Role | Scope | Why |
+|------|-------|-----|
+| `Storage Blob Data Reader` | the storage account | List and read the export blobs |
+
+The service principal is the credential. No account key is stored, and access is
+scoped to the one storage account rather than the subscription.
+
+## Reservation and savings-plan utilization
+
+CostGraph can also read how much of your reservation and savings-plan commitments is
+actually used. That read lives on the billing account, not the storage account, so it
+is an optional extra grant:
+
+```sh
+az role assignment create --role "Billing Reader" \
+  --assignee <client id> \
+  --scope "/providers/Microsoft.Billing/billingAccounts/<billingAccountId>"
+```
+
+Reservation and savings-plan reads live on tenant-scoped resources, separate
+from both the storage account and the billing-account scope above. The exact
+grants, by agreement type:
+
+| What | MCA | EA |
+|------|-----|----|
+| Reservation utilization | billing profile **Reader** role, or **Reservations Reader** (Entra, tenant or reservation-order scope) | Enterprise Administrator (read-only), or **Reservations Reader** (Entra, tenant or reservation-order scope) |
+| Savings-plan utilization | billing profile Reader role, or **Savings plan Reader** (Entra, tenant scope) | Enterprise Administrator (read-only), or **Savings plan Reader** (Entra, tenant scope) |
+
+For the Entra roles, assign the reader to the service principal, for example:
+
+```sh
+az role assignment create --role "Reservations Reader" \
+  --assignee <client id> \
+  --scope "/"
+```
+
+Without these grants, cost ingestion works as usual and utilization is simply
+not reported.
+
+## What CostGraph does with it
+
+- **Cost**: FOCUS line items normalized to a canonical model, keeping both billed and
+  effective (amortized) cost, credits, and commitment attribution.
+- **Reconciliation**: allocated plus unallocated cost is checked to equal the invoice
+  per billing scope per month.
+- **Allocation**: spend attributed by resource, resource group, subscription, and
+  tags, with an explicit unallocated bucket for shared and commitment costs.

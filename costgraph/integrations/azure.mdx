@@ -90,10 +90,22 @@ az role assignment create --role "Billing Reader" \
   --scope "/providers/Microsoft.Billing/billingAccounts/<billingAccountId>"
 ```
 
-On some enrollments the utilization reads also need `Reservations Reader` on a
-reservation order, or read access on the MCA billing profile. If utilization
-stays empty after granting `Billing Reader`, add the reader role Azure names in
-the error at the scope it names.
+Reservation and savings-plan reads live on tenant-scoped resources, separate
+from both the storage account and the billing-account scope above. The exact
+grants, by agreement type:
+
+| What | MCA | EA |
+|------|-----|----|
+| Reservation utilization | billing profile **Reader** role, or **Reservations Reader** (Entra, tenant or reservation-order scope) | Enterprise Administrator (read-only), or **Reservations Reader** (Entra, tenant or reservation-order scope) |
+| Savings-plan utilization | billing profile Reader role, or **Savings plan Reader** (Entra, tenant scope) | Enterprise Administrator (read-only), or **Savings plan Reader** (Entra, tenant scope) |
+
+For the Entra roles, assign the reader to the service principal, for example:
+
+```sh
+az role assignment create --role "Reservations Reader" \
+  --assignee <client id> \
+  --scope "/"
+```
 
 Without these grants, cost ingestion works as usual and utilization is simply
 not reported.

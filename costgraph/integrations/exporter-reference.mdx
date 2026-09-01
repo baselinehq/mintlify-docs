@@ -333,9 +333,9 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/newapi
 | `NEWAPI_ACCESS_TOKEN` | yes | yes | Dashboard access token (PAT) of an admin account, generated at Profile -> Security -> Access Token (not an inference sk- API key). Admin access is required to read usage across all users. |
 | `NEWAPI_QUOTA_PER_UNIT` | no | no | Quota credits per US dollar for USD conversion. Must match the deployment's QuotaPerUnit setting. Defaults to 500000 (new-api default). |
 
-## Bill published to storage
+## Object Store
 
-`--provider objectstore` - Bill delivered to storage
+`--provider objectstore` - Bill published to storage
 
 Grain: whatever the published bill carries (a row per resource, service and day for most providers).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.

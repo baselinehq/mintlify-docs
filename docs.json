@@ -97,6 +97,7 @@
                     "icon": "cloud",
                     "pages": [
                       "costgraph/integrations/aws",
+                      "costgraph/integrations/azure",
                       "costgraph/integrations/gcp",
                       "costgraph/integrations/digitalocean",
                       "costgraph/integrations/ovhcloud",

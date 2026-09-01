@@ -9,8 +9,9 @@ CostGraph ingests it as normalized, reconciled cost. The Azure integration asks 
 Azure-named credentials (tenant, client, storage account); the generic Object Store
 integration accepts the same setup with storage-level variable names.
 
-One Cloud Shell script does all of it. Unlike Google Cloud, Azure exposes export
-creation over its REST API, so there is no manual console step.
+One Cloud Shell script creates the storage and the read-only credential. Like Google
+Cloud, turning the billing export on is a one-time portal step: the exports API only
+accepts the classic dataset types, not FOCUS.
 
 <Note>
 FOCUS exports need an **EA** or **MCA** billing scope (billing account, billing
@@ -49,16 +50,33 @@ It creates:
 | Cost Management export | `costgraph-focus` | Daily FOCUS export, month-to-date, overwriting |
 | Service principal | `costgraph-billing-reader` | Read-only credential CostGraph connects with |
 
-The script also triggers the first export run. A first run can still take up to
-24 hours to produce files, so if the connect check finds nothing to read yet,
-wait for the first files in the container and connect again.
+The script ends by reminding you of the one manual step: create the FOCUS export in
+the portal (Step 2 below).
 
 Set `COSTGRAPH_SUBSCRIPTION_ID`, `COSTGRAPH_RESOURCE_GROUP`, `COSTGRAPH_LOCATION`,
-`COSTGRAPH_STORAGE_ACCOUNT`, or `COSTGRAPH_EXPORT_SCOPE` (for example
-`/providers/Microsoft.Billing/billingAccounts/<id>`) to override the defaults. Set
-`COSTGRAPH_EXPORT_DATA_VERSION` to `1.2-preview` for the preview FOCUS schema.
+`COSTGRAPH_STORAGE_ACCOUNT`, or `COSTGRAPH_CONTAINER` to override the defaults.
 
-## Step 2: Connect in CostGraph
+## Step 2: Create the FOCUS export (portal, one-time)
+
+<Note>
+Enabling a FOCUS export is **portal-only** - the exports REST API accepts only the
+classic `ActualCost` and `AmortizedCost` dataset types, not FOCUS. This is the one
+manual step.
+</Note>
+
+1. In the Azure portal, open **Cost Management + Billing** for your billing account and
+   select **Exports**.
+2. Click **+ Create** and choose the **Cost and usage details (FOCUS)** dataset.
+3. Choose **Daily** execution, month-to-date, with overwrite.
+4. Destination: the storage account, container and folder the script printed
+   (`cgfocus...` / `focus-exports` / `costgraph-focus`).
+
+FOCUS exports need an EA or MCA billing scope; on a pay-as-you-go MOSP subscription
+the dataset is not offered. The first files can take up to 24 hours to appear, so if
+the connect check finds nothing to read yet, wait for the first files and connect
+again.
+
+## Step 3: Connect in CostGraph
 
 The script ends by printing the values to paste into the connect form:
 

@@ -5,7 +5,9 @@ description: "Connect an Azure billing scope to CostGraph from a FOCUS export in
 
 CostGraph reads your Azure spend from a **FOCUS billing export** in Blob Storage. You
 create the export, the storage it lands in, and a read-only service principal, then
-CostGraph ingests it as normalized, reconciled cost.
+CostGraph ingests it as normalized, reconciled cost. The Azure integration asks for
+Azure-named credentials (tenant, client, storage account); the generic Object Store
+integration accepts the same setup with storage-level variable names.
 
 One Cloud Shell script does all of it. Unlike Google Cloud, Azure exposes export
 creation over its REST API, so there is no manual console step.
@@ -53,15 +55,15 @@ Set `COSTGRAPH_SUBSCRIPTION_ID`, `COSTGRAPH_RESOURCE_GROUP`, `COSTGRAPH_LOCATION
 The script ends by printing the values to paste into the connect form:
 
 ```
-OBJECTSTORE_KIND=azure
-OBJECTSTORE_LAYOUT=manifest
-OBJECTSTORE_ENDPOINT=https://cgfocus....blob.core.windows.net
-OBJECTSTORE_BUCKET=focus-exports
-OBJECTSTORE_PREFIX=costgraph-focus
-OBJECTSTORE_ACCESS_KEY_ID=<tenant id>/<client id>
-OBJECTSTORE_SECRET_ACCESS_KEY=<client secret>
+AZURE_TENANT_ID=<tenant id>
+AZURE_CLIENT_ID=<client id>
+AZURE_CLIENT_SECRET=<client secret>
+AZURE_STORAGE_ACCOUNT=cgfocus....
+AZURE_CONTAINER=focus-exports
+AZURE_EXPORT_NAME=costgraph-focus
 ```
 
+The Azure connect form asks for these by name, so each value has an obvious home.
 Save the client secret when it is printed; it is shown once. CostGraph validates it
 can read the export, then starts the first sync.
 

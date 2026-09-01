@@ -100,6 +100,7 @@
                   "costgraph/integrations/digitalocean",
                   "costgraph/integrations/ovhcloud",
                   "costgraph/integrations/stackit",
+                  "costgraph/integrations/objectstore",
                   "costgraph/integrations/scaleway",
                   "costgraph/integrations/linode",
                   "costgraph/integrations/cherryservers",

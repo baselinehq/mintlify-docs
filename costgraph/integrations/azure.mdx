@@ -39,8 +39,9 @@ It creates:
 | Cost Management export | `costgraph-focus` | Daily FOCUS export, month-to-date, overwriting |
 | Service principal | `costgraph-billing-reader` | Read-only credential CostGraph connects with |
 
-The script also triggers the first export run, so the first files appear within
-minutes instead of waiting for the daily schedule.
+The script also triggers the first export run. A first run can still take up to
+24 hours to produce files, so if the connect check finds nothing to read yet,
+wait for the first files in the container and connect again.
 
 Set `COSTGRAPH_SUBSCRIPTION_ID`, `COSTGRAPH_RESOURCE_GROUP`, `COSTGRAPH_LOCATION`,
 `COSTGRAPH_STORAGE_ACCOUNT`, or `COSTGRAPH_EXPORT_SCOPE` (for example
@@ -53,6 +54,7 @@ The script ends by printing the values to paste into the connect form:
 
 ```
 OBJECTSTORE_KIND=azure
+OBJECTSTORE_LAYOUT=manifest
 OBJECTSTORE_ENDPOINT=https://cgfocus....blob.core.windows.net
 OBJECTSTORE_BUCKET=focus-exports
 OBJECTSTORE_PREFIX=costgraph-focus
@@ -86,7 +88,13 @@ az role assignment create --role "Billing Reader" \
   --scope "/providers/Microsoft.Billing/billingAccounts/<billingAccountId>"
 ```
 
-Without it, cost ingestion works as usual and utilization is simply not reported.
+On some enrollments the utilization reads also need `Reservations Reader` on a
+reservation order, or read access on the MCA billing profile. If utilization
+stays empty after granting `Billing Reader`, add the reader role Azure names in
+the error at the scope it names.
+
+Without these grants, cost ingestion works as usual and utilization is simply
+not reported.
 
 ## What CostGraph does with it
 

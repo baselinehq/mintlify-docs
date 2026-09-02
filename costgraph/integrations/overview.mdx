@@ -71,7 +71,7 @@ Every provider you connect feeds the same place, so "what did we spend last mont
 why is it up?" stops being four consoles and a spreadsheet. It is one question, and the
 answer covers everything you connected.
 
-## Four ways to connect
+## Five ways to connect
 
 <CardGroup cols={2}>
   <Card title="CostGraph pulls it" icon="cloud-arrow-down">
@@ -90,6 +90,10 @@ answer covers everything you connected.
   <Card title="CostGraph exports it" icon="file-invoice-dollar" href="/costgraph/integrations/exports/autumn">
     The other direction: report each customer's attributed spend to your billing
     platform, so you can bill them for it.
+  </Card>
+  <Card title="You run the agent" icon="microchip" href="/costgraph/operator/overview">
+    A bill tells you what a cluster or a host cost. The agent tells you what ran on it.
+    Install it once and every node, pod, volume, and machine reports its own usage.
   </Card>
 </CardGroup>
 
@@ -252,6 +256,20 @@ argument at the end of the month.
   </Card>
   <Card title="CostGraph" icon="/images/logos/costgraph.svg" href="/costgraph/integrations/costgraph">
     Your CostGraph invoice, in the same view as everything else.
+  </Card>
+</CardGroup>
+
+### Agent
+
+A bill stops at the resource. These two go inside it, so a node's cost can be split
+across the namespaces and containers that actually used it.
+
+<CardGroup cols={3}>
+  <Card title="Kubernetes" icon="/images/logos/kubernetes.svg" href="/costgraph/operator/overview">
+    Nodes, namespaces, workloads, and volumes, with idle capacity and rightsizing.
+  </Card>
+  <Card title="Virtual machines" icon="server" href="/costgraph/agent">
+    Hosts and their disks, with utilization, containers, and idle detection.
   </Card>
 </CardGroup>
 

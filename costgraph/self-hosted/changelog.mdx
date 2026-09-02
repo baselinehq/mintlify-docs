@@ -14,9 +14,14 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
     - Cloud and SaaS spend that CostGraph manages but does not monitor as a compute resource - object storage, managed databases, egress, ingested provider bills - now appears on your invoice as CostGraph Cloud, itemized per provider
     - Invoice lines for spend billed in a currency other than USD now show the amount in that currency alongside the charge
     - Self-hosted installations now report their own spend, so usage is billed from what the instance measures rather than from resource counts alone
+    - The cost view now defaults to the last 30 days
+    - Network edge properties are recorded on aggregated traffic
 
     ### Changed
     - The $500 free threshold is measured across everything under management, hosted and self-hosted together, rather than each separately
+
+    ### Fixed
+    - Two dependency vulnerabilities in the aggregator, one rated critical
 </Update>
 
 <Update label="2026-08-29" description="costgraph-selfhosted v0.4.1">

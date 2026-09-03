@@ -24,7 +24,7 @@
     "/marketplace/providers/compute": {
       "get": {
         "summary": "Get your custom pricing entries",
-        "description": "List the compute rates your organization has registered. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and offset.",
+        "description": "List the compute rates your organization has registered. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and offset.\nSuperseded by GET /v1/marketplace/compute, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "limit",
@@ -81,7 +81,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.MarketplaceProvidersResponse"
+                  "$ref": "#/components/schemas/ComputePriceList"
                 }
               }
             }
@@ -91,7 +91,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -101,7 +101,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -111,12 +111,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -128,13 +129,13 @@
       },
       "post": {
         "summary": "Register a custom provider",
-        "description": "Register your own compute rates so CostGraph can price machines it has no public price for, such as bare metal or a private cloud.\nAn entry is upserted on its natural key (provider, service, region, availability zone, usage type, instance type, operating system and period billing hours), so re-posting the same entry with a new cost keeps its id and reprices everything already using it. Changing any key field mints a new id, because it describes a different SKU.\nThe returned id is what you attach to a resource with the `costgraph.ai/pricing-id.compute` label or tag. Treat it as a secret you hand out deliberately: anyone holding it can pin to the rate, which is how a provider prices clusters it sells on.",
+        "description": "Register your own compute rates so CostGraph can price machines it has no public price for, such as bare metal or a private cloud.\nAn entry is upserted on its natural key (provider, service, region, availability zone, usage type, instance type, operating system and period billing hours), so re-posting the same entry with a new cost keeps its id and reprices everything already using it. Changing any key field mints a new id, because it describes a different SKU.\nThe returned id is what you attach to a resource with the `costgraph.ai/pricing-id.compute` label or tag. Treat it as a secret you hand out deliberately: anyone holding it can pin to the rate, which is how a provider prices clusters it sells on.\nSuperseded by POST /v1/marketplace/compute, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Custom pricing request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.CustomPriceRequest"
+                "$ref": "#/components/schemas/ComputePricesRequest"
               }
             }
           },
@@ -146,7 +147,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredComputePrices"
                 }
               }
             }
@@ -156,7 +157,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -166,7 +167,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -176,12 +177,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -194,7 +196,7 @@
       },
       "delete": {
         "summary": "Delete a custom provider instance",
-        "description": "Delete one of your compute rates by id.\nA rate a resource is already priced against cannot be deleted; the request fails while that link exists, so re-pin those resources first.\nOnce it is gone, a resource still carrying its id stops resolving a price rather than falling back to attribute matching.",
+        "description": "Delete one of your compute rates by id.\nA rate a resource is already priced against cannot be deleted; the request fails while that link exists, so re-pin those resources first.\nOnce it is gone, a resource still carrying its id stops resolving a price rather than falling back to attribute matching.\nSuperseded by DELETE /v1/marketplace/compute/{id}, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "id",
@@ -212,7 +214,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredComputePrices"
                 }
               }
             }
@@ -222,7 +224,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -232,7 +234,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -242,7 +244,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -252,12 +254,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -271,7 +274,7 @@
     "/marketplace/providers/databases": {
       "get": {
         "summary": "Get your custom database pricing entries",
-        "description": "List the managed database rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "description": "List the managed database rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.\nSuperseded by GET /v1/marketplace/databases, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "limit",
@@ -344,7 +347,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.MarketplaceDatabaseProvidersResponse"
+                  "$ref": "#/components/schemas/DatabasePriceList"
                 }
               }
             }
@@ -354,7 +357,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -364,7 +367,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -374,12 +377,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -391,13 +395,13 @@
       },
       "post": {
         "summary": "Register custom database pricing",
-        "description": "Register your own managed database rates, keyed by engine, edition, deployment option, storage type and instance type alongside the usual provider, service and region.\nAn entry is upserted on the full natural key (provider, service, region, availability zone, usage type, engine, edition, deployment option, billing config, storage type, instance type, architecture and period billing hours), so re-posting with a new cost keeps its id; changing any key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.database` label or tag.",
+        "description": "Register your own managed database rates, keyed by engine, edition, deployment option, storage type and instance type alongside the usual provider, service and region.\nAn entry is upserted on the full natural key (provider, service, region, availability zone, usage type, engine, edition, deployment option, billing config, storage type, instance type, architecture and period billing hours), so re-posting with a new cost keeps its id; changing any key field mints a new one.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.database` label or tag.\nSuperseded by POST /v1/marketplace/databases, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Custom database pricing request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.CustomDatabasePriceRequest"
+                "$ref": "#/components/schemas/DatabasePricesRequest"
               }
             }
           },
@@ -409,7 +413,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomDatabasePricingResponse"
+                  "$ref": "#/components/schemas/RegisteredDatabasePrices"
                 }
               }
             }
@@ -419,7 +423,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -429,7 +433,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -439,12 +443,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -457,7 +462,7 @@
       },
       "delete": {
         "summary": "Delete a custom database pricing entry",
-        "description": "Delete one of your managed database rates by id.\nA rate a database or one of its reports still references cannot be deleted; the request fails while that reference exists, so re-pin first.\nOnce it is gone, a database still carrying its id stops resolving a price.",
+        "description": "Delete one of your managed database rates by id.\nA rate a database or one of its reports still references cannot be deleted; the request fails while that reference exists, so re-pin first.\nOnce it is gone, a database still carrying its id stops resolving a price.\nSuperseded by DELETE /v1/marketplace/databases/{id}, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "id",
@@ -475,7 +480,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomDatabasePricingResponse"
+                  "$ref": "#/components/schemas/RegisteredDatabasePrices"
                 }
               }
             }
@@ -485,7 +490,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -495,7 +500,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -505,7 +510,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -515,12 +520,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -534,7 +540,7 @@
     "/marketplace/providers/disks": {
       "get": {
         "summary": "Get your custom disk pricing entries",
-        "description": "List the storage rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "description": "List the storage rates your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.\nSuperseded by GET /v1/marketplace/disks, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "limit",
@@ -591,7 +597,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.MarketplaceDiskProvidersResponse"
+                  "$ref": "#/components/schemas/DiskPriceList"
                 }
               }
             }
@@ -601,7 +607,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -611,7 +617,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -621,12 +627,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -638,13 +645,13 @@
       },
       "post": {
         "summary": "Register a custom disk provider",
-        "description": "Register your own storage rates, priced per GB hour with optional IOPS and throughput components and the capacity band they apply to.\nAn entry is upserted on its natural key (provider, service, region, availability zone, disk type, usage type and period billing hours), so re-posting with a new cost keeps its id; changing a key field mints a new one.\nCapacity, IOPS and throughput bands are not part of that key, so a second band for the same disk type replaces the first: give each band its own usage type.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.storage` label or tag.",
+        "description": "Register your own storage rates, priced per GB hour with optional IOPS and throughput components and the capacity band they apply to.\nAn entry is upserted on its natural key (provider, service, region, availability zone, disk type, usage type and period billing hours), so re-posting with a new cost keeps its id; changing a key field mints a new one.\nCapacity, IOPS and throughput bands are not part of that key, so a second band for the same disk type replaces the first: give each band its own usage type.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.storage` label or tag.\nSuperseded by POST /v1/marketplace/disks, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Custom disk pricing request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.CustomDiskPriceRequest"
+                "$ref": "#/components/schemas/DiskPricesRequest"
               }
             }
           },
@@ -656,7 +663,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomDiskPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredDiskPrices"
                 }
               }
             }
@@ -666,7 +673,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -676,7 +683,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -686,12 +693,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -704,7 +712,7 @@
       },
       "delete": {
         "summary": "Delete a custom disk provider entry",
-        "description": "Delete one of your storage rates by id.\nA rate a volume is already priced against cannot be deleted; the request fails while that link exists, so re-pin those volumes first.\nOnce it is gone, a volume still carrying its id stops resolving a price.",
+        "description": "Delete one of your storage rates by id.\nA rate a volume is already priced against cannot be deleted; the request fails while that link exists, so re-pin those volumes first.\nOnce it is gone, a volume still carrying its id stops resolving a price.\nSuperseded by DELETE /v1/marketplace/disks/{id}, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "id",
@@ -722,7 +730,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/types.CustomDiskPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredDiskPrices"
                 }
               }
             }
@@ -732,7 +740,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -742,7 +750,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -752,7 +760,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -762,12 +770,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -781,7 +790,7 @@
     "/marketplace/providers/models": {
       "get": {
         "summary": "Get your custom model pricing entries",
-        "description": "List the live version of each model rate your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.",
+        "description": "List the live version of each model rate your organization has registered. Only your own rates are returned.\nFilters combine, and paging is by limit and offset.\nSuperseded by GET /v1/marketplace/models, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "limit",
@@ -838,7 +847,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.MarketplaceModelProvidersResponse"
+                  "$ref": "#/components/schemas/ModelPriceList"
                 }
               }
             }
@@ -848,7 +857,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -858,7 +867,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -868,12 +877,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -885,13 +895,13 @@
       },
       "post": {
         "summary": "Register custom model pricing",
-        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change instead of holding on to an earlier one.",
+        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change instead of holding on to an earlier one.\nSuperseded by POST /v1/marketplace/models, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Custom model pricing request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/handler.CustomModelPriceRequest"
+                "$ref": "#/components/schemas/ModelPricesRequest"
               }
             }
           },
@@ -903,7 +913,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.CustomModelPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredModelPrices"
                 }
               }
             }
@@ -913,7 +923,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -923,7 +933,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -933,12 +943,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -951,7 +962,7 @@
       },
       "delete": {
         "summary": "Delete a custom model pricing entry",
-        "description": "Delete one of your model rates by id. The row is closed rather than removed, so spend already priced against it keeps that rate.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "description": "Delete one of your model rates by id. The row is closed rather than removed, so spend already priced against it keeps that rate.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.\nSuperseded by DELETE /v1/marketplace/models/{id}, which returns RFC 9457 problem responses on failure.",
         "parameters": [
           {
             "name": "id",
@@ -969,7 +980,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.CustomModelPricingResponse"
+                  "$ref": "#/components/schemas/RegisteredModelPrices"
                 }
               }
             }
@@ -979,7 +990,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -989,7 +1000,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -999,7 +1010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1009,12 +1020,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -1028,13 +1040,13 @@
     "/pricing": {
       "post": {
         "summary": "Get pricing for an instance",
-        "description": "Get pricing for compute instances",
+        "description": "Get pricing for compute instances\nSuperseded by POST /v1/pricing/compute, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Instance",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+                "$ref": "#/components/schemas/Instance"
               }
             }
           },
@@ -1046,7 +1058,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/schema.ComputePricingsRow"
+                  "$ref": "#/components/schemas/ComputePrice"
                 }
               }
             }
@@ -1056,7 +1068,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1066,7 +1078,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1076,7 +1088,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1086,12 +1098,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -1106,13 +1119,13 @@
     "/pricing/compute": {
       "post": {
         "summary": "Get pricing for an instance",
-        "description": "Get pricing for compute instances",
+        "description": "Get pricing for compute instances\nSuperseded by POST /v1/pricing/compute, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Instance",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+                "$ref": "#/components/schemas/Instance"
               }
             }
           },
@@ -1124,7 +1137,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/schema.ComputePricingsRow"
+                  "$ref": "#/components/schemas/ComputePrice"
                 }
               }
             }
@@ -1134,7 +1147,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1144,7 +1157,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1154,7 +1167,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1164,12 +1177,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -1184,13 +1198,13 @@
     "/pricing/disks": {
       "post": {
         "summary": "Get pricing for a disk",
-        "description": "Get pricing for a disk",
+        "description": "Get pricing for a disk\nSuperseded by POST /v1/pricing/disks, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Disk",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.Disk"
+                "$ref": "#/components/schemas/Disk"
               }
             }
           },
@@ -1202,7 +1216,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/schema.DiskPricingsRow"
+                  "$ref": "#/components/schemas/DiskPrice"
                 }
               }
             }
@@ -1212,7 +1226,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1222,7 +1236,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1232,7 +1246,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1242,12 +1256,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "ApiKeyAuth": []
@@ -1262,14 +1277,14 @@
     "/providers": {
       "get": {
         "summary": "Get details for the providers",
-        "description": "Get details for the providers",
+        "description": "Get details for the providers\nSuperseded by GET /v1/providers, which returns RFC 9457 problem responses on failure.",
         "responses": {
           "200": {
             "description": "List of providers",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/provider.Configs"
+                  "$ref": "#/components/schemas/ProviderConfigs"
                 }
               }
             }
@@ -1279,7 +1294,1833 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/recommendations": {
+      "post": {
+        "summary": "Get recommendations for compute instances",
+        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance\nSuperseded by POST /v1/recommendations/compute, which returns RFC 9457 problem responses on failure.",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComputeRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComputeRecommendation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/recommendations/compute": {
+      "post": {
+        "summary": "Get recommendations for compute instances",
+        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance\nSuperseded by POST /v1/recommendations/compute, which returns RFC 9457 problem responses on failure.",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComputeRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComputeRecommendation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/recommendations/disks": {
+      "post": {
+        "summary": "Get recommendations for disks",
+        "description": "Get the cheapest disk candidate per provider with savings versus the requested disk\nSuperseded by POST /v1/recommendations/disks, which returns RFC 9457 problem responses on failure.",
+        "requestBody": {
+          "description": "Instance",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiskRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiskRecommendation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/v1/healthz": {
+      "get": {
+        "tags": [
+          "service"
+        ],
+        "summary": "Check the service is live",
+        "description": "Report that the pricing service is accepting requests. No credential is required.",
+        "responses": {
+          "200": {
+            "description": "The service is live",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/marketplace/compute": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "List your compute prices",
+        "description": "List the compute rates your organization has published. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and an opaque cursor carried in the page of the previous response.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum prices to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance_type",
+            "in": "query",
+            "description": "Filter by instance type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of your prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputePricePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Publish compute prices",
+        "description": "Register your own compute rates so CostGraph can price machines it has no public price for, such as bare metal or a private cloud.\nAn entry is upserted on its natural key (provider, service, region, availability zone, usage type, instance type, operating system and period billing hours), so re-posting the same entry with a new cost keeps its id and reprices everything already using it. Changing any key field mints a new id, because it describes a different SKU.\nThe returned id is what you attach to a resource with the `costgraph.ai/pricing-id.compute` label or tag.",
+        "requestBody": {
+          "description": "Prices to publish",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComputePricesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The published prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedComputePrices"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/compute/{id}": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Read one compute price",
+        "description": "Read a single compute rate your organization has published, by its id.\nA price belonging to another organization is not visible and reads as not found.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputePrice"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Delete one compute price",
+        "description": "Delete a compute price you have published, by its id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The price was deleted",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Change one compute price",
+        "description": "Change the rate or the descriptive fields of a compute price you have published. Send only the fields you want to change.\nThe fields that identify the price cannot be changed, because they describe a different SKU; delete the price and register a new one instead.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to change",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The changed price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputePrice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/databases": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "List your database prices",
+        "description": "List the database rates your organization has published. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and an opaque cursor carried in the page of the previous response.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum prices to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "engine",
+            "in": "query",
+            "description": "Filter by engine",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "edition",
+            "in": "query",
+            "description": "Filter by edition",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance_type",
+            "in": "query",
+            "description": "Filter by instance type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of your prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabasePricePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Publish database prices",
+        "description": "Register your own managed database rates so CostGraph can price clusters it has no public price for.\nAn entry is upserted on its natural key (provider, service, region, engine, edition, instance type and usage type), so re-posting the same entry with a new cost keeps its id and reprices everything already using it.\nThe returned id is what you attach to a database with the `costgraph.ai/pricing-id.database` label or tag.",
+        "requestBody": {
+          "description": "Prices to publish",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatabasePricesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The published prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedDatabasePrices"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/databases/{id}": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Read one database price",
+        "description": "Read a single database rate your organization has published, by its id.\nA price belonging to another organization is not visible and reads as not found.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabasePrice"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Delete one database price",
+        "description": "Delete a database price you have published, by its id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The price was deleted",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Change one database price",
+        "description": "Change the rate or the descriptive fields of a database price you have published. Send only the fields you want to change.\nThe fields that identify the price cannot be changed, because they describe a different SKU; delete the price and register a new one instead.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to change",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The changed price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabasePrice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/disks": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "List your disk prices",
+        "description": "List the disk rates your organization has published. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and an opaque cursor carried in the page of the previous response.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum prices to return (default 500)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Filter by service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by disk type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usage_type",
+            "in": "query",
+            "description": "Filter by usage type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of your prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiskPricePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Publish disk prices",
+        "description": "Register your own block storage rates so CostGraph can price volumes it has no public price for.\nAn entry is upserted on its natural key (provider, service, region, availability zone, usage type, type and period billing hours), so re-posting the same entry with a new cost keeps its id and reprices everything already using it.\nThe returned id is what you attach to a volume with the `costgraph.ai/pricing-id.disk` label or tag.",
+        "requestBody": {
+          "description": "Prices to publish",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiskPricesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The published prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedDiskPrices"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/disks/{id}": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Read one disk price",
+        "description": "Read a single disk rate your organization has published, by its id.\nA price belonging to another organization is not visible and reads as not found.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiskPrice"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Delete one disk price",
+        "description": "Delete a disk price you have published, by its id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The price was deleted",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Change one disk price",
+        "description": "Change the rate or the descriptive fields of a disk price you have published. Send only the fields you want to change.\nThe fields that identify the price cannot be changed, because they describe a different SKU; delete the price and register a new one instead.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to change",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The changed price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiskPrice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/filters/{kind}": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "List the filters a price kind accepts",
+        "description": "The query parameters you can filter this kind of price by. They differ by kind because the fields that identify a price differ: compute prices carry an instance type, disk prices a disk type, database prices an engine.",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "description": "Price kind",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "compute",
+                "disks",
+                "databases",
+                "models"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilterSet"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1295,41 +3136,80 @@
         ]
       }
     },
-    "/recommendations": {
-      "post": {
-        "summary": "Get recommendations for compute instances",
-        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance",
-        "requestBody": {
-          "description": "Instance",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/types.ComputeRequest"
-              }
+    "/v1/marketplace/models": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "List your model prices",
+        "description": "List the model rates your organization has published. Only your own rates are returned, never another organization's.\nFilters combine, and paging is by limit and an opaque cursor carried in the page of the previous response.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum prices to return (default 500)",
+            "schema": {
+              "type": "integer"
             }
           },
-          "required": true
-        },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "description": "Filter by model",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "Filter by model provider",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "description": "Filter by region",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token_bucket",
+            "in": "query",
+            "description": "Filter by token bucket",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "A page of your prices",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/recommendations.ComputeRecommendationResult"
-                  }
+                  "$ref": "#/components/schemas/ModelPricePage"
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid request body",
+            "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1339,17 +3219,479 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Publish model prices",
+        "description": "Register your own token rates for models you host, so CostGraph can price calls it has no public rate for.\nEntries are versioned: a price change closes the current row and opens a new one, so spend already recorded keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change.",
+        "requestBody": {
+          "description": "Prices to publish",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPricesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The published prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedModelPrices"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/marketplace/models/{id}": {
+      "get": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Read one model price",
+        "description": "Read a single model rate your organization has published, by its id.\nA price belonging to another organization is not visible and reads as not found.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPrice"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
           },
           "404": {
-            "description": "Not found",
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Delete one model price",
+        "description": "Delete a model price you have published, by its id.\nUsage still pinned to it stops resolving a price, so re-pin before deleting.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The price was deleted",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "marketplace"
+        ],
+        "summary": "Change one model price",
+        "description": "Change the rate or the descriptive fields of a model price you have published. Send only the fields you want to change.\nThe fields that identify the price cannot be changed, because they describe a different SKU; delete the price and register a new one instead.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Price id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to change",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The changed price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPrice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/pricing/compute": {
+      "post": {
+        "tags": [
+          "pricing"
+        ],
+        "summary": "Price a machine",
+        "description": "Resolve the hourly rate CostGraph would bill for a machine with the given shape, in the given region and usage type.\nPrices you have published for the machine's provider are preferred over the public catalogue.",
+        "requestBody": {
+          "description": "Machine to price",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Instance"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The resolved price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputePrice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No price matches the machine",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1359,7 +3701,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1376,16 +3718,19 @@
         "x-codegen-request-body-name": "instance"
       }
     },
-    "/recommendations/compute": {
+    "/v1/pricing/disks": {
       "post": {
-        "summary": "Get recommendations for compute instances",
-        "description": "Get the cheapest compute candidate per provider with savings versus the requested instance",
+        "tags": [
+          "pricing"
+        ],
+        "summary": "Price a volume",
+        "description": "Resolve the rate CostGraph would bill for a block volume of the given type and capacity, in the given region.\nPrices you have published for the volume's provider are preferred over the public catalogue.",
         "requestBody": {
-          "description": "Instance",
+          "description": "Volume to price",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.ComputeRequest"
+                "$ref": "#/components/schemas/Disk"
               }
             }
           },
@@ -1393,14 +3738,11 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The resolved price",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/recommendations.ComputeRecommendationResult"
-                  }
+                  "$ref": "#/components/schemas/DiskPrice"
                 }
               }
             }
@@ -1410,27 +3752,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "Unauthenticated",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
           },
           "404": {
-            "description": "Not found",
+            "description": "No price matches the volume",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1440,7 +3792,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1457,16 +3809,68 @@
         "x-codegen-request-body-name": "instance"
       }
     },
-    "/recommendations/disks": {
+    "/v1/providers": {
+      "get": {
+        "tags": [
+          "providers"
+        ],
+        "summary": "List the providers CostGraph prices",
+        "description": "Return every provider the pricing catalogue covers, with the filter values each one accepts.",
+        "responses": {
+          "200": {
+            "description": "The providers CostGraph prices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderConfigs"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/recommendations/compute": {
       "post": {
-        "summary": "Get recommendations for disks",
-        "description": "Get the cheapest disk candidate per provider with savings versus the requested disk",
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Find cheaper machines",
+        "description": "Return the cheapest machine per provider that still meets the requested shape, with the saving against the machine you asked about.",
         "requestBody": {
-          "description": "Instance",
+          "description": "Machine to improve on",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/types.DiskRequest"
+                "$ref": "#/components/schemas/ComputeRecommendationRequest"
               }
             }
           },
@@ -1474,13 +3878,13 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "The cheapest candidate per provider",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/recommendations.DiskRecommendationResult"
+                    "$ref": "#/components/schemas/ComputeRecommendation"
                   }
                 }
               }
@@ -1491,27 +3895,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "Unauthenticated",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
           },
           "404": {
-            "description": "Not found",
+            "description": "No candidate matches the machine",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1521,7 +3935,101 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/handler.ErrorResponse"
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-codegen-request-body-name": "instance"
+      }
+    },
+    "/v1/recommendations/disks": {
+      "post": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Find cheaper volumes",
+        "description": "Return the cheapest volume per provider that still meets the requested capacity and performance, with the saving against the volume you asked about.",
+        "requestBody": {
+          "description": "Volume to improve on",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiskRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The cheapest candidate per provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiskRecommendation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No candidate matches the volume",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -1541,298 +4049,7 @@
   },
   "components": {
     "schemas": {
-      "datatypes.JSON": {
-        "type": "object"
-      },
-      "github_com_baselinehq_golang-shared_types.Instance": {
-        "type": "object",
-        "properties": {
-          "availability_zone": {
-            "type": "string"
-          },
-          "fallback_to_base_pricing": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          },
-          "instance_type": {
-            "type": "string"
-          },
-          "operating_system": {
-            "type": "string"
-          },
-          "provider": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
-          },
-          "region": {
-            "type": "string"
-          },
-          "service": {
-            "$ref": "#/components/schemas/types.Service"
-          },
-          "usage_type": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
-          },
-          "vm": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
-          }
-        }
-      },
-      "github_com_baselinehq_golang-shared_types.Provider": {
-        "type": "string",
-        "enum": [
-          "GCP",
-          "AWS",
-          "DigitalOcean",
-          "Azure",
-          "Hetzner",
-          "OVHCloud",
-          "PlanetScale",
-          "STACKIT",
-          "Akamai",
-          "Base"
-        ],
-        "x-enum-comments": {
-          "Base": "Base provider for default pricing, no specific cloud provider"
-        },
-        "x-enum-varnames": [
-          "GCP",
-          "AWS",
-          "DigitalOcean",
-          "Azure",
-          "Hetzner",
-          "OVHCloud",
-          "PlanetScale",
-          "STACKIT",
-          "Akamai",
-          "Base"
-        ]
-      },
-      "github_com_baselinehq_golang-shared_types.UsageType": {
-        "type": "string",
-        "enum": [
-          "SPOT_PREEMPTIBLE",
-          "ONDEMAND",
-          "RESERVED",
-          "ONDEMAND_CUSTOM",
-          "SPOT_PREEMPTIBLE_CUSTOM",
-          "RESERVED_CUSTOM",
-          "SOLE_TENANCY",
-          "CUSTOM",
-          "EXTENDED"
-        ],
-        "x-enum-varnames": [
-          "SPOT_PREEMPTIBLE",
-          "ONDEMAND",
-          "RESERVED",
-          "ONDEMAND_CUSTOM",
-          "SPOT_PREEMPTIBLE_CUSTOM",
-          "RESERVED_CUSTOM",
-          "SOLE_TENANCY",
-          "CUSTOM",
-          "EXTENDED"
-        ]
-      },
-      "github_com_baselinehq_golang-shared_types.VM": {
-        "type": "object",
-        "properties": {
-          "cpu_cores": {
-            "type": "number"
-          },
-          "ram_gb": {
-            "type": "number"
-          }
-        }
-      },
-      "github_com_baselinehq_pricingapi_pkg_types.Status": {
-        "type": "string",
-        "enum": [
-          "Registered",
-          "Deleted"
-        ],
-        "x-enum-varnames": [
-          "Registered",
-          "Deleted"
-        ]
-      },
-      "handler.CustomModelPriceRequest": {
-        "required": [
-          "entries"
-        ],
-        "type": "object",
-        "properties": {
-          "entries": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/models.ModelPricing"
-            }
-          }
-        }
-      },
-      "handler.CustomModelPricingResponse": {
-        "type": "object",
-        "properties": {
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/models.ModelPricing"
-            }
-          },
-          "status": {
-            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
-          }
-        }
-      },
-      "handler.ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "string"
-          }
-        }
-      },
-      "handler.MarketplaceModelProvidersResponse": {
-        "type": "object",
-        "properties": {
-          "providers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/models.ModelPricing"
-            }
-          }
-        }
-      },
-      "models.ModelPricing": {
-        "type": "object",
-        "properties": {
-          "context_limit": {
-            "type": "integer"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "effective_from": {
-            "type": "string"
-          },
-          "effective_to": {
-            "type": "string"
-          },
-          "fetched_at": {
-            "type": "string"
-          },
-          "host": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "modalities_input": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "modalities_output": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "model": {
-            "type": "string"
-          },
-          "model_id": {
-            "type": "string"
-          },
-          "open_weights": {
-            "type": "boolean"
-          },
-          "output_limit": {
-            "type": "integer"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "publisher": {
-            "type": "string"
-          },
-          "raw_pricing_data": {
-            "$ref": "#/components/schemas/datatypes.JSON"
-          },
-          "reasoning": {
-            "type": "boolean"
-          },
-          "region": {
-            "type": "string"
-          },
-          "sku_price_id": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string"
-          },
-          "source_url": {
-            "type": "string"
-          },
-          "structured_output": {
-            "type": "boolean"
-          },
-          "tags": {
-            "$ref": "#/components/schemas/datatypes.JSON"
-          },
-          "token_bucket": {
-            "type": "string"
-          },
-          "tool_call": {
-            "type": "boolean"
-          },
-          "unit_price_per_mtok": {
-            "type": "number"
-          }
-        }
-      },
-      "provider.Config": {
-        "type": "object",
-        "properties": {
-          "predicates": {
-            "$ref": "#/components/schemas/types.Predicates"
-          },
-          "provider": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
-          }
-        }
-      },
-      "provider.Configs": {
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/provider.Config"
-        }
-      },
-      "recommendations.ComputeRecommendationResult": {
-        "type": "object",
-        "properties": {
-          "pricing": {
-            "$ref": "#/components/schemas/schema.ComputePricingsRow"
-          },
-          "savings": {
-            "$ref": "#/components/schemas/types.Savings"
-          }
-        }
-      },
-      "recommendations.DiskRecommendationResult": {
-        "type": "object",
-        "properties": {
-          "pricing": {
-            "$ref": "#/components/schemas/schema.DiskPricingsRow"
-          },
-          "savings": {
-            "$ref": "#/components/schemas/types.Savings"
-          }
-        }
-      },
-      "schema.ComputePricingsRow": {
+      "ComputePrice": {
         "type": "object",
         "properties": {
           "architecture": {
@@ -1911,7 +4128,75 @@
           }
         }
       },
-      "schema.DatabasePricingsRow": {
+      "ComputePriceList": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComputePrice"
+            }
+          }
+        }
+      },
+      "ComputePricePage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComputePrice"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "ComputePricesRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComputePrice"
+            }
+          }
+        }
+      },
+      "ComputeRecommendation": {
+        "type": "object",
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/ComputePrice"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
+          }
+        }
+      },
+      "ComputeRecommendationRequest": {
+        "type": "object",
+        "properties": {
+          "include_metadata": {
+            "type": "boolean"
+          },
+          "instance": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+          },
+          "predicates": {
+            "$ref": "#/components/schemas/types.Predicates"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+          }
+        }
+      },
+      "DatabasePrice": {
         "type": "object",
         "properties": {
           "architecture": {
@@ -2035,7 +4320,85 @@
           }
         }
       },
-      "schema.DiskPricingsRow": {
+      "DatabasePriceList": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatabasePrice"
+            }
+          }
+        }
+      },
+      "DatabasePricePage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatabasePrice"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "DatabasePricesRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatabasePrice"
+            }
+          }
+        }
+      },
+      "Disk": {
+        "type": "object",
+        "properties": {
+          "availability_zone": {
+            "type": "string"
+          },
+          "capacity_gb": {
+            "type": "number"
+          },
+          "fallback_to_base_pricing": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "iops": {
+            "type": "number"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/types.Service"
+          },
+          "throughput_mbps": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "usage_type": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+          }
+        }
+      },
+      "DiskPrice": {
         "type": "object",
         "properties": {
           "availability_zone": {
@@ -2117,24 +4480,257 @@
           }
         }
       },
-      "types.ComputeRequest": {
+      "DiskPriceList": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiskPrice"
+            }
+          }
+        }
+      },
+      "DiskPricePage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiskPrice"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "DiskPricesRequest": {
+        "required": [
+          "entries"
+        ],
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiskPrice"
+            }
+          }
+        }
+      },
+      "DiskRecommendation": {
+        "type": "object",
+        "properties": {
+          "pricing": {
+            "$ref": "#/components/schemas/DiskPrice"
+          },
+          "savings": {
+            "$ref": "#/components/schemas/types.Savings"
+          }
+        }
+      },
+      "DiskRecommendationRequest": {
         "type": "object",
         "properties": {
           "include_metadata": {
             "type": "boolean"
           },
           "instance": {
-            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Instance"
+            "$ref": "#/components/schemas/types.Disk"
           },
           "predicates": {
             "$ref": "#/components/schemas/types.Predicates"
           },
           "usage": {
+            "$ref": "#/components/schemas/types.Disk"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "pointer": {
+            "type": "string"
+          }
+        }
+      },
+      "FilterSet": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string"
+          }
+        }
+      },
+      "Instance": {
+        "type": "object",
+        "properties": {
+          "availability_zone": {
+            "type": "string"
+          },
+          "fallback_to_base_pricing": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instance_type": {
+            "type": "string"
+          },
+          "operating_system": {
+            "type": "string"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/types.Service"
+          },
+          "usage_type": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+          },
+          "vm": {
             "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
           }
         }
       },
-      "types.CustomDatabasePriceRequest": {
+      "ModelPrice": {
+        "type": "object",
+        "properties": {
+          "context_limit": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "effective_from": {
+            "type": "string"
+          },
+          "effective_to": {
+            "type": "string"
+          },
+          "fetched_at": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "modalities_input": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "modalities_output": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "open_weights": {
+            "type": "boolean"
+          },
+          "output_limit": {
+            "type": "integer"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "raw_pricing_data": {
+            "$ref": "#/components/schemas/datatypes.JSON"
+          },
+          "reasoning": {
+            "type": "boolean"
+          },
+          "region": {
+            "type": "string"
+          },
+          "sku_price_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "structured_output": {
+            "type": "boolean"
+          },
+          "tags": {
+            "$ref": "#/components/schemas/datatypes.JSON"
+          },
+          "token_bucket": {
+            "type": "string"
+          },
+          "tool_call": {
+            "type": "boolean"
+          },
+          "unit_price_per_mtok": {
+            "type": "number"
+          }
+        }
+      },
+      "ModelPriceList": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelPrice"
+            }
+          }
+        }
+      },
+      "ModelPricePage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelPrice"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "ModelPricesRequest": {
         "required": [
           "entries"
         ],
@@ -2144,80 +4740,292 @@
             "minItems": 1,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
+              "$ref": "#/components/schemas/ModelPrice"
             }
           }
         }
       },
-      "types.CustomDatabasePricingResponse": {
+      "Page": {
+        "type": "object",
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          },
+          "instance": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "ProviderConfig": {
+        "type": "object",
+        "properties": {
+          "predicates": {
+            "$ref": "#/components/schemas/types.Predicates"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          }
+        }
+      },
+      "ProviderConfigs": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ProviderConfig"
+        }
+      },
+      "PublishedComputePrices": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComputePrice"
+            }
+          }
+        }
+      },
+      "PublishedDatabasePrices": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatabasePrice"
+            }
+          }
+        }
+      },
+      "PublishedDiskPrices": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiskPrice"
+            }
+          }
+        }
+      },
+      "PublishedModelPrices": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelPrice"
+            }
+          }
+        }
+      },
+      "RegisteredComputePrices": {
         "type": "object",
         "properties": {
           "entries": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
+              "$ref": "#/components/schemas/ComputePrice"
             }
           },
           "status": {
-            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+            "$ref": "#/components/schemas/RegistrationStatus"
           }
         }
       },
-      "types.CustomDiskPriceRequest": {
-        "required": [
-          "entries"
+      "RegisteredDatabasePrices": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatabasePrice"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegistrationStatus"
+          }
+        }
+      },
+      "RegisteredDiskPrices": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiskPrice"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegistrationStatus"
+          }
+        }
+      },
+      "RegisteredModelPrices": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelPrice"
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegistrationStatus"
+          }
+        }
+      },
+      "RegistrationStatus": {
+        "type": "string",
+        "enum": [
+          "Registered",
+          "Deleted"
         ],
-        "type": "object",
-        "properties": {
-          "entries": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.DiskPricingsRow"
-            }
-          }
-        }
+        "x-enum-varnames": [
+          "Registered",
+          "Deleted"
+        ]
       },
-      "types.CustomDiskPricingResponse": {
+      "datatypes.JSON": {
+        "type": "object"
+      },
+      "github_com_baselinehq_golang-shared_types.Instance": {
         "type": "object",
         "properties": {
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.DiskPricingsRow"
-            }
+          "availability_zone": {
+            "type": "string"
           },
-          "status": {
-            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+          "fallback_to_base_pricing": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instance_type": {
+            "type": "string"
+          },
+          "operating_system": {
+            "type": "string"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.Provider"
+          },
+          "region": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/types.Service"
+          },
+          "usage_type": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
+          },
+          "vm": {
+            "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
           }
         }
       },
-      "types.CustomPriceRequest": {
-        "required": [
-          "entries"
+      "github_com_baselinehq_golang-shared_types.Provider": {
+        "type": "string",
+        "enum": [
+          "GCP",
+          "AWS",
+          "DigitalOcean",
+          "Azure",
+          "Hetzner",
+          "OVHCloud",
+          "PlanetScale",
+          "STACKIT",
+          "Akamai",
+          "Base"
         ],
-        "type": "object",
-        "properties": {
-          "entries": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.ComputePricingsRow"
-            }
-          }
-        }
+        "x-enum-comments": {
+          "Base": "Base provider for default pricing, no specific cloud provider"
+        },
+        "x-enum-descriptions": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Base provider for default pricing, no specific cloud provider"
+        ],
+        "x-enum-varnames": [
+          "GCP",
+          "AWS",
+          "DigitalOcean",
+          "Azure",
+          "Hetzner",
+          "OVHCloud",
+          "PlanetScale",
+          "STACKIT",
+          "Akamai",
+          "Base"
+        ]
       },
-      "types.CustomPricingResponse": {
+      "github_com_baselinehq_golang-shared_types.UsageType": {
+        "type": "string",
+        "enum": [
+          "SPOT_PREEMPTIBLE",
+          "ONDEMAND",
+          "RESERVED",
+          "ONDEMAND_CUSTOM",
+          "SPOT_PREEMPTIBLE_CUSTOM",
+          "RESERVED_CUSTOM",
+          "SOLE_TENANCY",
+          "CUSTOM",
+          "EXTENDED"
+        ],
+        "x-enum-varnames": [
+          "SPOT_PREEMPTIBLE",
+          "ONDEMAND",
+          "RESERVED",
+          "ONDEMAND_CUSTOM",
+          "SPOT_PREEMPTIBLE_CUSTOM",
+          "RESERVED_CUSTOM",
+          "SOLE_TENANCY",
+          "CUSTOM",
+          "EXTENDED"
+        ]
+      },
+      "github_com_baselinehq_golang-shared_types.VM": {
         "type": "object",
         "properties": {
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.ComputePricingsRow"
-            }
+          "cpu_cores": {
+            "type": "number"
           },
-          "status": {
-            "$ref": "#/components/schemas/github_com_baselinehq_pricingapi_pkg_types.Status"
+          "ram_gb": {
+            "type": "number"
           }
         }
       },
@@ -2256,56 +5064,6 @@
           },
           "usage_type": {
             "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.UsageType"
-          }
-        }
-      },
-      "types.DiskRequest": {
-        "type": "object",
-        "properties": {
-          "include_metadata": {
-            "type": "boolean"
-          },
-          "instance": {
-            "$ref": "#/components/schemas/types.Disk"
-          },
-          "predicates": {
-            "$ref": "#/components/schemas/types.Predicates"
-          },
-          "usage": {
-            "$ref": "#/components/schemas/types.Disk"
-          }
-        }
-      },
-      "types.MarketplaceDatabaseProvidersResponse": {
-        "type": "object",
-        "properties": {
-          "providers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.DatabasePricingsRow"
-            }
-          }
-        }
-      },
-      "types.MarketplaceDiskProvidersResponse": {
-        "type": "object",
-        "properties": {
-          "providers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.DiskPricingsRow"
-            }
-          }
-        }
-      },
-      "types.MarketplaceProvidersResponse": {
-        "type": "object",
-        "properties": {
-          "providers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/schema.ComputePricingsRow"
-            }
           }
         }
       },

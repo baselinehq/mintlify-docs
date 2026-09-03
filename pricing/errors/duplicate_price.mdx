@@ -1,0 +1,23 @@
+---
+title: 'Duplicate price'
+description: 'HTTP 409, code duplicate_price'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/duplicate_price`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/duplicate_price",
+  "title": "Duplicate price",
+  "status": 409,
+  "code": "duplicate_price"
+}
+```
+
+## When you see it
+
+A row for this key already exists.
+
+## What to do
+
+Re-posting the same natural key is an update, not an error; check whether you meant to update instead of create.

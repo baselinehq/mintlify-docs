@@ -1,0 +1,37 @@
+---
+title: Errors
+description: 'Every failure on /v1 is an RFC 9457 problem document with a stable code'
+---
+
+On `/v1`, every error response is an RFC 9457 problem document
+(`application/problem+json`) with a stable `code` you can branch on:
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/price_not_found",
+  "title": "Price not found",
+  "status": 404,
+  "detail": "No price matches this machine shape in us-east1.",
+  "instance": "/v1/pricing/compute",
+  "code": "price_not_found"
+}
+```
+
+`title` is the same for every occurrence of a code; `detail` explains this
+occurrence; `instance` is the request path. Validation failures also carry
+`errors[]`, one entry per invalid field, addressed by JSON Pointer into your
+request.
+
+The deprecated unprefixed routes keep their original `{"error": "..."}` bodies.
+
+<CardGroup cols={3}>
+  <Card title="Validation and request errors" icon="triangle-exclamation" href="/pricing/errors/validation_failed">
+    invalid_request_body, validation_failed, invalid_pagination, immutable_field
+  </Card>
+  <Card title="Credential and tenancy errors" icon="key" href="/pricing/errors/unauthenticated">
+    unauthenticated, organization_unavailable
+  </Card>
+  <Card title="Lookup and server errors" icon="magnifying-glass" href="/pricing/errors/price_not_found">
+    not_found, price_not_found, duplicate_price, rate_limited, internal_error
+  </Card>
+</CardGroup>

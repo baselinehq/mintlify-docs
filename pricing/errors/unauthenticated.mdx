@@ -1,0 +1,23 @@
+---
+title: 'Unauthenticated'
+description: 'HTTP 401, code unauthenticated'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/unauthenticated`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/unauthenticated",
+  "title": "Unauthenticated",
+  "status": 401,
+  "code": "unauthenticated"
+}
+```
+
+## When you see it
+
+No API key or bearer token was presented, or the credential is not valid.
+
+## What to do
+
+Send `X-API-KEY` with a valid CostGraph API key, or an `Authorization: Bearer` token.

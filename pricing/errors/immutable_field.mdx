@@ -1,0 +1,25 @@
+---
+title: 'Field cannot be changed'
+description: 'HTTP 422, code immutable_field'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/immutable_field`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/immutable_field",
+  "title": "Field cannot be changed",
+  "status": 422,
+  "code": "immutable_field"
+}
+```
+
+## When you see it
+
+The patch targets a field that identifies the price.
+
+## What to do
+
+Delete this price and register a new one; a different identifying field describes a different SKU.
+
+Carries `errors[]` naming the field.

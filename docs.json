@@ -209,6 +209,7 @@
             "group": "Getting Started",
             "pages": [
               "api-reference/introduction",
+              "api-reference/errors",
               "api-reference/authentication"
             ]
           },
@@ -221,19 +222,74 @@
             ]
           },
           {
-            "group": "API Reference",
+            "group": "Pricing",
             "pages": [
-              "POST /pricing/compute",
-              "POST /pricing/disks",
-              "POST /recommendations",
-              "POST /recommendations/compute",
-              "POST /recommendations/disks",
-              "GET /providers"
+              "POST /v1/pricing/compute",
+              "POST /v1/pricing/disks",
+              "POST /v1/recommendations/compute",
+              "POST /v1/recommendations/disks"
             ]
           },
           {
             "group": "Marketplace",
             "pages": [
+              "GET /v1/marketplace/compute",
+              "POST /v1/marketplace/compute",
+              "GET /v1/marketplace/compute/{id}",
+              "PATCH /v1/marketplace/compute/{id}",
+              "DELETE /v1/marketplace/compute/{id}",
+              "GET /v1/marketplace/disks",
+              "POST /v1/marketplace/disks",
+              "GET /v1/marketplace/disks/{id}",
+              "PATCH /v1/marketplace/disks/{id}",
+              "DELETE /v1/marketplace/disks/{id}",
+              "GET /v1/marketplace/databases",
+              "POST /v1/marketplace/databases",
+              "GET /v1/marketplace/databases/{id}",
+              "PATCH /v1/marketplace/databases/{id}",
+              "DELETE /v1/marketplace/databases/{id}",
+              "GET /v1/marketplace/models",
+              "POST /v1/marketplace/models",
+              "GET /v1/marketplace/models/{id}",
+              "PATCH /v1/marketplace/models/{id}",
+              "DELETE /v1/marketplace/models/{id}",
+              "GET /v1/marketplace/filters/{kind}"
+            ]
+          },
+          {
+            "group": "Errors",
+            "pages": [
+              "pricing/errors/invalid_request_body",
+              "pricing/errors/validation_failed",
+              "pricing/errors/invalid_pagination",
+              "pricing/errors/unauthenticated",
+              "pricing/errors/organization_unavailable",
+              "pricing/errors/not_found",
+              "pricing/errors/price_not_found",
+              "pricing/errors/immutable_field",
+              "pricing/errors/duplicate_price",
+              "pricing/errors/rate_limited",
+              "pricing/errors/internal_error"
+            ]
+          },
+          {
+            "group": "Other",
+            "pages": [
+              "GET /v1/providers",
+              "GET /v1/healthz"
+            ]
+          },
+          {
+            "group": "Deprecated",
+            "pages": [
+              "POST /pricing",
+              "POST /pricing/compute",
+              "POST /pricing/disks",
+              "POST /recommendations",
+              "POST /recommendations/compute",
+              "POST /recommendations/disks",
+              "GET /providers",
+              "GET /healthz",
               "GET /marketplace/providers/compute",
               "POST /marketplace/providers/compute",
               "DELETE /marketplace/providers/compute",

@@ -51,6 +51,8 @@ Include your API key in the `X-API-KEY` header:
 ```bash
 curl -H "X-API-KEY: $COSTGRAPH_API_KEY" \
      -H "Content-Type: application/json" \
-     -X POST https://pricing.baselinehq.cloud/pricing/compute \
+     -X POST https://pricing.baselinehq.cloud/v1/pricing/compute \
      -d '{"instance_type": "s-2vcpu-2gb", "provider": "digitalocean", "region": "nyc1", "service": "Droplet", "usage_type": "ondemand", "operating_system": "linux", "vm": {"cpu_cores": 2, "ram_gb": 2}}'
 ```
+
+An invalid key returns a `401` problem document with code `unauthenticated`. On `/v1`, every error is an RFC 9457 problem document; see [Errors](/api-reference/errors).

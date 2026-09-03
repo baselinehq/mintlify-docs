@@ -1,0 +1,23 @@
+---
+title: 'Too many requests'
+description: 'HTTP 429, code rate_limited'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/rate_limited`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/rate_limited",
+  "title": "Too many requests",
+  "status": 429,
+  "code": "rate_limited"
+}
+```
+
+## When you see it
+
+The request was throttled.
+
+## What to do
+
+Retry after the delay in the `Retry-After` header.

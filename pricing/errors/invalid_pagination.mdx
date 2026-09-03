@@ -1,0 +1,33 @@
+---
+title: 'Invalid pagination'
+description: 'HTTP 400, code invalid_pagination'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/invalid_pagination`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/invalid_pagination",
+  "title": "Invalid pagination",
+  "status": 400,
+  "code": "invalid_pagination"
+}
+```
+
+## When you see it
+
+The `limit` or `cursor` query parameter is not usable.
+
+## What to do
+
+`limit` must be between 1 and 1000, `offset` zero or greater, and `cursor` must be the opaque value returned by the previous page.
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/invalid_pagination",
+  "title": "Invalid pagination",
+  "status": 400,
+  "code": "invalid_pagination",
+  "errors": [{ "pointer": "/limit", "detail": "must be between 1 and 1000" }]
+}
+```

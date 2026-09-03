@@ -1,0 +1,23 @@
+---
+title: 'Organization unavailable'
+description: 'HTTP 403, code organization_unavailable'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/organization_unavailable`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/organization_unavailable",
+  "title": "Organization unavailable",
+  "status": 403,
+  "code": "organization_unavailable"
+}
+```
+
+## When you see it
+
+The credential is not attached to an organization, so it cannot read or publish marketplace prices.
+
+## What to do
+
+Use a credential that belongs to an organization. Note that bearer-token credentials do not currently carry an organization.

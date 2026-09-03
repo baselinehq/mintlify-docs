@@ -1,0 +1,24 @@
+---
+title: 'Validation failed'
+description: 'HTTP 422, code validation_failed'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/validation_failed`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/validation_failed",
+  "title": "Validation failed",
+  "status": 422,
+  "code": "validation_failed",
+  "errors": [{ "pointer": "/entries/0/region", "detail": "region is required" }]
+}
+```
+
+## When you see it
+
+The body parsed, but one or more fields are missing or out of range.
+
+## What to do
+
+Fix each field listed in `errors`, addressed by JSON Pointer into your request (for example `/entries/0/region`).

@@ -5,6 +5,19 @@ title: Pricing API
 
 # Changelogs
 
+<Update label="2026-09-03" description="v1">
+    ### New Features
+    - **Versioned `/v1` surface.** Marketplace price rows are now addressable: `GET`, `PATCH`, and `DELETE` on `/v1/marketplace/{compute,disks,databases,models}/{id}`. Correcting a rate no longer requires delete and re-post, which changed the id every consumer held. Model prices are versioned: a patch retires the old row and returns the new id.
+    - **RFC 9457 problem responses** on `/v1`, with a stable `code` and a JSON Pointer per invalid field. Each code is documented under Errors.
+    - **Cursor pagination** on marketplace collections, and `GET /v1/marketplace/filters/{kind}` to discover each kind's filter vocabulary.
+    - Status codes corrected on `/v1`: `201` with `Location` on create, `204` on delete, `422` on validation.
+
+    ### Updates
+    - The unprefixed routes are deprecated but unchanged; they keep their original response shapes and remain documented under Deprecated.
+    - Public schema names in the generated SDK no longer carry Go import paths (`ComputePrice`, not `SchemaComputePricingsRow`).
+    - An invalid API key now answers `401` on `/v1` instead of `500`.
+</Update>
+
 <Update label="2025-08-10" description="v0.0.6">
     ### New Features
     - **Pricing API Marketplace** is now available in early access! Upload custom pricing data for cloud providers not natively supported or leverage significant pricing advantages. The marketplace allows you to create custom pricing entries that integrate seamlessly with our recommendations engine.

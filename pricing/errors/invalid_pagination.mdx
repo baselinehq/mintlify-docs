@@ -22,4 +22,12 @@ The `limit` or `cursor` query parameter is not usable.
 
 `limit` must be between 1 and 1000, `offset` zero or greater, and `cursor` must be the opaque value returned by the previous page.
 
-Carries `errors[]` naming the parameter.
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/invalid_pagination",
+  "title": "Invalid pagination",
+  "status": 400,
+  "code": "invalid_pagination",
+  "errors": [{ "pointer": "/limit", "detail": "must be between 1 and 1000" }]
+}
+```

@@ -18,9 +18,13 @@ On `/v1`, every error response is an RFC 9457 problem document
 ```
 
 `title` is the same for every occurrence of a code; `detail` explains this
-occurrence; `instance` is the request path. Validation failures also carry
-`errors[]`, one entry per invalid field, addressed by JSON Pointer into your
-request.
+occurrence; `instance` is the request path.
+
+Validation failures also carry `errors[]`, one entry per invalid field. Each
+entry has two string fields: `pointer`, a JSON Pointer (RFC 6901) into the
+request the server received (`/entries/0/region` names a field in the body,
+`/limit` a query parameter), and `detail`, what is wrong with that value.
+Pointers address the request, never the stored row.
 
 The deprecated unprefixed routes keep their original `{"error": "..."}` bodies.
 

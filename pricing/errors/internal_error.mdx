@@ -20,4 +20,4 @@ The request could not be completed.
 
 ## What to do
 
-Retry once after a short delay; if it persists, contact support and quote the request path and time.
+Reads, deletes, and marketplace creates are safe to retry once after a short delay: creates are natural-key upserts, so a repeat lands on the same row. For a `PATCH`, check the current value before retrying, since the first attempt may have committed. If the error persists, contact support and quote the request path and time.

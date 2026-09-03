@@ -10,7 +10,8 @@ description: 'HTTP 422, code validation_failed'
   "type": "https://docs.costgraph.ai/pricing/errors/validation_failed",
   "title": "Validation failed",
   "status": 422,
-  "code": "validation_failed"
+  "code": "validation_failed",
+  "errors": [{ "pointer": "/entries/0/region", "detail": "region is required" }]
 }
 ```
 
@@ -21,5 +22,3 @@ The body parsed, but one or more fields are missing or out of range.
 ## What to do
 
 Fix each field listed in `errors`, addressed by JSON Pointer into your request (for example `/entries/0/region`).
-
-Carries `errors[]`, one entry per invalid field.

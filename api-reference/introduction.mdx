@@ -29,6 +29,28 @@ your own rates on the marketplace and pin resources to them with the
 labels. A rate is upserted on its natural key: re-posting the same key with a
 new cost keeps its id and reprices everything already pinned to it.
 
+### Model prices are per token bucket
+
+Model tokens are not one price. Every bucket is priced separately, so one model
+carries one price per bucket, each with its own `unit_price_per_mtok` covering
+that bucket alone - never a blended input and output rate:
+
+| `token_bucket` | Covers |
+|---|---|
+| `input` | Prompt tokens read fresh |
+| `output` | Tokens the model generates |
+| `cache_read` | Prompt tokens served from a prompt cache, usually far cheaper than `input` |
+| `cache_write` | Prompt tokens written into the cache, usually dearer than `input` |
+
+Publish one entry per bucket you charge for. A bucket you leave out has no rate,
+and usage in it resolves to no price rather than to zero, so a model priced for
+`input` and `output` alone reports nothing for cached prompt tokens.
+
+`token_bucket` identifies the price alongside the model, host and region, so it
+cannot be patched: delete the price and publish a new one to move a rate to a
+different bucket. Filter reads with the `token_bucket` query parameter to pull
+back one bucket at a time.
+
 ## Get Started
 
 <CardGroup cols={3}>

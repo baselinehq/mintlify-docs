@@ -280,31 +280,6 @@
             ]
           },
           {
-            "group": "Deprecated",
-            "pages": [
-              "POST /pricing",
-              "POST /pricing/compute",
-              "POST /pricing/disks",
-              "POST /recommendations",
-              "POST /recommendations/compute",
-              "POST /recommendations/disks",
-              "GET /providers",
-              "GET /healthz",
-              "GET /marketplace/providers/compute",
-              "POST /marketplace/providers/compute",
-              "DELETE /marketplace/providers/compute",
-              "GET /marketplace/providers/disks",
-              "POST /marketplace/providers/disks",
-              "DELETE /marketplace/providers/disks",
-              "GET /marketplace/providers/databases",
-              "POST /marketplace/providers/databases",
-              "DELETE /marketplace/providers/databases",
-              "GET /marketplace/providers/models",
-              "POST /marketplace/providers/models",
-              "DELETE /marketplace/providers/models"
-            ]
-          },
-          {
             "group": "Changelog",
             "icon": "clock-rotate-left",
             "pages": [

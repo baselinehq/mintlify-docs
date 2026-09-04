@@ -72,6 +72,37 @@ refreshes its served targets on that interval rather than at start only.
   a non-standard deployment.
 </Warning>
 
+### Pod selector
+
+The pod selector is a **comma-separated list of `key=value` terms**, the same
+syntax `kubectl get pods -l` takes. Every term must match: the list is ANDed, so
+a pod is scraped only if it carries all of them.
+
+```
+app.kubernetes.io/name=agentgateway,gateway.networking.k8s.io/gateway-name=llm
+```
+
+One label is a valid list of one:
+
+```
+app.kubernetes.io/name=envoy-ai-gateway
+```
+
+Use equality terms only. `!=`, `in (...)`, `notin (...)`, and bare existence
+checks are not supported: CostGraph resolves the same selector to the pods it
+amortizes gateway cost across, and that resolution accepts `key=value` only.
+
+Match the labels the data plane pods actually carry, which you can read off the
+running pods:
+
+```bash
+kubectl -n my-namespace get pods --show-labels
+```
+
+Narrow the list until it selects the gateway's data plane pods and nothing else -
+a selector that also matches other pods pulls their metrics into your gateway's
+usage.
+
 ## Attribute usage to your customers
 
 If you resell access, tell your gateway to label each request with your
@@ -204,13 +235,42 @@ it runs on Kubernetes:
 
 ```
 costgraph_gen_ai_usage_total{
-  costgraph_model,        # the model whose rate applies
-  costgraph_usage_kind,   # input, output, cached_input, reasoning, image, ...
-  costgraph_unit,         # tokens, images, seconds, characters
-  costgraph_gateway,      # which connection this belongs to
-  costgraph_sub_account,  # your customer, when you attribute usage
+  costgraph_tenant_id="0d5f...",       # required
+  costgraph_gateway="prod-inference",  # required
+  costgraph_model="gpt-4o",            # required
+  costgraph_usage_kind="input",        # required
+  costgraph_unit="tokens",             # required
+  costgraph_sub_account="acme",        # optional
+  costgraph_host="openai",             # optional
+  costgraph_cluster_id="...",          # optional
+  costgraph_cluster_name="aws-prod",   # optional
 }
 ```
+
+The value is a monotonically increasing counter of units consumed.
+
+### The labels
+
+| Label | Required | What it is for |
+|---|---|---|
+| `costgraph_tenant_id` | Yes | Your CostGraph tenant. Together with `costgraph_gateway` this is the key that matches a series to a connection, so usage carrying neither is never claimed by anything. |
+| `costgraph_gateway` | Yes | The connection this usage belongs to. It must equal the gateway name you set when you connected, so two gateways reporting the same model never merge. |
+| `costgraph_model` | Yes | The model the call ran against. This is what resolves a rate, through the connection's model map if you set one. |
+| `costgraph_usage_kind` | Yes | Which side of the call the number counts, so input and output are priced at their own rates rather than a blended one. One of `input`, `output`, `cached_input`, `reasoning`, `image`, `audio_input`, `audio_output`, `embedding`. Anything else is dropped. |
+| `costgraph_unit` | Yes | What the value counts: `tokens`, `images`, `seconds`, `characters`. Anything else is dropped. |
+| `costgraph_sub_account` | No | Your customer, when you attribute usage. It lands in the FOCUS sub-account columns, so per-customer spend groups the way the rest of your bill does. |
+| `costgraph_host` | No | Who served the call - `openai`, `anthropic`, your own cluster. Rate lookup prefers a price published for that host, so the same model resolves differently per host. |
+| `costgraph_cluster_id`, `costgraph_cluster_name` | No | The cluster the gateway runs in. The operator stamps these on scraped series; a gateway that remote-writes from outside Kubernetes has nothing to put here. |
+
+A series missing any required label, carrying an unknown `costgraph_usage_kind`
+or `costgraph_unit`, or reporting a value of zero or less, is skipped rather
+than half-priced.
+
+Any other label rides along and is available to
+[attribution dimensions](#attribute-usage-to-your-customers), which read the
+labels your gateway already emits - `team`, `route`, `gen_ai_provider_name` -
+into sub-account and cost extensions. Nothing needs renaming to
+`costgraph_` first.
 
 Remote-write it to `https://tsdb.costgraph.ai/api/v1/write` with an API key in
 the `X-API-Key` header. A gateway CostGraph has never heard of works this way

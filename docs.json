@@ -218,7 +218,8 @@
             "pages": [
               "pricing-api/SDKs/install",
               "pricing-api/SDKs/go",
-              "pricing-api/SDKs/typescript"
+              "pricing-api/SDKs/typescript",
+              "pricing-api/SDKs/python"
             ]
           },
           {

@@ -6,7 +6,7 @@ description: 'Install the CostGraph Pricing API SDK'
 ## Prerequisites
 
 - [API Key](/api-reference/authentication)
-- Go 1.23+ or Node.js 16+
+- Go 1.23+, Node.js 16+, or Python 3.9+
 
 ## Install
 
@@ -30,18 +30,32 @@ description: 'Install the CostGraph Pricing API SDK'
     Import in your code:
 
     ```typescript
-    import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
+    import { Configuration } from '@baselinehq/pricingapi-client-typescript';
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```bash
+    pip install pricing-api-client
+    ```
+
+    Import in your code:
+
+    ```python
+    import pricing_api_client
     ```
   </Tab>
 </Tabs>
 
 ## Next Steps
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Go" icon="golang" href="/pricing-api/SDKs/go">
     Usage examples and API reference for the Go client.
   </Card>
   <Card title="TypeScript" icon="js" href="/pricing-api/SDKs/typescript">
     Usage examples and API reference for the TypeScript client.
+  </Card>
+  <Card title="Python" icon="python" href="/pricing-api/SDKs/python">
+    Usage examples and API reference for the Python client.
   </Card>
 </CardGroup>

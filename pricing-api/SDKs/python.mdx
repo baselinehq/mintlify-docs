@@ -1,0 +1,127 @@
+---
+title: Python
+icon: python
+description: 'Python SDK examples for the CostGraph Pricing API'
+---
+
+## Install
+
+```bash
+pip install pricing-api-client
+```
+
+## Client setup
+
+```python
+import os
+
+import pricing_api_client
+from pricing_api_client.api.pricing_api import PricingApi
+from pricing_api_client.api.marketplace_api import MarketplaceApi
+from pricing_api_client.models.instance import Instance
+from pricing_api_client.models.github_com_baselinehq_golang_shared_types_vm import GithubComBaselinehqGolangSharedTypesVM
+
+configuration = pricing_api_client.Configuration(
+    host="https://pricing.baselinehq.cloud",
+    api_key={"ApiKeyAuth": os.environ["COSTGRAPH_API_KEY"]},
+)
+
+with pricing_api_client.ApiClient(configuration) as api_client:
+    pricing = PricingApi(api_client)
+    marketplace = MarketplaceApi(api_client)
+```
+
+## Compute pricing
+
+```python
+instance = Instance(
+    region="nyc1",
+    instance_type="s-2vcpu-2gb",
+    usage_type="ONDEMAND",
+    provider="DigitalOcean",
+    operating_system="linux",
+    service="Droplet",
+    vm=GithubComBaselinehqGolangSharedTypesVM(cpu_cores=2, ram_gb=2),
+)
+
+price = pricing.v1_pricing_compute_post(instance=instance)
+print(price.cost_per_hour)
+```
+
+## Recommendations
+
+```python
+from pricing_api_client.api.recommendations_api import RecommendationsApi
+
+instance = Instance(
+    region="nyc1",
+    instance_type="s-4vcpu-16gb-amd",
+    usage_type="ONDEMAND",
+    provider="DigitalOcean",
+    operating_system="linux",
+    service="Droplet",
+    vm=GithubComBaselinehqGolangSharedTypesVM(cpu_cores=4, ram_gb=16),
+)
+
+recommendations = RecommendationsApi(api_client)
+recs = recommendations.v1_recommendations_compute_post(instance=instance)
+```
+
+## Disk pricing
+
+```python
+from pricing_api_client.models.disk import Disk
+
+disk = Disk(
+    provider="AWS",
+    service="AmazonEBS",
+    region="us-east-1",
+    type="gp3",
+    usage_type="ONDEMAND",
+    capacity_gb=100,
+)
+
+disk_price = pricing.v1_pricing_disks_post(instance=disk)
+```
+
+## Marketplace
+
+Publish your own rates. Re-posting the same natural key with a new cost keeps its id and reprices everything pinned to it.
+
+```python
+from pricing_api_client.models.compute_price import ComputePrice
+from pricing_api_client.models.compute_prices_request import ComputePricesRequest
+
+entry = ComputePrice(
+    provider="",
+    service="compute",
+    region="on-prem",
+    instance_type="bare-metal-s",
+    usage_type="ONDEMAND",
+    operating_system="linux",
+    cpu_cores=64,
+    ram_gb=512,
+    cost_per_hour=2.5,
+)
+
+published = marketplace.v1_marketplace_compute_post(
+    body=ComputePricesRequest(entries=[entry])
+)
+price_id = published.data[0].id
+```
+
+List, patch, and retire:
+
+```python
+page = marketplace.v1_marketplace_compute_get(limit=100)
+
+updated = marketplace.v1_marketplace_compute_id_patch(
+    id=price_id, body={"cost_per_hour": 3.0}
+)
+
+marketplace.v1_marketplace_compute_id_delete(id=price_id)
+```
+
+The same five verbs exist for disks, databases, and models. A model patch retires the old row and returns the new id, because model prices are versioned.
+
+Errors on `/v1` are problem documents; the SDK raises `pricing_api_client.exceptions.ApiException` with `status` and the parsed body on `e.body`.

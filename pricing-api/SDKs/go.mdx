@@ -4,7 +4,7 @@ icon: golang
 description: 'Go SDK examples for the CostGraph Pricing API'
 ---
 
-## Client Setup
+## Client setup
 
 ```go
 import (
@@ -15,18 +15,16 @@ import (
     openapiclient "github.com/baselinehq/pricingapi-client-golang"
 )
 
-token := os.Getenv("COSTGRAPH_API_KEY")
-
 configuration := openapiclient.NewConfiguration()
-configuration.DefaultHeader["Authorization"] = fmt.Sprintf("Bearer %s", token)
+configuration.DefaultHeader["X-API-KEY"] = os.Getenv("COSTGRAPH_API_KEY")
 
 client := openapiclient.NewAPIClient(configuration)
 ```
 
-## Compute Pricing
+## Compute pricing
 
 ```go
-instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance()
+instance := *openapiclient.NewInstance()
 instance.SetInstanceType("s-2vcpu-2gb")
 instance.SetUsageType("ONDEMAND")
 instance.SetProvider("DigitalOcean")
@@ -41,8 +39,8 @@ instance.SetVm(openapiclient.GithubComBaselinehqGolangSharedTypesVM{
     RamGb:    &ramGb,
 })
 
-resp, _, err := client.DefaultAPI.
-    PricingComputePost(context.Background()).
+price, _, err := client.PricingAPI.
+    V1PricingComputePost(context.Background()).
     Instance(instance).
     Execute()
 
@@ -51,16 +49,16 @@ if err != nil {
     return
 }
 
-fmt.Printf("Cost per hour: %v\n", resp)
+fmt.Printf("Cost per hour: %v\n", price.GetCostPerHour())
 ```
 
 ## Recommendations
 
 ```go
-instance := *openapiclient.NewGithubComBaselinehqGolangSharedTypesInstance()
+instance := *openapiclient.NewInstance()
 instance.SetInstanceType("s-4vcpu-16gb-amd")
-instance.SetUsageType("ondemand")
-instance.SetProvider("digitalocean")
+instance.SetUsageType("ONDEMAND")
+instance.SetProvider("DigitalOcean")
 instance.SetOperatingSystem("linux")
 instance.SetService("Droplet")
 instance.SetRegion("nyc1")
@@ -72,38 +70,16 @@ instance.SetVm(openapiclient.GithubComBaselinehqGolangSharedTypesVM{
     RamGb:    &ramGb,
 })
 
-resp, _, err := client.DefaultAPI.
-    RecommendationsComputePost(context.Background()).
+recs, _, err := client.RecommendationsAPI.
+    V1RecommendationsComputePost(context.Background()).
     Instance(instance).
     Execute()
-
-if err != nil {
-    fmt.Fprintf(os.Stderr, "error: %v\n", err)
-    return
-}
-
-fmt.Printf("Recommendations: %v\n", resp)
 ```
 
-## Providers
+## Disk pricing
 
 ```go
-resp, _, err := client.DefaultAPI.
-    ProvidersGet(context.Background()).
-    Execute()
-
-if err != nil {
-    fmt.Fprintf(os.Stderr, "error: %v\n", err)
-    return
-}
-
-fmt.Printf("Providers: %v\n", resp)
-```
-
-## Disk Pricing
-
-```go
-disk := *openapiclient.NewTypesDisk()
+disk := *openapiclient.NewDisk()
 disk.SetProvider("AWS")
 disk.SetService("AmazonEBS")
 disk.SetRegion("us-east-1")
@@ -111,42 +87,53 @@ disk.SetType("gp3")
 disk.SetUsageType("ONDEMAND")
 disk.SetCapacityGb(100)
 
-resp, _, err := client.DefaultAPI.
-    PricingDisksPost(context.Background()).
-    Instance(disk).
+price, _, err := client.PricingAPI.
+    V1PricingDisksPost(context.Background()).
+    Instance(*disk).
     Execute()
-
-if err != nil {
-    fmt.Fprintf(os.Stderr, "error: %v\n", err)
-    return
-}
-
-fmt.Printf("Disk pricing: %v\n", resp)
 ```
 
-## Disk Recommendations
+## Marketplace
+
+Publish your own rates. Re-posting the same natural key with a new cost keeps its id and reprices everything pinned to it.
 
 ```go
-disk := *openapiclient.NewTypesDisk()
-disk.SetProvider("AWS")
-disk.SetService("AmazonEBS")
-disk.SetRegion("us-east-1")
-disk.SetType("gp3")
-disk.SetUsageType("ONDEMAND")
-disk.SetCapacityGb(100)
+entry := *openapiclient.NewComputePrice()
+entry.SetProvider("") // claimed as your organization
+entry.SetService("compute")
+entry.SetRegion("on-prem")
+entry.SetInstanceType("bare-metal-s")
+entry.SetUsageType("ONDEMAND")
+entry.SetOperatingSystem("linux")
+entry.SetCpuCores(64)
+entry.SetRamGb(512)
+entry.SetCostPerHour(2.5)
 
-diskReq := *openapiclient.NewTypesDiskRequest()
-diskReq.SetInstance(disk)
+body := openapiclient.NewComputePricesRequest([]openapiclient.ComputePrice{entry})
 
-resp, _, err := client.DefaultAPI.
-    RecommendationsDisksPost(context.Background()).
-    Instance(diskReq).
+published, _, err := client.MarketplaceAPI.
+    V1MarketplaceComputePost(context.Background()).
+    Body(body).
+    Execute()
+```
+
+List your rates, change one in place, retire it:
+
+```go
+page, _, err := client.MarketplaceAPI.
+    V1MarketplaceComputeGet(context.Background()).
+    Limit(100).
     Execute()
 
-if err != nil {
-    fmt.Fprintf(os.Stderr, "error: %v\n", err)
-    return
-}
+patch := map[string]any{"cost_per_hour": 3.0}
+updated, _, err := client.MarketplaceAPI.
+    V1MarketplaceComputeIdPatch(context.Background(), id).
+    Body(patch).
+    Execute()
 
-fmt.Printf("Disk recommendations: %v\n", resp)
+_, err = client.MarketplaceAPI.
+    V1MarketplaceComputeIdDelete(context.Background(), id).
+    Execute()
 ```
+
+The same five verbs exist for `Disks`, `Databases`, and `Models`. A model patch retires the old row and returns the new id, because model prices are versioned.

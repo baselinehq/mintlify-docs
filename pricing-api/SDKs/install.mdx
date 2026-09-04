@@ -46,6 +46,38 @@ description: 'Install the CostGraph Pricing API SDK'
   </Tab>
 </Tabs>
 
+## Installing straight from git
+
+The client repositories are public, so every SDK can also be installed directly from git, pinned to a release tag. No registry account is needed.
+
+<Tabs>
+  <Tab title="Go">
+    ```bash
+    go get github.com/baselinehq/pricingapi-client-golang@v1.0.0
+    ```
+
+    A git tag is the module version. Without a tag you get a pseudo-version pinned to a commit, such as `v0.0.0-20260904000608-ae60e4d9982f`.
+  </Tab>
+  <Tab title="TypeScript">
+    ```bash
+    npm install github:baselinehq/pricingapi-client-typescript#v1.0.0
+    ```
+
+    The tag pins the commit; the package version itself is the one in `package.json` at that tag.
+  </Tab>
+  <Tab title="Python">
+    ```bash
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git@v1.0.0
+    ```
+
+    Omit `@v1.0.0` to install the default branch.
+  </Tab>
+</Tabs>
+
+<Note>
+The `@baselinehq/pricingapi-client-typescript` npm package also exists on GitHub Packages (`npm.pkg.github.com`), which requires a GitHub account with `read:packages` even though the repository is public. The git install above avoids that entirely.
+</Note>
+
 ## Next Steps
 
 <CardGroup cols={3}>

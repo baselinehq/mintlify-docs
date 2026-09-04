@@ -80,6 +80,13 @@ connections.
 
 ## Settings
 
+<Note>
+**Self-hosted CostGraph**: the exporter pushes to `https://api.costgraph.ai` by
+default. Point it at your own install with `COSTGRAPH_URL` - set it the same
+way as any other setting (flag, config file, or environment variable), to your
+deployment's API base URL.
+</Note>
+
 A setting is read from a flag, then a config file, then the environment, so any
 of the three works and the more specific one wins. Credentials are usually
 environment variables; everything else reads well in a file, at `--config`,

@@ -31,10 +31,10 @@ changing the rate reprices all of them at once.
 
 | Suffix | Rate it points at | Register with |
 |--------|-------------------|---------------|
-| `.compute` | compute rate | [`POST /marketplace/providers/compute`](https://docs.costgraph.ai/api-reference/register-a-custom-provider) |
-| `.storage` | disk rate | [`POST /marketplace/providers/disks`](https://docs.costgraph.ai/api-reference/register-a-custom-disk-provider) |
-| `.database` | managed database rate | [`POST /marketplace/providers/databases`](https://docs.costgraph.ai/api-reference/register-custom-database-pricing) |
-| `.model` | model token rate | [`POST /marketplace/providers/models`](https://docs.costgraph.ai/api-reference/register-custom-model-pricing) |
+| `.compute` | compute rate | [`POST /v1/marketplace/compute`](https://docs.costgraph.ai/api-reference/marketplace/publish-compute-prices) |
+| `.storage` | disk rate | [`POST /v1/marketplace/disks`](https://docs.costgraph.ai/api-reference/marketplace/publish-disk-prices) |
+| `.database` | managed database rate | [`POST /v1/marketplace/databases`](https://docs.costgraph.ai/api-reference/marketplace/publish-database-prices) |
+| `.model` | model token rate | [`POST /v1/marketplace/models`](https://docs.costgraph.ai/api-reference/marketplace/publish-model-prices) |
 
 A key with no suffix is read as `.compute` on a node and `.storage` on a volume.
 Prefer the explicit suffix.
@@ -42,13 +42,13 @@ Prefer the explicit suffix.
 ## Register a rate
 
 Full request and response schema:
-[Register a custom provider](https://docs.costgraph.ai/api-reference/register-a-custom-provider)
+[Publish compute prices](https://docs.costgraph.ai/api-reference/marketplace/publish-compute-prices)
 for compute, and
-[Register a custom disk provider](https://docs.costgraph.ai/api-reference/register-a-custom-disk-provider)
+[Publish disk prices](https://docs.costgraph.ai/api-reference/marketplace/publish-disk-prices)
 for storage.
 
 ```bash
-curl -X POST https://pricing.baselinehq.cloud/marketplace/providers/compute \
+curl -X POST https://pricing.baselinehq.cloud/v1/marketplace/compute \
   -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"entries":[{"service":"BaseCompute","region":"dc-east","instance_type":"bare-metal-xl","operating_system":"linux","cpu_cores":64,"ram_gb":512,"cost_per_hour":1.85,"period_billing_hours":730}]}'
@@ -57,7 +57,7 @@ curl -X POST https://pricing.baselinehq.cloud/marketplace/providers/compute \
 A disk rate takes capacity bounds instead of CPU and memory:
 
 ```bash
-curl -X POST https://pricing.baselinehq.cloud/marketplace/providers/disks \
+curl -X POST https://pricing.baselinehq.cloud/v1/marketplace/disks \
   -H "Authorization: Bearer $COSTGRAPH_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"entries":[{"service":"BaseDisks","region":"dc-east","type":"nvme","usage_type":"ONDEMAND","cost_per_gb_hour":0.0002,"min_capacity_gb":0,"max_capacity_gb":65536,"period_billing_hours":730}]}'

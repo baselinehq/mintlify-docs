@@ -32,7 +32,7 @@ description: 'Install the CostGraph Pricing API SDK'
     Or straight from the public repository, no account:
 
     ```bash
-    npm install github:baselinehq/pricingapi-client-typescript#v1.0.0
+    npm install github:baselinehq/pricingapi-client-typescript
     ```
 
     Import in your code:
@@ -45,7 +45,7 @@ description: 'Install the CostGraph Pricing API SDK'
     Not on PyPI; install from the public repository at a release tag:
 
     ```bash
-    pip install git+https://github.com/baselinehq/pricingapi-client-python.git@v1.0.0
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git
     ```
 
     Import in your code:
@@ -58,29 +58,28 @@ description: 'Install the CostGraph Pricing API SDK'
 
 ## Installing straight from git
 
-The client repositories are public, so every SDK can also be installed directly from git, pinned to a release tag. No registry account is needed.
+The client repositories are public, so every SDK can also be installed directly from git. No registry account is needed.
 
 <Tabs>
   <Tab title="Go">
     ```bash
-    go get github.com/baselinehq/pricingapi-client-golang@v1.0.0
+    go get github.com/baselinehq/pricingapi-client-golang@latest
     ```
 
-    A git tag is the module version. Without a tag you get a pseudo-version pinned to a commit, such as `v0.0.0-20260904000608-ae60e4d9982f`.
+    `@latest` resolves the newest release tag through the Go module proxy. A specific version can be pinned by tag, such as `@v1.0.0`.
   </Tab>
   <Tab title="TypeScript">
     ```bash
-    npm install github:baselinehq/pricingapi-client-typescript#v1.0.0
+    npm install github:baselinehq/pricingapi-client-typescript
     ```
 
-    The tag pins the commit; the package version itself is the one in `package.json` at that tag.
+    Installs the default branch. A specific release can be pinned by tag, such as `#v0.2.0`.
   </Tab>
   <Tab title="Python">
     ```bash
-    pip install git+https://github.com/baselinehq/pricingapi-client-python.git@v1.0.0
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git
     ```
 
-    Omit `@v1.0.0` to install the default branch.
   </Tab>
 </Tabs>
 

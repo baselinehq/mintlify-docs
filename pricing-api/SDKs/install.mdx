@@ -23,8 +23,16 @@ description: 'Install the CostGraph Pricing API SDK'
     ```
   </Tab>
   <Tab title="TypeScript">
+    From GitHub Packages (needs a GitHub account with `read:packages`, see [the TypeScript page](/pricing-api/SDKs/typescript) for the one-time login):
+
     ```bash
     npm install @baselinehq/pricingapi-client-typescript
+    ```
+
+    Or straight from the public repository, no account:
+
+    ```bash
+    npm install github:baselinehq/pricingapi-client-typescript
     ```
 
     Import in your code:
@@ -34,8 +42,10 @@ description: 'Install the CostGraph Pricing API SDK'
     ```
   </Tab>
   <Tab title="Python">
+    Not on PyPI; install from the public repository at a release tag:
+
     ```bash
-    pip install pricing-api-client
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git
     ```
 
     Import in your code:
@@ -45,6 +55,37 @@ description: 'Install the CostGraph Pricing API SDK'
     ```
   </Tab>
 </Tabs>
+
+## Installing straight from git
+
+The client repositories are public, so every SDK can also be installed directly from git. No registry account is needed.
+
+<Tabs>
+  <Tab title="Go">
+    ```bash
+    go get github.com/baselinehq/pricingapi-client-golang@latest
+    ```
+
+    `@latest` resolves the newest release tag through the Go module proxy. A specific version can be pinned by tag, such as `@v1.0.0`.
+  </Tab>
+  <Tab title="TypeScript">
+    ```bash
+    npm install github:baselinehq/pricingapi-client-typescript
+    ```
+
+    Installs the default branch. A specific release can be pinned by tag, such as `#v0.2.0`.
+  </Tab>
+  <Tab title="Python">
+    ```bash
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git
+    ```
+
+  </Tab>
+</Tabs>
+
+<Note>
+The `@baselinehq/pricingapi-client-typescript` npm package also exists on GitHub Packages (`npm.pkg.github.com`), which requires a GitHub account with `read:packages` even though the repository is public. The git install above avoids that entirely.
+</Note>
 
 ## Next Steps
 

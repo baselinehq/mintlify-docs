@@ -23,8 +23,16 @@ description: 'Install the CostGraph Pricing API SDK'
     ```
   </Tab>
   <Tab title="TypeScript">
+    From GitHub Packages (needs a GitHub account with `read:packages`, see [the TypeScript page](/pricing-api/SDKs/typescript) for the one-time login):
+
     ```bash
     npm install @baselinehq/pricingapi-client-typescript
+    ```
+
+    Or straight from the public repository, no account:
+
+    ```bash
+    npm install github:baselinehq/pricingapi-client-typescript#v1.0.0
     ```
 
     Import in your code:
@@ -34,8 +42,10 @@ description: 'Install the CostGraph Pricing API SDK'
     ```
   </Tab>
   <Tab title="Python">
+    Not on PyPI; install from the public repository at a release tag:
+
     ```bash
-    pip install pricing-api-client
+    pip install git+https://github.com/baselinehq/pricingapi-client-python.git@v1.0.0
     ```
 
     Import in your code:

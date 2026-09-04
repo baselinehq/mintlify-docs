@@ -4,15 +4,11 @@ icon: js
 description: 'TypeScript SDK examples for the CostGraph Pricing API'
 ---
 
-## Client Setup
+## Client setup
 
 ```typescript
-import { DefaultApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
-import type {
-  GithubComBaselinehqGolangSharedTypesInstance,
-  GithubComBaselinehqGolangSharedTypesVM,
-  TypesDisk,
-} from '@baselinehq/pricingapi-client-typescript';
+import { PricingApi, MarketplaceApi, Configuration } from '@baselinehq/pricingapi-client-typescript';
+import type { Instance } from '@baselinehq/pricingapi-client-typescript';
 
 const token = process.env.COSTGRAPH_API_KEY;
 
@@ -21,66 +17,51 @@ const config = new Configuration({
   apiKey: (name: string) => (name === 'X-API-Key' ? token : undefined),
 });
 
-const client = new DefaultApi(config);
+const pricing = new PricingApi(config);
+const marketplace = new MarketplaceApi(config);
 ```
 
-## Compute Pricing
+## Compute pricing
 
 ```typescript
-const vm: GithubComBaselinehqGolangSharedTypesVM = {
-  cpu_cores: 2,
-  ram_gb: 2,
-};
-
-const instance: GithubComBaselinehqGolangSharedTypesInstance = {
+const instance: Instance = {
   region: 'nyc1',
   instance_type: 's-2vcpu-2gb',
   usage_type: 'ONDEMAND',
   provider: 'DigitalOcean',
   operating_system: 'linux',
   service: 'Droplet',
-  availability_zone: '',
-  vm,
+  vm: { cpu_cores: 2, ram_gb: 2 },
 };
 
-const pricing = await client.pricingComputePost({ instance });
-console.log(JSON.stringify(pricing.data, null, 2));
+const price = await pricing.v1PricingComputePost(instance);
+console.log(price.data.cost_per_hour);
 ```
 
 ## Recommendations
 
 ```typescript
-const vm: GithubComBaselinehqGolangSharedTypesVM = {
-  cpu_cores: 4,
-  ram_gb: 16,
-};
-
-const instance: GithubComBaselinehqGolangSharedTypesInstance = {
+const instance: Instance = {
   region: 'nyc1',
   instance_type: 's-4vcpu-16gb-amd',
-  usage_type: 'ondemand',
-  provider: 'digitalocean',
+  usage_type: 'ONDEMAND',
+  provider: 'DigitalOcean',
   operating_system: 'linux',
   service: 'Droplet',
-  availability_zone: '',
-  vm,
+  vm: { cpu_cores: 4, ram_gb: 16 },
 };
 
-const recommendations = await client.recommendationsComputePost({ instance });
-console.log(JSON.stringify(recommendations.data, null, 2));
+const recommendations = new RecommendationsApi(config);
+const recs = await recommendations.v1RecommendationsComputePost(instance);
 ```
 
-## Providers
+## Disk pricing
 
 ```typescript
-const providers = await client.providersGet();
-console.log(JSON.stringify(providers.data, null, 2));
-```
+import { PricingApi } from '@baselinehq/pricingapi-client-typescript';
+import type { Disk } from '@baselinehq/pricingapi-client-typescript';
 
-## Disk Pricing
-
-```typescript
-const disk: TypesDisk = {
+const disk: Disk = {
   provider: 'AWS',
   service: 'AmazonEBS',
   region: 'us-east-1',
@@ -89,22 +70,42 @@ const disk: TypesDisk = {
   capacity_gb: 100,
 };
 
-const diskPricing = await client.pricingDisksPost(disk);
-console.log(JSON.stringify(diskPricing.data, null, 2));
+const diskPrice = await pricing.v1PricingDisksPost(disk);
 ```
 
-## Disk Recommendations
+## Marketplace
+
+Publish your own rates. Re-posting the same natural key with a new cost keeps its id and reprices everything pinned to it.
 
 ```typescript
-const disk: TypesDisk = {
-  provider: 'AWS',
-  service: 'AmazonEBS',
-  region: 'us-east-1',
-  type: 'gp3',
-  usage_type: 'ONDEMAND',
-  capacity_gb: 100,
+import type { ComputePricesRequest } from '@baselinehq/pricingapi-client-typescript';
+
+const body: ComputePricesRequest = {
+  entries: [{
+    provider: '',
+    service: 'compute',
+    region: 'on-prem',
+    instance_type: 'bare-metal-s',
+    usage_type: 'ONDEMAND',
+    operating_system: 'linux',
+    cpu_cores: 64,
+    ram_gb: 512,
+    cost_per_hour: 2.5,
+  }],
 };
 
-const diskRecommendations = await client.recommendationsDisksPost({ instance: disk });
-console.log(JSON.stringify(diskRecommendations.data, null, 2));
+const published = await marketplace.v1MarketplaceComputePost(body);
+const id = published.data.data?.[0]?.id;
 ```
+
+List, patch, and retire:
+
+```typescript
+const page = await marketplace.v1MarketplaceComputeGet(100);
+
+const updated = await marketplace.v1MarketplaceComputeIdPatch(id, { cost_per_hour: 3.0 });
+
+await marketplace.v1MarketplaceComputeIdDelete(id);
+```
+
+The same five verbs exist for disks, databases, and models. A model patch retires the old row and returns the new id, because model prices are versioned.

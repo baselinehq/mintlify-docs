@@ -97,9 +97,9 @@ the right total.
 <Note>
 Cloud providers restate recent spend, so CostGraph holds each day for two days
 before reporting it, then keeps reconciling the last 35 days. Metronome
-deduplicates a transaction id for 34 days, which is the same window, so a
-correction always carries totals that differ from the last one sent and is
-never mistaken for a replay.
+ignores a transaction id it has already seen for 34 days. A correction carries
+totals that differ from the last one sent, so its transaction id differs too and
+it is never mistaken for a replay.
 </Note>
 
 ## Day to day

@@ -97,10 +97,12 @@ sent as the difference, and can be negative - settle to the right total.
 
 <Note>
 Cloud providers restate recent spend, so CostGraph holds each day for two days
-before reporting it, then keeps reconciling the last 35 days. Lago bills every
-event into the subscription's **current** period, so a correction to an old day
-shows up on the next invoice - `usage_date` is how you and your customer see
-which day it belongs to.
+before reporting it, then keeps reconciling the last 35 days. Lago assigns an event to the period its
+`timestamp` falls in. A correction that arrives while that period's invoice is
+still a draft is included in it; once the invoice is finalized Lago does not
+move the event onto a later one, so putting the difference right is a manual
+adjustment. `usage_date` is how you and your customer see which day an event
+belongs to.
 </Note>
 
 ## Day to day

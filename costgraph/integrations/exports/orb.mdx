@@ -106,11 +106,12 @@ against the metric before relying on it.
 
 <Note>
 Cloud providers restate recent spend, so CostGraph holds each day for two days
-before reporting it, then keeps reconciling the last 35 days. Orb bills every
-event into the customer's **current** period, so a correction to an old day
-shows up on the next invoice - `usage_date` is how you and your customer see
-which day it belongs to. Orb's own backfill flow is the way to move a
-correction into a closed period.
+before reporting it, then keeps reconciling the last 35 days. Orb assigns an event to the period its
+timestamp falls in, so a correction that arrives while that period's invoice is
+still pending is reflected in it. Once an invoice is issued, Orb's backfill
+recalculates the affected usage but does not change what has already been
+billed, so the difference is settled in Orb rather than by the export.
+`usage_date` is how you and your customer see which day an event belongs to.
 </Note>
 
 ## Day to day

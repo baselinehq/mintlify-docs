@@ -111,8 +111,10 @@ Cloud providers restate recent spend, so CostGraph holds each day for two days
 before reporting it, then keeps reconciling the last 35 days. That is also
 Stripe's own limit for how far back a meter event may be timestamped, so the
 oldest day in the window can be rejected outright; it is recorded with the
-rejection. Stripe bills every event into the customer's **current** period, so
-a correction to an old day shows up on the next invoice.
+rejection. Stripe assigns an event to the period its timestamp falls in. A correction sent
+while that period's invoice is still a draft lands on it; once the invoice is
+finalized the event no longer changes it, and putting the difference right is a
+credit note or an adjustment in Stripe rather than something the export can do.
 </Note>
 
 ## Day to day

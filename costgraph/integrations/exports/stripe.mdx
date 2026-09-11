@@ -1,0 +1,134 @@
+---
+title: Stripe
+description: "Bill your customers for the cloud spend CostGraph attributes to them"
+---
+
+Most integrations bring cost data into CostGraph. Stripe is the opposite
+direction: CostGraph reports each of your customers' attributed cloud spend to
+your [Stripe](https://stripe.com) account every night as meter events, and
+Stripe turns them into invoices. You resell or charge back cloud
+infrastructure; CostGraph decides who spent what, Stripe bills them for it.
+
+This is your customers' billing. It has nothing to do with how you pay
+CostGraph.
+
+## How it fits together
+
+1. A **virtual tag** decides which customer each charge belongs to. You write
+   the rules; every value the tag produces is a Stripe customer id.
+2. A **meter** binds that tag key to one billing meter in your Stripe account.
+   Each night CostGraph reports every customer's attributed spend for each
+   settled day to that meter.
+3. **Stripe prices and invoices.** Attach a usage-based price to the meter and
+   your customers are billed for exactly the spend CostGraph attributed to them.
+
+Spend is reported in **integer cents**. Price the meter per cent, or use a
+transform quantity to group 100 units into one priced dollar. Stripe does not
+know what unit a meter carries, so nothing on its side will catch a price set
+as if the values were dollars.
+
+## Connect
+
+<Steps>
+  <Step title="Create a meter">
+    In Stripe, open **Billing -> Meters** and create a meter with a **sum**
+    aggregation. Note its event name - that is what CostGraph reports against.
+  </Step>
+  <Step title="Copy a secret key">
+    Open **Developers -> API keys** and copy a secret key. Use a live key to
+    bill for real; a test key exercises the whole flow without invoicing anyone.
+  </Step>
+  <Step title="Connect in CostGraph">
+    Open **Integrations**, choose **Stripe**, and paste the key. CostGraph
+    verifies it against Stripe before saving anything, and stores it encrypted.
+  </Step>
+  <Step title="Bind a meter">
+    Bind a virtual tag key to one of your active meters. CostGraph lists meters
+    by their **event name**, which is the value meter events reference.
+  </Step>
+</Steps>
+
+## Choose who gets billed
+
+Create a virtual tag key named with a `stripe_` prefix, such as
+`stripe_customer`. The prefix is required: it marks the key as billing-bound,
+and only prefixed keys can be bound to a meter. Give it values that are your
+Stripe customer ids, and only the customers you bill.
+
+The match is the tag value itself: whatever value a rule assigns is the Stripe
+customer id the spend is reported under. Stripe customer ids look like
+`cus_NciAYcXfLnqBoz`:
+
+| Field | Operator | Match value | Tag value |
+|-------|----------|-------------|-----------|
+| Account id | is | `416508157375` | `cus_NciAYcXfLnqBoz` |
+
+Any field works as the match: a linked account per customer, a resource name
+prefix, a project, or an existing tag. See
+[Virtual tags](/costgraph/virtual-tags/usage) for the rule builder and how
+overlapping rules resolve.
+
+Spend the tag does not match is never reported.
+
+<Warning>
+An event naming a customer that does not exist in Stripe is rejected, and the
+day is recorded with the rejection rather than billed. Stripe customer ids are
+opaque, so a tag value that looks plausible is not necessarily real - check the
+tag's values against your Stripe customers before binding it to a meter.
+</Warning>
+
+Because a bound tag key drives invoices, CostGraph protects days that were
+already reported: rules on that key cannot be reordered, and new or edited
+rules must start from a date that has not been reported yet. Close an old rule
+with an end date instead of editing it in place.
+
+## Downward corrections are held back
+
+Stripe meter events only ever count **up**. There is no event that takes usage
+away, so when a cloud provider revises a day's spend downwards - a credit, a
+refund, a late discount - CostGraph cannot report the difference.
+
+Rather than overbill quietly or clamp the value, CostGraph **holds the day
+back** and records it with the reason `negative_correction_unsupported`. The
+day's last reported total stands, and the held day is listed in the meter's
+ledger so you can decide what to do: issue a credit note in Stripe, or accept
+the difference.
+
+Upward corrections are reported normally.
+
+<Note>
+This is a property of Stripe's meter events, not of CostGraph. Platforms whose
+events can carry a negative value - Lago, Orb, Metronome, OpenMeter - reconcile
+downward revisions automatically.
+</Note>
+
+## What lands in Stripe
+
+Each customer-day is one meter event whose payload carries the Stripe customer
+id and the amount reported. The event's `identifier` is derived from the day
+and the totals, so a run retried within Stripe's deduplication window is
+recognised as the same event rather than counted twice.
+
+<Note>
+Cloud providers restate recent spend, so CostGraph holds each day for two days
+before reporting it, then keeps reconciling the last 35 days. That is also
+Stripe's own limit for how far back a meter event may be timestamped, so the
+oldest day in the window can be rejected outright; it is recorded with the
+rejection. Stripe bills every event into the customer's **current** period, so
+a correction to an old day shows up on the next invoice.
+</Note>
+
+## Day to day
+
+- The nightly run reports only what changed, so an unchanged day sends nothing.
+- A day is held back rather than reported wrong when its spend mixes
+  currencies, when a quantity meter meets an unexpected unit, or when the
+  correction would be negative.
+- Deactivating a meter stops reporting but keeps its history, so reactivating
+  resumes from what was already sent instead of double-billing the window.
+
+## Next steps
+
+<Card title="Virtual tags" icon="tags" href="/costgraph/virtual-tags/usage">
+  Write the rules that decide which customer each charge belongs to.
+</Card>

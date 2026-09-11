@@ -1,0 +1,119 @@
+---
+title: Lago
+description: "Bill your customers for the cloud spend CostGraph attributes to them"
+---
+
+Most integrations bring cost data into CostGraph. Lago is the opposite
+direction: CostGraph reports each of your customers' attributed cloud spend to
+your [Lago](https://getlago.com) account every night as usage events, and Lago
+turns them into invoices. You resell or charge back cloud infrastructure;
+CostGraph decides who spent what, Lago bills them for it.
+
+## How it fits together
+
+1. A **virtual tag** decides which subscription each charge belongs to. You
+   write the rules; every value the tag produces is a Lago external
+   subscription id.
+2. A **meter** binds that tag key to one billable metric in your Lago account.
+   Each night CostGraph reports every customer's attributed spend for each
+   settled day to that metric.
+3. **Lago prices and invoices.** Attach a charge to the billable metric and
+   your customers are billed for exactly the spend CostGraph attributed to them.
+
+Spend is reported in **integer cents**. Price the charge per cent, or divide by
+100 in the metric, because Lago does not know what unit the events carry and
+nothing on its side will catch a charge priced as if the values were dollars.
+
+## Connect
+
+<Steps>
+  <Step title="Create an API key">
+    In Lago, open **Developers -> API keys** and copy a key.
+  </Step>
+  <Step title="Connect in CostGraph">
+    Open **Integrations**, choose **Lago**, and paste the key. Self-hosting Lago
+    or using a region other than the default? Set **API URL** to your instance,
+    for example `https://lago.internal`. Leave it empty for Lago Cloud.
+    CostGraph verifies the key against Lago before saving anything, and stores
+    it encrypted.
+  </Step>
+  <Step title="Bind a billable metric">
+    Bind a virtual tag key to one of your billable metrics. The metric must
+    already exist in Lago; CostGraph only offers metrics it can see in the
+    connected account.
+  </Step>
+</Steps>
+
+## Choose who gets billed
+
+Create a virtual tag key named with a `lago_` prefix, such as
+`lago_subscription`. The prefix is required: it marks the key as billing-bound,
+and only prefixed keys can be bound to a meter.
+
+The value a rule assigns is the **external subscription id** the spend is
+reported under - not the customer id. Lago attributes usage to a subscription,
+so a customer with two subscriptions needs the tag to name whichever one should
+carry the cloud spend. If the subscription in Lago is `acme-prod`, write a rule
+whose **Tag value** is `acme-prod`:
+
+| Field | Operator | Match value | Tag value |
+|-------|----------|-------------|-----------|
+| Account id | is | `416508157375` | `acme-prod` |
+
+Any field works as the match: a linked account per customer, a resource name
+prefix, a project, or an existing tag. See
+[Virtual tags](/costgraph/virtual-tags/usage) for the rule builder and how
+overlapping rules resolve.
+
+Spend the tag does not match is never reported.
+
+<Warning>
+An event whose external subscription id does not exist in Lago is rejected, and
+the day is recorded with the rejection rather than billed. Check the tag's
+values against your Lago subscriptions before binding it to a metric.
+</Warning>
+
+Because a bound tag key drives invoices, CostGraph protects days that were
+already reported: rules on that key cannot be reordered, and new or edited
+rules must start from a date that has not been reported yet. Close an old rule
+with an end date instead of editing it in place.
+
+## What lands in Lago
+
+Each customer-day is one event on your billable metric. The event's
+`transaction_id` is derived from the day and the totals, so a retried run is
+recognised as the same event rather than counted twice. Its properties carry:
+
+| Property | What it tells you |
+|----------|-------------------|
+| `value` | The amount reported for this event |
+| `usage_date` | The day the spend belongs to |
+| `correction` | Whether this event adjusts a day reported earlier |
+| `previous_total` / `new_total` | What the day's total was, and is now |
+| `currency` | The currency the meter is denominated in |
+
+Aggregate the metric on `value` with a **sum**, so that corrections - which are
+sent as the difference, and can be negative - settle to the right total.
+
+<Note>
+Cloud providers restate recent spend, so CostGraph holds each day for two days
+before reporting it, then keeps reconciling the last 35 days. Lago bills every
+event into the subscription's **current** period, so a correction to an old day
+shows up on the next invoice - `usage_date` is how you and your customer see
+which day it belongs to.
+</Note>
+
+## Day to day
+
+- The nightly run reports only what changed, so an unchanged day sends nothing.
+- A day is held back rather than reported wrong when its spend mixes
+  currencies, or a quantity meter meets an unexpected unit. Each held day is
+  recorded with its reason.
+- Deactivating a meter stops reporting but keeps its history, so reactivating
+  resumes from what was already sent instead of double-billing the window.
+
+## Next steps
+
+<Card title="Virtual tags" icon="tags" href="/costgraph/virtual-tags/usage">
+  Write the rules that decide which subscription each charge belongs to.
+</Card>

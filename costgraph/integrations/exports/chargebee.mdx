@@ -117,6 +117,15 @@ to a term that Chargebee has already invoiced can no longer be replaced, so
 late restatements to a closed term need a manual adjustment in Chargebee.
 </Note>
 
+<Warning>
+Chargebee only accepts a usage date that falls inside the period the item price
+was active on the subscription. A meter bound to an item price you have just
+added therefore reports nothing for the days before it was added: those days
+are rejected and recorded with the rejection, not billed. Add the item price to
+the subscription from the date you want billing to start, and expect the first
+run to report only from that date onwards.
+</Warning>
+
 ## Day to day
 
 - The nightly run writes only what changed, so an unchanged day sends nothing.

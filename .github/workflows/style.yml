@@ -1,0 +1,17 @@
+name: style
+
+on:
+  pull_request:
+    paths:
+      - "**/*.mdx"
+      - "scripts/style-lint.py"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git fetch origin main
+      - run: python3 scripts/style-lint.py

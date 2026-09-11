@@ -40,9 +40,10 @@ downstream, because OpenMeter does not know what unit the events carry.
     **API URL** empty for OpenMeter Cloud; set it when your meters live
     somewhere else. It is the API root including its version, not just the
     host: a self-hosted instance ends in `/api/v1`, and an account on Kong
-    Konnect looks like `https://eu.api.konghq.com/metering/v1`, with the region
-    matching your Konnect organisation. CostGraph verifies the token before
-    saving anything, and stores it encrypted.
+    Konnect is `https://{region}.api.konghq.com/v3/openmeter` or
+    `https://{region}.api.konghq.com/metering/v1`, with the region matching your
+    Konnect organisation. Either Konnect root works. CostGraph verifies the
+    token before saving anything, and stores it encrypted.
   </Step>
   <Step title="Bind a meter">
     Bind a virtual tag key to one of your meters. CostGraph lists meters by

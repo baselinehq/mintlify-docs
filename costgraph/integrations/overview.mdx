@@ -87,7 +87,7 @@ answer covers everything you connected.
     An AI gateway in your cluster has no bill to read. CostGraph reads its token
     metrics through the operator and prices them against the model catalog.
   </Card>
-  <Card title="CostGraph exports it" icon="file-invoice-dollar" href="/costgraph/integrations/exports/autumn">
+  <Card title="CostGraph exports it" icon="file-invoice-dollar" href="#billing-exports">
     The other direction: report each customer's attributed spend to your billing
     platform, so you can bill them for it.
   </Card>
@@ -277,7 +277,25 @@ across the namespaces and containers that actually used it.
 
 <CardGroup cols={3}>
   <Card title="Autumn" icon="/images/logos/autumn.svg" href="/costgraph/integrations/exports/autumn">
-    Bill your customers for the cloud spend CostGraph attributes to them.
+    Meter a customer's attributed spend against one of your Autumn features.
+  </Card>
+  <Card title="Stripe" icon="/images/logos/stripe.svg" href="/costgraph/integrations/exports/stripe">
+    Report it to a Stripe billing meter and let Stripe invoice from it.
+  </Card>
+  <Card title="Chargebee" icon="/images/logos/chargebee.svg" href="/costgraph/integrations/exports/chargebee">
+    Record a day's spend against a metered item price on a subscription.
+  </Card>
+  <Card title="Lago" icon="/images/logos/lago.svg" href="/costgraph/integrations/exports/lago">
+    Send it as events on a billable metric, self-hosted or on Lago Cloud.
+  </Card>
+  <Card title="Orb" icon="/images/logos/orb.svg" href="/costgraph/integrations/exports/orb">
+    Ingest it as events for the metric your pricing is built on.
+  </Card>
+  <Card title="Metronome" icon="/images/logos/metronome.svg" href="/costgraph/integrations/exports/metronome">
+    Send it as usage events for a billable metric to rate and invoice.
+  </Card>
+  <Card title="OpenMeter" icon="/images/logos/openmeter.svg" href="/costgraph/integrations/exports/openmeter">
+    Meter it per subject, on OpenMeter Cloud, Kong Konnect or self-hosted.
   </Card>
 </CardGroup>
 

@@ -6,7 +6,9 @@ description: "Bill your customers for the cloud spend CostGraph attributes to th
 Most integrations bring cost data into CostGraph. OpenMeter is the opposite
 direction: CostGraph reports each of your customers' attributed cloud spend to
 your [OpenMeter](https://openmeter.io) account every night as CloudEvents, and
-OpenMeter aggregates them for billing. You resell or charge back cloud
+OpenMeter aggregates them for billing. OpenMeter is also the metering behind
+Kong Konnect, and an account there connects the same way - only the API URL
+differs. You resell or charge back cloud
 infrastructure; CostGraph decides who spent what, OpenMeter meters it.
 
 ## How it fits together
@@ -30,14 +32,17 @@ downstream, because OpenMeter does not know what unit the events carry.
     is `$.value`. Note its event type - that is what CostGraph reports against.
   </Step>
   <Step title="Create an API token">
-    Open your OpenMeter settings and copy an API token.
+    Open your OpenMeter settings and copy an API token. On Kong Konnect this is
+    a personal access token, which starts with `kpat_`.
   </Step>
   <Step title="Connect in CostGraph">
-    Open **Integrations**, choose **OpenMeter**, and paste the token.
-    Self-hosting OpenMeter? Set **API URL** to your instance, for example
-    `https://openmeter.internal`. Leave it empty for OpenMeter Cloud. CostGraph
-    verifies the token against OpenMeter before saving anything, and stores it
-    encrypted.
+    Open **Integrations**, choose **OpenMeter**, and paste the token. Leave
+    **API URL** empty for OpenMeter Cloud; set it when your meters live
+    somewhere else. It is the API root including its version, not just the
+    host: a self-hosted instance ends in `/api/v1`, and an account on Kong
+    Konnect looks like `https://eu.api.konghq.com/metering/v1`, with the region
+    matching your Konnect organisation. CostGraph verifies the token before
+    saving anything, and stores it encrypted.
   </Step>
   <Step title="Bind a meter">
     Bind a virtual tag key to one of your meters. CostGraph lists meters by

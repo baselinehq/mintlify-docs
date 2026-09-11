@@ -835,9 +835,15 @@
           {
             "name": "token_bucket",
             "in": "query",
-            "description": "Filter by token bucket",
+            "description": "Filter by token bucket. Every bucket is priced separately, so a model has one price per bucket",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "input",
+                "output",
+                "cache_read",
+                "cache_write"
+              ]
             }
           }
         ],
@@ -895,7 +901,7 @@
       },
       "post": {
         "summary": "Register custom model pricing",
-        "description": "Register custom token pricing for models you host. Entries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change instead of holding on to an earlier one.\nSuperseded by POST /v1/marketplace/models, which returns RFC 9457 problem responses on failure.",
+        "description": "Register custom token pricing for models you host. Every token bucket is priced separately, so submit one entry per bucket you charge for - `input`, `output`, `cache_read`, `cache_write` - each with its own `unit_price_per_mtok`. A bucket you leave out has no rate, and usage in it resolves to no price rather than to zero.\nEntries are versioned: a price change closes the current row and opens a new one, so historic spend keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change instead of holding on to an earlier one.\nSuperseded by POST /v1/marketplace/models, which returns RFC 9457 problem responses on failure.",
         "requestBody": {
           "description": "Custom model pricing request",
           "content": {
@@ -3187,9 +3193,15 @@
           {
             "name": "token_bucket",
             "in": "query",
-            "description": "Filter by token bucket",
+            "description": "Filter by token bucket. Every bucket is priced separately, so a model has one price per bucket",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "input",
+                "output",
+                "cache_read",
+                "cache_write"
+              ]
             }
           }
         ],
@@ -3259,7 +3271,7 @@
           "marketplace"
         ],
         "summary": "Publish model prices",
-        "description": "Register your own token rates for models you host, so CostGraph can price calls it has no public rate for.\nEntries are versioned: a price change closes the current row and opens a new one, so spend already recorded keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change.",
+        "description": "Register your own token rates for models you host, so CostGraph can price calls it has no public rate for.\nEvery token bucket is priced separately, so publish one price per bucket you charge for - `input`, `output`, `cache_read`, `cache_write` - each with its own `unit_price_per_mtok`. A bucket you do not publish has no rate, and usage in it resolves to no price rather than to zero.\n`token_bucket` identifies the price alongside the model, host and region, so it cannot be patched later: delete the price and publish a new one to move a rate to another bucket.\nEntries are versioned: a price change closes the current row and opens a new one, so spend already recorded keeps the rate it was billed at.\nThe returned id is what you attach with the `costgraph.ai/pricing-id.model` label or tag. Each version carries its own id, so read the live entry back after a price change.",
         "requestBody": {
           "description": "Prices to publish",
           "content": {
@@ -4695,7 +4707,13 @@
             "$ref": "#/components/schemas/datatypes.JSON"
           },
           "token_bucket": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "input",
+              "output",
+              "cache_read",
+              "cache_write"
+            ]
           },
           "tool_call": {
             "type": "boolean"

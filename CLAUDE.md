@@ -89,6 +89,90 @@ and cut any section that only restates the obvious. When in doubt, cut.
 - Capitalize product names: CostGraph, Graph AI, Kubernetes, Helm, Prometheus,
   Mintlify.
 
+## Style guide
+
+Pages follow the
+[Google developer documentation style guide](https://developers.google.com/style).
+The rules that matter most here, in the order they usually bite:
+
+- **Critical information first.** Lead every page and every paragraph with the
+  point. Readers scan; the last sentence of a paragraph is the one they skip.
+- **One idea per paragraph, under 26 words per sentence.** Split rather than
+  join. A single-sentence paragraph is fine.
+- **Second person, present tense, active voice.** "CostGraph reports", not
+  "will report" or "is reported by CostGraph".
+- **Contractions.** Use the common ones, and prefer negation contractions:
+  "doesn't" is harder to misread than "does not".
+- **Prescriptive, not exhaustive.** Give one path. "Must" for a requirement,
+  "we recommend" for advice, "can" for an option. Never "should".
+- **No excessive claims.** No superlatives, no "ensure" or "guarantee", no
+  comparisons with other products. State what the software does.
+- **Conditions before instructions.** "If you self-host Lago, set **API URL**",
+  not a question and not the condition at the end.
+- **Procedures.** Each step starts with an imperative verb, does one thing, names
+  where it happens before what to do, and carries its result in the same
+  paragraph. Prerequisites go in a **Before you begin** list, not inside steps.
+- **UI.** Bold the visible label. Click a button, select an option, enter text.
+  Menu paths use bold and a greater-than sign: **Settings > API keys**.
+- **Headings.** Sentence case. Task headings are bare verbs (`Connect`,
+  `Tag spend by customer`); concept headings are noun phrases (`Event payload`).
+  No `-ing` first words, no punctuation, no questions.
+- **Notices.** A `<Note>` or `<Warning>` holds something the reader can skip
+  and still succeed. Anything that decides whether the setup works is body
+  text. Never two notices back to back; rarely more than one per page.
+- **No directional language.** "The following table", not "the table below".
+- **Tables.** Introduce with a full sentence. Three or more facts per row, or
+  use a list.
+- **Don't pre-announce.** Document what exists today. No "until X lands".
+
+### Shared content
+
+When several pages describe variants of one feature, put everything they share
+on one overview page and cut each variant page to what only it does. The
+[Billing exports](/costgraph/integrations/exports/overview) section is the
+model: the overview owns the mechanism, the tag rules, and the nightly
+behavior, opens with a comparison table of how the platforms differ, and each
+platform page is 40 to 70 lines in a fixed shape:
+
+1. One-sentence lead naming what the platform bills, with a link to the
+   overview.
+2. **Before you begin**: what must exist on the platform first.
+3. **Connect**: the `<Steps>`, platform-specific detail only.
+4. **Tag spend by customer**: what the tag value must be and what happens to an
+   unknown one.
+5. The payload and the aggregation it needs.
+6. **<Platform> behavior**: the one or two things only this platform does.
+
+Copying a sibling page and swapping the product name is how the duplication
+starts. Write the shared page first.
+
+### Review process
+
+When reviewing or rewriting a page:
+
+1. Read the diff against `origin/main`, then read the page top to bottom as a
+   reader would. Mark every paragraph that repeats a sibling page or restates
+   the paragraph before it.
+2. Compare the register with a recent post on
+   [blog.costgraph.ai](https://blog.costgraph.ai): the problem in one or two
+   sentences, then the mechanism, no throat-clearing.
+3. Move shared material to the overview. Cut what is left to the fixed shape.
+4. Turn each notice into body text unless the reader can skip it.
+5. Run `scripts/style-lint.py <files>` and fix every error. Read the warnings;
+   most are real.
+6. Check the frontmatter `description` is specific to the page, not shared with
+   its siblings.
+
+### Enforcement
+
+`scripts/style-lint.py` checks the mechanical rules: em dashes, spaced hyphens
+used as dashes, ASCII arrows, `should`, `simply`, `please`, `e.g.`, `i.e.`,
+`in order to`, `click on`, missing descriptions, and back-to-back notices. It
+warns on sentence length, `-ing` headings, `will`, `just`, directional words,
+and absolutes. It runs on every pull request against the changed pages
+and fails on errors. Run it locally with no arguments to lint what you changed,
+or pass paths. Older pages have known hits; fix them when you touch the page.
+
 **Mintlify components** (use them; do not hand-roll HTML). These are the ones
 actually in use here:
 
@@ -176,6 +260,7 @@ tab are `api-reference/introduction`, `api-reference/authentication`, and the
   path resolves.
 - Moved pages have a `redirects` entry.
 - No em dashes, and product names are capitalized.
+- `scripts/style-lint.py` passes on the pages you changed.
 
 Preview is optional and there is no required local toolchain. If you have the
 Mintlify CLI installed, `mint dev` serves the site locally; otherwise Mintlify

@@ -1,122 +1,65 @@
 ---
 title: OpenMeter
-description: "Bill your customers for the cloud spend CostGraph attributes to them"
+description: "Report attributed cloud spend to an OpenMeter meter, including on Kong Konnect"
 ---
 
-Most integrations bring cost data into CostGraph. OpenMeter is the opposite
-direction: CostGraph reports each of your customers' attributed cloud spend to
-your [OpenMeter](https://openmeter.io) account every night as CloudEvents, and
-OpenMeter aggregates them for billing. OpenMeter is also the metering behind
-Kong Konnect, and an account there connects the same way - only the API URL
-differs. You resell or charge back cloud
-infrastructure; CostGraph decides who spent what, OpenMeter meters it.
+CostGraph reports each customer's attributed cloud spend to an
+[OpenMeter](https://openmeter.io) meter as CloudEvents. OpenMeter aggregates
+them per subject for your billing system or its own billing to price. The
+shared model, tag rules, and nightly behavior are on the
+[Billing exports](/costgraph/integrations/exports/overview) page.
 
-## How it fits together
+OpenMeter is also the metering behind Kong Konnect. A Konnect account
+connects the same way, with a different API URL.
 
-1. A **virtual tag** decides which customer each charge belongs to. You write
-   the rules; every value the tag produces is an OpenMeter subject.
-2. A **meter** binds that tag key to one meter in your OpenMeter account. Each
-   night CostGraph reports every customer's attributed spend for each settled
-   day as events of that meter's event type.
-3. **OpenMeter aggregates.** The meter sums the reported values per subject,
-   ready for your billing system or OpenMeter's own billing to price.
+## Before you begin
 
-Spend is reported in **integer cents**. Price per cent, or divide by 100
-downstream, because OpenMeter does not know what unit the events carry.
+- Create a meter with a **sum** aggregation whose value property is `$.value`.
+  CostGraph reports against its event type.
+- Price per cent, or divide by 100 downstream.
+- Copy an API token from your OpenMeter settings. On Kong Konnect, use a
+  personal access token, which starts with `kpat_`.
 
 ## Connect
 
 <Steps>
-  <Step title="Create a meter">
-    In OpenMeter, create a meter with a **sum** aggregation whose value property
-    is `$.value`. Note its event type - that is what CostGraph reports against.
-  </Step>
-  <Step title="Create an API token">
-    Open your OpenMeter settings and copy an API token. On Kong Konnect this is
-    a personal access token, which starts with `kpat_`.
-  </Step>
-  <Step title="Connect in CostGraph">
-    Open **Integrations**, choose **OpenMeter**, and paste the token. Leave
-    **API URL** empty for OpenMeter Cloud; set it when your meters live
-    somewhere else. It is the API root including its version, not just the
-    host: a self-hosted instance ends in `/api/v1`, and an account on Kong
-    Konnect is `https://{region}.api.konghq.com/v3/openmeter`, with the region
-    matching your Konnect organisation. CostGraph verifies the token before
-    saving anything, and stores it encrypted.
+  <Step title="Connect the account">
+    In **Integrations**, click **OpenMeter** and enter the API token. Leave
+    **API URL** empty for OpenMeter Cloud. For anything else, set it to the API
+    root including its version, not only the host:
+
+    - Self-hosted: your instance URL ending in `/api/v1`
+    - Kong Konnect: `https://{region}.api.konghq.com/v3/openmeter`, with the
+      region of your Konnect organization
+
+    CostGraph verifies the token before it saves anything, and stores it
+    encrypted.
   </Step>
   <Step title="Bind a meter">
-    Bind a virtual tag key to one of your meters. CostGraph lists meters by
-    their **event type**, which is what the events it sends carry.
+    Bind an `openmeter_` tag key to one of your meters. CostGraph lists meters
+    by event type.
   </Step>
 </Steps>
 
-## Choose who gets billed
+## Tag spend by customer
 
-Create a virtual tag key named with an `openmeter_` prefix, such as
-`openmeter_subject`. The prefix is required: it marks the key as billing-bound,
-and only prefixed keys can be bound to a meter.
+The tag value must be an OpenMeter subject, the identifier for whoever the
+usage belongs to. OpenMeter creates a subject the first time it sees one, so a
+mistyped tag value becomes a new metered subject. Check the tag's values before
+you bind the meter, and review what was reported after any rule change.
 
-The value a rule assigns is the **subject** the spend is reported under -
-OpenMeter's identifier for whoever the usage belongs to:
+## Event payload
 
-| Field | Operator | Match value | Tag value |
-|-------|----------|-------------|-----------|
-| Account id | is | `416508157375` | `acme-corp` |
+Each customer-day is one CloudEvent. Its `source` is `costgraph`, its `type`
+is the meter's event type, and its `subject` is the tag value. The event
+`id` is derived from the day and the totals, so a retried run is deduplicated.
+The data carries `value`, the amount in cents, and the shared reconciliation
+fields.
 
-Any field works as the match: a linked account per customer, a resource name
-prefix, a project, or an existing tag. See
-[Virtual tags](/costgraph/virtual-tags/usage) for the rule builder and how
-overlapping rules resolve.
+Corrections are sent as the difference and can be negative. The meter must
+sum `$.value` for the total to settle.
 
-Spend the tag does not match is never reported.
+## OpenMeter behavior
 
-<Warning>
-OpenMeter creates a subject the first time it sees one, so a mistyped tag value
-quietly becomes a new metered subject. Check the tag's values before binding it
-to a meter, and review what was reported after rule changes.
-</Warning>
-
-Because a bound tag key drives billing, CostGraph protects days that were
-already reported: rules on that key cannot be reordered, and new or edited
-rules must start from a date that has not been reported yet. Close an old rule
-with an end date instead of editing it in place.
-
-## What lands in OpenMeter
-
-Each customer-day is one CloudEvent, with `source` set to `costgraph`, `type`
-set to the meter's event type, and `subject` set to the tag value. The event
-`id` is derived from the day and the totals, so a retried run carries the same
-id and is deduplicated rather than counted twice. Its data carries:
-
-| Property | What it tells you |
-|----------|-------------------|
-| `value` | The amount reported for this event |
-| `usage_date` | The day the spend belongs to |
-| `correction` | Whether this event adjusts a day reported earlier |
-| `previous_total` / `new_total` | What the day's total was, and is now |
-| `currency` | The currency the meter is denominated in |
-
-Aggregate on `$.value` with a **sum**, so that corrections - which are sent as
-the difference, and can be negative - settle to the right total.
-
-<Note>
-Cloud providers restate recent spend, so CostGraph holds each day for two days
-before reporting it, then keeps reconciling the last 35 days. Each event is
-timestamped with the day it belongs to, so a correction lands in that day's
-window rather than the day it was sent.
-</Note>
-
-## Day to day
-
-- The nightly run reports only what changed, so an unchanged day sends nothing.
-- A day is held back rather than reported wrong when its spend mixes
-  currencies, or a quantity meter meets an unexpected unit. Each held day is
-  recorded with its reason.
-- Deactivating a meter stops reporting but keeps its history, so reactivating
-  resumes from what was already sent instead of double-counting the window.
-
-## Next steps
-
-<Card title="Virtual tags" icon="tags" href="/costgraph/virtual-tags/usage">
-  Write the rules that decide which customer each charge belongs to.
-</Card>
+Each event is timestamped with the day it belongs to. A correction lands in
+that day's window, not the day it was sent.

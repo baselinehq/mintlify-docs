@@ -194,6 +194,7 @@
                 "group": "Exports",
                 "icon": "file-invoice-dollar",
                 "pages": [
+                  "costgraph/integrations/exports/overview",
                   "costgraph/integrations/exports/autumn",
                   "costgraph/integrations/exports/chargebee",
                   "costgraph/integrations/exports/lago",

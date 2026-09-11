@@ -194,7 +194,13 @@
                 "group": "Exports",
                 "icon": "file-invoice-dollar",
                 "pages": [
-                  "costgraph/integrations/exports/autumn"
+                  "costgraph/integrations/exports/autumn",
+                  "costgraph/integrations/exports/chargebee",
+                  "costgraph/integrations/exports/lago",
+                  "costgraph/integrations/exports/metronome",
+                  "costgraph/integrations/exports/openmeter",
+                  "costgraph/integrations/exports/orb",
+                  "costgraph/integrations/exports/stripe"
                 ]
               }
             ]

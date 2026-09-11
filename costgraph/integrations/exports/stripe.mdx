@@ -84,10 +84,23 @@ with an end date instead of editing it in place.
 
 ## What lands in Stripe
 
-Each customer-day is one meter event whose payload carries the Stripe customer
-id and the amount reported. The event's `identifier` is derived from the day
+Each customer-day is one meter event. Its `identifier` is derived from the day
 and the totals, so a run retried within Stripe's deduplication window is
-recognised as the same event rather than counted twice.
+recognised as the same event rather than counted twice. Its payload carries the
+customer, the amount, and the same reconciliation fields every other billing
+platform receives:
+
+| Payload key | What it tells you |
+|-------------|-------------------|
+| `stripe_customer_id` | The tag value for that day |
+| `value` | The amount reported for this event |
+| `usage_date` | The day the spend belongs to |
+| `correction` | Whether this event adjusts a day reported earlier |
+| `previous_total` / `new_total` | What the day's total was, and is now |
+| `currency` | The currency the meter is denominated in |
+
+Stripe reads only the keys your meter is configured with and stores the rest
+alongside the event, so they are there when you need to explain a charge.
 
 Corrections are sent as the difference, so a day revised downwards sends a
 negative value and the meter's sum settles to the new total. Give the meter a

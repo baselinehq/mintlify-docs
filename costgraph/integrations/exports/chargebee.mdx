@@ -108,6 +108,7 @@ invoiced yet, and no credit note is needed.
 | `item_price_id` | The metered item price the meter is bound to |
 | `quantity` | The day's total attributed spend, in cents |
 | `usage_date` | The day the spend belongs to |
+| `note` | The same reconciliation fields the other platforms receive as event properties: the day, whether this replaced an earlier figure, and what that figure was |
 
 <Note>
 Cloud providers restate recent spend, so CostGraph holds each day for two days

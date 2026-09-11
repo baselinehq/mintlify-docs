@@ -1,130 +1,68 @@
 ---
 title: Orb
-description: "Bill your customers for the cloud spend CostGraph attributes to them"
+description: "Report attributed cloud spend to Orb as events for a billable metric"
 ---
 
-Most integrations bring cost data into CostGraph. Orb is the opposite
-direction: CostGraph reports each of your customers' attributed cloud spend to
-your [Orb](https://www.withorb.com) account every night as events, and Orb
-turns them into invoices. You resell or charge back cloud infrastructure;
-CostGraph decides who spent what, Orb bills them for it.
+CostGraph reports each customer's attributed cloud spend to
+[Orb](https://www.withorb.com) as events under an event name. A billable
+metric queries those events, and its price turns them into invoices. The
+shared model, tag rules, and nightly behavior are on the
+[Billing exports](/costgraph/integrations/exports/overview) page.
 
-## How it fits together
+## Before you begin
 
-1. A **virtual tag** decides which customer each charge belongs to. You write
-   the rules; every value the tag produces is an Orb external customer id.
-2. A **meter** binds that tag key to one event name in your Orb account. Each
-   night CostGraph reports every customer's attributed spend for each settled
-   day under that event name.
-3. **Orb prices and invoices.** A billable metric queries those events by
-   event name, and the price attached to it bills your customers for exactly
-   the spend CostGraph attributed to them.
+- Create a billable metric that filters on an event name and sums `value`:
 
-Spend is reported in **integer cents**. Price per cent, or divide by 100 in the
-metric, because Orb does not know what unit the events carry and nothing on its
-side will catch a price set as if the values were dollars.
+  ```sql
+  SELECT SUM(value) FROM events WHERE event_name = 'cloud_cost'
+  ```
+
+- Attach a price to the metric. Price per cent, or divide by 100 in the
+  metric.
+- Copy an API key from **Settings > Developers**.
 
 ## Connect
 
 <Steps>
-  <Step title="Create an API key">
-    In Orb, open **Settings -> Developers** and copy an API key.
-  </Step>
-  <Step title="Connect in CostGraph">
-    Open **Integrations**, choose **Orb**, and paste the key. CostGraph verifies
-    it against Orb before saving anything, and stores it encrypted.
+  <Step title="Connect the account">
+    In **Integrations**, click **Orb** and enter the API key. CostGraph
+    verifies the key against Orb before it saves anything, and stores it
+    encrypted.
   </Step>
   <Step title="Bind an event name">
-    Bind a virtual tag key to the **event name** your billable metric queries,
-    for example `cloud_cost`. Orb's metrics keep the event name inside their
-    SQL, so CostGraph cannot list the available names for you - type the one
-    your metric filters on, exactly as it appears there.
+    Bind an `orb_` tag key to the event name your metric queries, for example
+    `cloud_cost`. Orb keeps the event name inside the metric's SQL, so
+    CostGraph can't list the names for you. Enter it as it appears in the
+    metric.
   </Step>
 </Steps>
 
-## Choose who gets billed
-
-Create a virtual tag key named with an `orb_` prefix, such as `orb_customer`.
-The prefix is required: it marks the key as billing-bound, and only prefixed
-keys can be bound to a meter.
-
-The value a rule assigns is the **external customer id** the spend is reported
-under - the stable id from your own system that you set on the Orb customer,
-not Orb's internal id:
-
-| Field | Operator | Match value | Tag value |
-|-------|----------|-------------|-----------|
-| Account id | is | `416508157375` | `acme-corp` |
-
-Any field works as the match: a linked account per customer, a resource name
-prefix, a project, or an existing tag. See
-[Virtual tags](/costgraph/virtual-tags/usage) for the rule builder and how
-overlapping rules resolve.
-
-Spend the tag does not match is never reported.
-
 <Warning>
-An event naming an external customer id Orb does not know is reported back as a
-validation failure, and the day is recorded with that failure rather than
-billed. Check the tag's values against your Orb customers before binding it to
-a metric.
+Orb accepts events under any name. An event name that doesn't match the metric
+produces events that no metric counts, so the spend looks reported but bills
+nobody. Check the first night's events in Orb against the metric before you
+rely on it.
 </Warning>
 
-Because a bound tag key drives invoices, CostGraph protects days that were
-already reported: rules on that key cannot be reordered, and new or edited
-rules must start from a date that has not been reported yet. Close an old rule
-with an end date instead of editing it in place.
+## Tag spend by customer
 
-## What lands in Orb
+The tag value must be an Orb external customer id. That is the stable id from
+your own system that you set on the Orb customer, not Orb's internal id. Orb reports an
+unknown external customer id as a validation failure, and CostGraph records
+the day with that failure instead of billing it.
+
+## Event payload
 
 Each customer-day is one event. Its `idempotency_key` is derived from the day
-and the totals, so a retried run is recognised as the same event rather than
-counted twice. Its properties carry:
+and the totals, so a retried run counts once. The properties carry `value`,
+the amount in cents, and the shared reconciliation fields.
 
-| Property | What it tells you |
-|----------|-------------------|
-| `value` | The amount reported for this event |
-| `usage_date` | The day the spend belongs to |
-| `correction` | Whether this event adjusts a day reported earlier |
-| `previous_total` / `new_total` | What the day's total was, and is now |
-| `currency` | The currency the meter is denominated in |
+Corrections are sent as the difference and can be negative. The metric must
+sum `value` for the total to settle.
 
-Write the metric to filter on your event name and sum `value`, so that
-corrections - which are sent as the difference, and can be negative - settle to
-the right total:
+## Orb behavior
 
-```sql
-SELECT SUM(value) FROM events WHERE event_name = 'cloud_cost'
-```
-
-<Warning>
-Because the event name is free text, a name that does not match what your
-metric queries produces events Orb accepts and no metric ever counts - usage
-that looks reported but bills nobody. Check the first night's events in Orb
-against the metric before relying on it.
-</Warning>
-
-<Note>
-Cloud providers restate recent spend, so CostGraph holds each day for two days
-before reporting it, then keeps reconciling the last 35 days. Orb assigns an event to the period its
-timestamp falls in, so a correction that arrives while that period's invoice is
-still pending is reflected in it. Once an invoice is issued, Orb's backfill
-recalculates the affected usage but does not change what has already been
-billed, so the difference is settled in Orb rather than by the export.
-`usage_date` is how you and your customer see which day an event belongs to.
-</Note>
-
-## Day to day
-
-- The nightly run reports only what changed, so an unchanged day sends nothing.
-- A day is held back rather than reported wrong when its spend mixes
-  currencies, or a quantity meter meets an unexpected unit. Each held day is
-  recorded with its reason.
-- Deactivating a meter stops reporting but keeps its history, so reactivating
-  resumes from what was already sent instead of double-billing the window.
-
-## Next steps
-
-<Card title="Virtual tags" icon="tags" href="/costgraph/virtual-tags/usage">
-  Write the rules that decide which customer each charge belongs to.
-</Card>
+Orb assigns an event to the period its timestamp falls in. A correction that
+arrives while that period's invoice is pending is reflected in it. After the
+invoice is issued, Orb's backfill recalculates the usage but doesn't change
+what was billed. Settle the difference in Orb.

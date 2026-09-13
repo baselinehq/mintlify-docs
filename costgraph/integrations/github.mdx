@@ -20,15 +20,22 @@ repository, carrying both gross and net billed cost.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- Create a token that reads the organization's billing. A fine-grained personal access
+  token needs the organization permission **Administration: read**, plus **Copilot:
+  read** for per-seat data. A classic token needs `repo`, `read:org`, and `copilot`.
+  [Create a classic token with the scopes prefilled](https://github.com/settings/tokens/new?scopes=repo,read:org,copilot&description=costgraph-billing).
+- If the organization enforces SAML single sign-on, authorize the token for that
+  organization. An unauthorized token returns 403.
+- Note the organization login.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **GitHub**.
+1. Open **Settings > Integrations** and pick **GitHub**.
 2. Name the connection, pick the tenant these charges belong to, and enter the
    organization login whose billing you want.
-3. Supply a token with read access to the organization's billing.
-   [Create a classic token with the scopes prefilled](https://github.com/settings/tokens/new?scopes=repo,read:org,copilot&description=costgraph-billing),
-   or use a fine-grained personal access token with **Administration: read**
-   (plus **Copilot: read** for seat data).
+3. Enter the token.
 4. Select **Connect**.
 
 CostGraph verifies the token with a short fetch before saving, so a wrong value or a

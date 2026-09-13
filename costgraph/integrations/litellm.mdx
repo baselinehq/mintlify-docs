@@ -20,12 +20,20 @@ per model per virtual key.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- Note the base URL of your LiteLLM proxy, for example
+  `https://litellm.mycompany.com`. Its host becomes the billing account, because the
+  proxy has no organization id.
+- Copy the proxy master key. Only the master key reads spend across every virtual key
+  rather than the caller's own.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **LiteLLM**.
+1. Open **Settings > Integrations** and pick **LiteLLM**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables LiteLLM
-   needs, marks which are optional, and explains the permission each one requires.
+3. Enter the values you copied. The form lists what LiteLLM needs and marks the
+   optional ones.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

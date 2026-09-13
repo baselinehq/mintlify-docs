@@ -20,15 +20,18 @@ line item (subscription x database x usage period).
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the Redis Cloud console, go to **Account Settings > API** and enable the API. This
+  gives you the account key.
+- Under **API keys**, create a user key. Both halves are required.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Redis Cloud**.
+1. Open **Settings > Integrations** and pick **Redis Cloud**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys Redis Cloud
-   needs and explains the permission each one requires. You supply two keys:
-   the account-level API key (enabled under **Account Settings -> API**) and the
-   user-level secret key (**Account Settings -> API keys**). The account needs
-   the Owner, Billing admin, or Viewer role.
+3. Enter the account key and the user key. The account needs the Owner, Billing
+   admin, or Viewer role.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

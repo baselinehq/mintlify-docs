@@ -18,14 +18,18 @@ CostGraph reads Scaleway as **FOCUS 1.2** records at a grain of day x project x 
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the Scaleway console, go to **IAM > API keys** and generate a key.
+- Attach a policy granting the **BillingReadOnly** permission set on the organization.
+- Copy the secret key. Scaleway shows it once.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Scaleway**.
+1. Open **Settings > Integrations** and pick **Scaleway**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables Scaleway
-   needs, marks which are optional, and explains the permission each one requires.
-   You need an IAM API key secret key with billing read access; the organization
-   is optional when you supply the key's access key, since we resolve it for you.
+3. Enter the values you copied. The form lists what Scaleway needs and marks the
+   optional ones.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

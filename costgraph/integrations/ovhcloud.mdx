@@ -18,58 +18,44 @@ CostGraph reads OVHcloud as **FOCUS 1.2** records at a grain of bill line item.
   </Card>
 </CardGroup>
 
-## Create a service account
+## Before you begin
 
-CostGraph authenticates with an OVHcloud **OAuth2 service account**, which uses the
-client-credentials flow. The id and secret do not expire.
-
-1. In the [OVHcloud Control Panel](https://www.ovh.com/manager/), open
-   **Identity, Security & Operations -> Identities -> Service account**.
-2. Select **Add a service account**, give it a name and a description
-   (for example `costgraph-billing`), then **Create**.
-3. Copy both values from the confirmation window: the **service account name** is the
-   client id, the **password** is the client secret.
-
-<Warning>
-The secret is shown once and cannot be retrieved or regenerated afterwards. Copy it
-before closing the window; if you lose it, delete the service account and create
-another.
-</Warning>
-
-The client id carries the API region as its prefix - `EU.`, `CA.` or `US.` - and it
-must match the region your OVHcloud account lives in. A client id from the wrong
-region fails to authenticate with `invalid_client`.
-
-## Required accesses
-
-Service accounts start with no rights. Attach an IAM policy
-(**Identity, Security & Operations -> Identities -> Policies**) that gives yours read
-access to billing and, if you run Public Cloud, to project usage:
+- In the [OVHcloud Control Panel](https://www.ovh.com/manager/), go to
+  **Identity, Security & Operations > Identities > Service account** and click
+  **Add a service account**. Name it, describe it, and click **Create**.
+- Copy both values from the confirmation window. The **service account name** is the
+  client id and the **password** is the client secret. OVHcloud shows the secret once
+  and can't retrieve or regenerate it, so a lost secret means a new service account.
+- Attach an IAM policy to the service account under
+  **Identity, Security & Operations > Identities > Policies**. The following table
+  lists what CostGraph calls. OVHcloud's managed **Global billingAccount** permission
+  group covers the billing side across every product.
 
 | API call | IAM action | Why CostGraph needs it |
 |----------|------------|------------------------|
 | `GET /me` | `account:apiovh:me/get` | Identify the billing account |
-| `GET /me/bill`, `GET /me/bill/{id}` and its details | billing read | Read invoices and their line items |
+| `GET /me/bill` and its details | billing read | Read invoices and their line items |
 | `GET /cloud/project` | `publicCloudProject:apiovh:get` | List Public Cloud projects |
-| `GET /cloud/project/{id}/usage/current` | `publicCloudProject:apiovh:usage/current/get` | Read the running month before it is invoiced |
+| `GET /cloud/project/{id}/usage/current` | `publicCloudProject:apiovh:usage/current/get` | Read the running month before it's invoiced |
 
-The quickest route is OVHcloud's managed **Global billingAccount** permission group,
-which carries billing rights across every product. The IAM action a given route needs
-is shown on its **IAM actions** line in the
-[OVHcloud API console](https://api.ovh.com/console/).
+The client id prefix selects the API region and must match the region your account
+lives in: `EU.`, `CA.`, or `US.`. A client id from another region fails with
+`invalid_client`. The API console shows the IAM action each route needs on its
+**IAM actions** line. For the full walkthrough, see OVHcloud's
+[service account guide](https://docs.ovhcloud.com/en/guides/manage-and-operate/api/manage-service-account).
 
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **OVHcloud**.
+1. Open **Settings > Integrations** and pick **OVHcloud**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Paste the client id and client secret. Optionally set a Public Cloud project id to
-   scope the running month to one project; leave it empty and every project the
-   service account can see is included.
+3. Enter the client id and client secret. Add a Public Cloud project id to scope the
+   running month to one project, or leave it empty for every project the service
+   account reads.
 4. Select **Connect**.
 
-CostGraph verifies the credentials with a short fetch before saving, so a wrong
-value or a missing permission fails while you are still on the form. An account with
-no recent invoice still connects: CostGraph reads the billing account from `/me`.
+CostGraph verifies the credentials with a short fetch before saving, so a wrong value
+or a missing permission fails while you are still on the form. An account with no
+recent invoice still connects, because CostGraph reads the billing account from `/me`.
 
 <Note>
 Credentials are encrypted at rest and used only to read billing data. Revoke them in

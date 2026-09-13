@@ -20,12 +20,20 @@ per model per token.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In your new-api deployment, go to **Profile > Security > Access Token** and create an
+  access token on an admin account. This is the dashboard token, not an inference `sk-`
+  key, and admin scope is what reads logs across all users.
+- Note the base URL of the deployment and its `QuotaPerUnit` setting if you changed it
+  from the default of `500000`.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **New API**.
+1. Open **Settings > Integrations** and pick **New API**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables New API
-   needs, marks which are optional, and explains the permission each one requires.
+3. Enter the values you copied. The form lists what New API needs and marks the
+   optional ones.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

@@ -20,15 +20,19 @@ organization x product x charge type.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In Datadog, go to **Personal Settings > Access Tokens** and create a service access
+  token with the `usage_read` and `billing_read` scopes. Set the expiration to
+  **Never** so the connection doesn't lapse. The cost endpoints are parent-org only,
+  so create the token as a parent-org admin.
+- Note your Datadog site if it isn't US1, for example `datadoghq.eu`.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Datadog**.
+1. Open **Settings > Integrations** and pick **Datadog**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the keys Datadog needs
-   and explains the permission each one requires. You supply an **API key** and
-   an **application key** scoped to `usage_read` and `billing_read`, both created
-   by a parent-org admin (the cost endpoints are parent-org only). If your
-   account is not on US1, set the Datadog **site**.
+3. Enter the access token, and the Datadog site if your account isn't on US1.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

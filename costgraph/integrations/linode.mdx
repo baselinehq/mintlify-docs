@@ -20,13 +20,16 @@ item (service x resource).
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In Cloud Manager, go to **Profile > API Tokens** and create a personal access token
+  with **Account: Read Only**.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Akamai Cloud (Linode)**.
+1. Open **Settings > Integrations** and pick **Akamai Cloud (Linode)**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. You supply a **Linode personal access
-   token** with the `account:read_only` scope (Cloud Manager -> Profile -> API
-   Tokens).
+3. Enter the token.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

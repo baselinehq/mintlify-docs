@@ -20,12 +20,19 @@ CostGraph reads DigitalOcean as **FOCUS 1.2** records at a grain of invoice line
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the DigitalOcean console, go to **API > Tokens** and generate a token with
+  **Read** scope. Write access isn't needed.
+- A fine-grained token needs `billing:read`, plus `account:read` for CostGraph to label
+  the billing account itself.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **DigitalOcean**.
+1. Open **Settings > Integrations** and pick **DigitalOcean**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Create a Personal Access Token with **read** scope under **Account -> API -> Tokens**
-   and paste it in.
+3. Enter the token. Leave the billing account label empty and CostGraph resolves it
+   from your account.
 4. Select **Connect**.
 
 The billing account label is optional: leave it empty and we resolve it from your

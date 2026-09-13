@@ -20,12 +20,17 @@ CostGraph reads Depot as **FOCUS 1.2** records at a grain of one record per prod
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the Depot dashboard, go to **Organization settings > API tokens** and create an
+  organization token. A project token reads one project and can't see org-wide usage.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Depot**.
+1. Open **Settings > Integrations** and pick **Depot**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables Depot needs,
-   marks which are optional, and explains the permission each one requires.
+3. Enter the values you copied. The form lists what Depot needs and marks the
+   optional ones.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

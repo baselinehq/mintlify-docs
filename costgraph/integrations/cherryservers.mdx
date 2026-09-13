@@ -21,13 +21,18 @@ project, prorated to the period.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the Cherry Servers dashboard, go to **API keys** and create a key.
+- Note the team id if the key can see more than one team. Leave it empty and CostGraph
+  reads every team the key reaches.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Cherry Servers**.
+1. Open **Settings > Integrations** and pick **Cherry Servers**.
 2. Name the connection and pick the tenant these servers belong to.
-3. Fill in the values the form asks for. You supply a **Cherry Servers API key**
-   (Dashboard -> API keys). Optionally scope the export to a single **team id**;
-   left empty, every team the key can read is exported.
+3. Enter the API key, and a team id if you want one team instead of every team the
+   key reads.
 4. Select **Connect**.
 
 CostGraph verifies the credentials with a short fetch before saving, so a wrong

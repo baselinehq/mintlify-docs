@@ -22,14 +22,21 @@ organization-level row.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In Grafana Cloud, create an **Access Policy** whose realm is the organization, with
+  the `billing-metrics:read`, `org-billing-info:read`, `org-billing-rate:read`,
+  `invoices:read`, and `orgs:read` scopes. Create a token for it.
+- The token must be an organization access policy token, which starts with `glc_`. A
+  stack service account token, which starts with `glsa_`, can't read billing.
+- Note the organization slug, the `{org}` in `grafana.com/orgs/{org}`.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **Grafana Cloud**.
+1. Open **Settings > Integrations** and pick **Grafana Cloud**.
 2. Name the connection, pick the tenant these charges belong to, and enter your
    organization slug, the `{org}` in `grafana.com/orgs/{org}`.
-3. Create an **Access Policy token** whose realm is the organization, carrying the
-   billing read scopes: `billing-metrics:read`, `org-billing-info:read`,
-   `org-billing-rate:read`, `invoices:read` and `orgs:read`. Paste it in.
+3. Enter the access policy token.
 4. Select **Connect**.
 
 <Warning>

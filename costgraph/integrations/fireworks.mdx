@@ -3,8 +3,10 @@ title: Fireworks AI
 description: "Bring Fireworks AI serverless tokens and dedicated GPU hours into CostGraph, pulled by us or pushed by you"
 ---
 
-Fireworks AI bills serverless inference per token and dedicated deployments per
-GPU per hour. Input, cached input, and output each carry their own rate.
+Fireworks AI bills serverless inference per token, where input, cached input,
+and output each carry their own rate. Dedicated deployments are priced per
+GPU-hour and metered in GPU-seconds, so CostGraph keeps the seconds Fireworks
+reports and reconciles them against the hourly rate.
 
 CostGraph reads Fireworks as **FOCUS 1.2** records, one per priced unit. For
 serverless that's per model per token type per day. For dedicated it's per

@@ -1,0 +1,104 @@
+---
+title: Fireworks AI
+description: "Bring Fireworks AI serverless tokens and dedicated GPU hours into CostGraph, pulled by us or pushed by you"
+---
+
+Fireworks AI bills serverless inference per token, where input, cached input,
+and output each carry their own rate. Dedicated deployments are priced per
+GPU-hour and metered in GPU-seconds, so CostGraph keeps the seconds Fireworks
+reports and reconciles them against the hourly rate.
+
+CostGraph reads Fireworks as **FOCUS 1.2** records, one per priced unit. For
+serverless that's per model per token type per day. For dedicated it's per
+deployment per accelerator per day.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply read-only credentials and we call Fireworks once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Before you begin
+
+- In the Fireworks console, go to **Settings > API Keys** and create a key.
+  Create it from a user with the account administrator role. A key without that
+  role returns only its own user's costs, so the bill reads low rather than
+  failing.
+- Copy your account ID from **Settings > Account**. It's the `accounts/<id>`
+  segment in every Fireworks resource name.
+
+## Let CostGraph pull
+
+1. Open **Settings > Integrations** and pick **Fireworks AI**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Enter the values you copied. The form lists what Fireworks needs and marks the
+   optional ones.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Fireworks at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads Fireworks on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider fireworks --sink costgraph
+```
+
+Your Fireworks credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/exporter) covers the three
+ways to run it and the variables it reads.
+
+## Fireworks behavior
+
+Fireworks reports usage and dollars through separate endpoints, which shapes what
+you see:
+
+| What | Where it comes from | Grain |
+| --- | --- | --- |
+| Token and GPU quantities | Usage query | Day, model, token type, or day, deployment, accelerator |
+| Every rated dollar | Billing summary | Day, token type, and billing category |
+| Quota headroom | Quota snapshot | One record per quota, per sync |
+
+Embeddings and image generation don't appear in Fireworks usage responses yet, so
+that spend is absent. Grouping by team, project, or environment needs a Fireworks
+Enterprise plan. Without it, Fireworks rejects the request rather than ignoring
+those fields, so CostGraph asks once and then leaves them out; charges arrive
+attributed to an API key instead.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Fireworks spend appears in Cost Overview and in anomaly
+detection alongside every other provider.
+
+Four signals ride along, so the cost carries its own justification:
+
+- **Cache savings.** Cached input is priced well under uncached input, and
+  Fireworks reports the split, so you can see how much of a bill the prompt cache
+  avoided and how much it didn't.
+- **Idle GPUs.** A dedicated deployment with a replica floor of one or more holds its
+  accelerators whether or not anything is served. CostGraph carries that floor and
+  the scale-to-zero window next to the GPU hours you paid for.
+- **Serving tier.** Premium-tier spend is separated from standard.
+- **Quota headroom.** Fireworks caps monthly spend and request rate, and reaching
+  either throttles or suspends the account, so CostGraph tracks how close your
+  usage is to the caps that stop the service.

@@ -127,7 +127,8 @@
                       "costgraph/integrations/litellm",
                       "costgraph/integrations/truefoundry",
                       "costgraph/integrations/newapi",
-                      "costgraph/integrations/elevenlabs"
+                      "costgraph/integrations/elevenlabs",
+                      "costgraph/integrations/fireworks"
                     ]
                   },
                   {

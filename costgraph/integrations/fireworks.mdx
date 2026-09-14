@@ -74,13 +74,15 @@ you see:
 
 | What | Where it comes from | Grain |
 | --- | --- | --- |
-| Serverless tokens and dollars | Usage and rated-cost queries | Day, model, token type |
-| Dedicated GPU hours | Usage query | Day, deployment, accelerator |
-| Dedicated and training dollars | Billing summary | Day, billing category |
+| Token and GPU quantities | Usage query | Day, model, token type, or day, deployment, accelerator |
+| Every rated dollar | Billing summary | Day, token type, and billing category |
+| Quota headroom | Quota snapshot | One record per quota, per sync |
 
 Embeddings and image generation don't appear in Fireworks usage responses yet, so
-that spend is absent. Grouping by team, project, or environment is a Fireworks
-Enterprise feature; without it, charges arrive unattributed.
+that spend is absent. Grouping by team, project, or environment needs a Fireworks
+Enterprise plan. Without it, Fireworks rejects the request rather than ignoring
+those fields, so CostGraph asks once and then leaves them out; charges arrive
+attributed to an API key instead.
 
 ## What CostGraph does with it
 
@@ -96,6 +98,7 @@ Four signals ride along, so the cost carries its own justification:
 - **Idle GPUs.** A dedicated deployment with a replica floor of one or more holds its
   accelerators whether or not anything is served. CostGraph carries that floor and
   the scale-to-zero window next to the GPU hours you paid for.
-- **Batch versus realtime.** Batch runs at roughly half the serverless rate, so
-  realtime spend that could have been batched stands out.
 - **Serving tier.** Premium-tier spend is separated from standard.
+- **Quota headroom.** Fireworks caps monthly spend and request rate, and reaching
+  either throttles or suspends the account, so CostGraph tracks how close your
+  usage is to the caps that stop the service.

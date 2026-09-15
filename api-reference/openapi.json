@@ -4071,7 +4071,8 @@
             "type": "string"
           },
           "cost_per_hour": {
-            "type": "number"
+            "type": "number",
+            "description": "On-demand-equivalent hourly USD; multiply by\nprovider_pricing_rules.month_hours for monthly."
           },
           "cpu_cores": {
             "type": "number"
@@ -4083,7 +4084,9 @@
             "type": "string"
           },
           "currency": {
-            "type": "string"
+            "type": "string",
+            "description": "Currency the provider published this price in. Cost columns are always\nnormalized USD.",
+            "x-semantic": "currencyCode"
           },
           "gpu_cost_per_hour": {
             "type": "number"
@@ -4101,13 +4104,15 @@
             "type": "string"
           },
           "native_cost_per_hour": {
-            "type": "number"
+            "type": "number",
+            "description": "cost_per_hour as published, before FX normalization. Zero when currency is\nUSD."
           },
           "operating_system": {
             "type": "string"
           },
           "period_billing_hours": {
-            "type": "number"
+            "type": "number",
+            "description": "Commitment term the raw price covers: 1=hourly on-demand;\n8640/25920/43200=1mo/3mo/1yr buckets. cost_per_hour is already normalized to\nhourly."
           },
           "provider": {
             "type": "string"
@@ -4136,7 +4141,8 @@
             "type": "string"
           },
           "usage_type": {
-            "type": "string"
+            "type": "string",
+            "description": "Pricing tier token (ONDEMAND, RESERVED, SPOT_*, *_HBP, *_BYOL,\nCommit1Yr/3Yr). Filter to ONDEMAND for normal pricing."
           }
         }
       },
@@ -4254,7 +4260,9 @@
             "type": "string"
           },
           "currency": {
-            "type": "string"
+            "type": "string",
+            "description": "Currency the provider published this price in. Cost columns are always\nnormalized USD.",
+            "x-semantic": "currencyCode"
           },
           "deployment_option": {
             "type": "string"
@@ -4429,13 +4437,16 @@
             "type": "string"
           },
           "currency": {
-            "type": "string"
+            "type": "string",
+            "description": "Currency the provider published this price in. Cost columns are always\nnormalized USD.",
+            "x-semantic": "currencyCode"
           },
           "id": {
             "type": "string"
           },
           "max_capacity_gb": {
-            "type": "number"
+            "type": "number",
+            "description": "Provisioning upper bound the disk type supports at this price (validation\nrange), not an actual disk size."
           },
           "max_iops": {
             "type": "number"
@@ -4444,7 +4455,8 @@
             "type": "number"
           },
           "min_capacity_gb": {
-            "type": "number"
+            "type": "number",
+            "description": "Provisioning lower bound the disk type supports at this price (validation\nrange), not an actual disk size."
           },
           "min_iops": {
             "type": "number"

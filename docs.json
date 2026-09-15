@@ -110,7 +110,8 @@
                       "costgraph/integrations/modal",
                       "costgraph/integrations/runpod",
                       "costgraph/integrations/depot",
-                      "costgraph/integrations/daytona"
+                      "costgraph/integrations/daytona",
+                      "costgraph/integrations/microsandbox"
                     ]
                   },
                   {
@@ -128,7 +129,8 @@
                       "costgraph/integrations/truefoundry",
                       "costgraph/integrations/newapi",
                       "costgraph/integrations/elevenlabs",
-                      "costgraph/integrations/fireworks"
+                      "costgraph/integrations/fireworks",
+                      "costgraph/integrations/baseten"
                     ]
                   },
                   {

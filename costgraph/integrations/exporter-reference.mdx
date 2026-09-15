@@ -12,7 +12,7 @@ environment.
 
 ## Anthropic
 
-`--provider anthropic` - AI / LLM
+`--provider anthropic` (AI / LLM)
 
 Grain: day x model x token bucket (cost + tokens).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -25,9 +25,40 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/anthrop
 | `ANTHROPIC_ORG_ID` | no | no | Organization the key belongs to. Only needed when the key can see more than one org; otherwise it is resolved for you. |
 | `ANTHROPIC_TENANT_GROUP` | no | no | Workspace field used to split charges into tenants. Leave empty to bill the whole organization as one tenant. |
 
+## Azure
+
+`--provider azure` (Cloud)
+
+Grain: day x resource x service, as the FOCUS export publishes it.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/azure
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `AZURE_TENANT_ID` | yes | no | Tenant id of the Entra ID app (service principal) reading the export. Shown as the directory ID on the app's Overview page. |
+| `AZURE_CLIENT_ID` | yes | no | Client id (application id) of the service principal. The Cloud Shell setup script creates it with Storage Blob Data Reader on the export's storage account. |
+| `AZURE_CLIENT_SECRET` | yes | yes | Client secret of the service principal. Shown once when created. |
+| `AZURE_STORAGE_ACCOUNT` | yes | no | Storage account the FOCUS export writes to, from Cost Management + Billing -> Exports. |
+| `AZURE_CONTAINER` | yes | no | Container inside the storage account that holds the export. |
+| `AZURE_EXPORT_NAME` | no | no | Folder the export writes into. Leave empty to read everything in the container; only set it to read one export among several. |
+
+## Baseten
+
+`--provider baseten` (AI / LLM)
+
+Grain: day x model x token type (model APIs), day x deployment (dedicated), day x job (training).
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/baseten
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `BASETEN_API_KEY` | yes | yes | Baseten API key with organization scope. Create one under Settings -> API keys; it reads the whole organization's billing, not just your own. |
+
 ## Blacksmith
 
-`--provider blacksmith` - CI / build acceleration
+`--provider blacksmith` (CI / build acceleration)
 
 Grain: day x org (billed CI runner spend), plus per-runner-type utilization signals.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -41,7 +72,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/blacksm
 
 ## Buildkite
 
-`--provider buildkite` - Developer platform / CI
+`--provider buildkite` (Developer platform / CI)
 
 Grain: month x user seat (billable unit) with per-user build activity as the active-vs-assigned value signal.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -56,7 +87,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/buildki
 
 ## Cherry Servers
 
-`--provider cherryservers` - Cloud (bare metal)
+`--provider cherryservers` (Cloud (bare metal))
 
 Grain: resource run-rate (server x project, prorated to the window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -70,7 +101,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cherrys
 
 ## ClickHouse Cloud
 
-`--provider clickhouse` - Managed database
+`--provider clickhouse` (Managed database)
 
 Grain: usage cost record (service x metric x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -85,7 +116,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/clickho
 
 ## Cloudflare
 
-`--provider cloudflare` - Cloud / edge
+`--provider cloudflare` (Cloud / edge)
 
 Grain: billable-usage line item (service x day, FOCUS-native fields).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -99,7 +130,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cloudfl
 
 ## Confluent Cloud
 
-`--provider confluent` - Streaming (Kafka)
+`--provider confluent` (Streaming (Kafka))
 
 Grain: billing line item (product x resource).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -114,7 +145,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/conflue
 
 ## CostGraph
 
-`--provider costgraph` - FinOps platform
+`--provider costgraph` (FinOps platform)
 
 Grain: billing period x workspace x meter, plus a row per fee, tax and credit.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -124,11 +155,11 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/costgra
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
 | `COSTGRAPH_API_KEY` | yes | yes | API key with the focus:read scope. Reads what your organization owes CostGraph. |
-| `COSTGRAPH_URL` | no | no | API base URL. Defaults to https://api.costgraph.ai. Set this to your own deployment's API URL on a self-hosted install. |
+| `COSTGRAPH_URL` | no | no | API base URL. Defaults to https://api.costgraph.ai. |
 
 ## Cursor
 
-`--provider cursor` - AI coding agent
+`--provider cursor` (AI coding agent)
 
 Grain: day x model x user (charged spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -142,7 +173,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/cursor
 
 ## Datadog
 
-`--provider datadog` - Observability
+`--provider datadog` (Observability)
 
 Grain: cost report line item (org x product x charge type, monthly).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -156,7 +187,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/datadog
 
 ## Daytona
 
-`--provider daytona` - Cloud (dev environments)
+`--provider daytona` (Cloud (dev environments))
 
 Grain: sandbox run-rate (sandbox x organization, prorated to the window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -170,7 +201,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/daytona
 
 ## Depot
 
-`--provider depot` - Developer tools (CI/CD)
+`--provider depot` (Developer tools (CI/CD))
 
 Grain: usage cost record (product x project/repo x window).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -188,7 +219,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/depot
 
 ## DigitalOcean
 
-`--provider digitalocean` - Cloud (IaaS)
+`--provider digitalocean` (Cloud (IaaS))
 
 Grain: invoice line item (product x resource).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -202,7 +233,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/digital
 
 ## ElevenLabs
 
-`--provider elevenlabs` - AI / LLM
+`--provider elevenlabs` (AI / LLM)
 
 Grain: day x model, or day x member when workspace metrics on (credit usage) + plan quota snapshot.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -215,9 +246,23 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/elevenl
 | `ELEVENLABS_ACCOUNT_ID` | no | no | Label for the ElevenLabs workspace this key belongs to, used as the billing account id. Defaults to elevenlabs when unset. |
 | `ELEVENLABS_WORKSPACE_METRICS` | no | no | Set true to attribute usage per workspace member instead of per model. Needs a key with workspace read access; falls back to per-model if the key lacks it. Defaults to false. |
 
+## Fireworks AI
+
+`--provider fireworks` (AI / LLM)
+
+Grain: day x model x token type (serverless), day x deployment x accelerator (dedicated), plus a quota snapshot.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/fireworks
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `FIREWORKS_API_KEY` | yes | yes | Fireworks API key. Create one under Account Settings -> API Keys. The user it belongs to needs the account administrator role, otherwise the cost query returns only that user's own spend. |
+| `FIREWORKS_ACCOUNT_ID` | yes | no | Account slug the usage is billed to, shown in the console URL and in firectl output. |
+
 ## GitHub
 
-`--provider github` - Developer platform / CI
+`--provider github` (Developer platform / CI)
 
 Grain: day x product x SKU x repository (gross/net billed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -231,7 +276,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/github
 
 ## Grafana Cloud
 
-`--provider grafanacloud` - Observability
+`--provider grafanacloud` (Observability)
 
 Grain: billed dimension x stack (per-stack attributed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -245,7 +290,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/grafana
 
 ## Hatchet Cloud
 
-`--provider hatchet` - Task orchestration
+`--provider hatchet` (Task orchestration)
 
 Grain: task-run cost record (tenant x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -262,7 +307,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/hatchet
 
 ## Helicone
 
-`--provider helicone` - AI gateway / observability
+`--provider helicone` (AI gateway / observability)
 
 Grain: day x model x upstream provider (request spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -277,7 +322,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/helicon
 
 ## Akamai Cloud (Linode)
 
-`--provider linode` - Cloud (IaaS)
+`--provider linode` (Cloud (IaaS))
 
 Grain: invoice line item (service x resource, per invoice).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -291,7 +336,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/linode
 
 ## LiteLLM
 
-`--provider litellm` - AI gateway
+`--provider litellm` (AI gateway)
 
 Grain: day x model x virtual key (tracked spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -303,9 +348,22 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/litellm
 | `LITELLM_BASE_URL` | yes | no | Base URL of your LiteLLM proxy, e.g. https://litellm.mycompany.com. |
 | `LITELLM_MASTER_KEY` | yes | yes | LiteLLM proxy master key (sk-...). Required to read spend across all virtual keys. |
 
+## Microsandbox Cloud
+
+`--provider microsandbox` (Compute)
+
+Grain: day x sandbox, day x volume, plus a quota snapshot.
+Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
+
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/microsandbox
+
+| Variable | Required | Secret | Description |
+| --- | --- | --- | --- |
+| `MICROSANDBOX_API_KEY` | yes | yes | Organization API key (msb_ak_...), created in the microsandbox console. It is org-scoped and reads the whole organization's usage. |
+
 ## Modal
 
-`--provider modal` - Serverless GPU / compute
+`--provider modal` (Serverless GPU / compute)
 
 Grain: day x object (per-resource CPU/mem/GPU cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -320,7 +378,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/modal
 
 ## New API
 
-`--provider newapi` - AI gateway
+`--provider newapi` (AI gateway)
 
 Grain: day x model x token (tracked quota spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -335,12 +393,12 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/newapi
 
 ## Object Store
 
-`--provider objectstore` - Bill published to storage
+`--provider objectstore` (Bill published to storage)
 
 Grain: whatever the published bill carries (a row per resource, service and day for most providers).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
 
-Provider documentation: this section - the object store reader has no provider page of its own.
+Provider documentation: https://docs.costgraph.ai/costgraph/integrations/objectstore
 
 | Variable | Required | Secret | Description |
 | --- | --- | --- | --- |
@@ -348,14 +406,14 @@ Provider documentation: this section - the object store reader has no provider p
 | `OBJECTSTORE_ENDPOINT` | no | no | S3-compatible endpoint, for example https://object.storage.eu01.stackit.schwarz. Leave empty for AWS S3. |
 | `OBJECTSTORE_REGION` | no | no | Region the bucket lives in. Defaults to us-east-1, which most S3-compatible stores ignore. |
 | `OBJECTSTORE_PREFIX` | no | no | Path within the bucket to read. Leave empty to read the whole bucket. |
-| `OBJECTSTORE_ACCESS_KEY_ID` | no | yes | Access key with read permission on the bucket. Leave empty on AWS to use the role or profile the exporter already runs as. |
-| `OBJECTSTORE_SECRET_ACCESS_KEY` | no | yes | Secret for the access key. |
+| `OBJECTSTORE_ACCESS_KEY_ID` | no | yes | Access key with read permission on the bucket. On Azure Blob Storage, a service principal instead: "<tenant id>/<client id>" of an app granted Storage Blob Data Reader. Leave empty on AWS to use the role or profile the exporter already runs as. |
+| `OBJECTSTORE_SECRET_ACCESS_KEY` | no | yes | Secret for the access key, or the client secret of the service principal on Azure Blob Storage. |
 | `OBJECTSTORE_KIND` | no | no | The storage backend the bill lives in: s3 for AWS S3 or any S3-compatible store (the default), azure for Azure Blob Storage, or local for a directory on disk. Usually inferred from the endpoint, so you rarely set it. |
 | `OBJECTSTORE_LAYOUT` | no | no | How to tell which files make up a billing period: flat (the default) reads every file under the prefix; latest-run reads only the newest export when the provider rewrites the period on each run (STACKIT); manifest reads exactly the files a published manifest lists (AWS, Azure). |
 
 ## OpenAI
 
-`--provider openai` - AI / LLM
+`--provider openai` (AI / LLM)
 
 Grain: day x model x token bucket (billed cost + quantity).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -370,7 +428,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/openai
 
 ## OpenRouter
 
-`--provider openrouter` - AI gateway
+`--provider openrouter` (AI gateway)
 
 Grain: day x model x upstream provider (credit spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -384,7 +442,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/openrou
 
 ## OVHcloud
 
-`--provider ovhcloud` - Cloud (IaaS)
+`--provider ovhcloud` (Cloud (IaaS))
 
 Grain: invoice line item (service x resource, per bill).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -399,7 +457,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/ovhclou
 
 ## PlanetScale
 
-`--provider planetscale` - Managed database
+`--provider planetscale` (Managed database)
 
 Grain: invoice month x database x billing metric.
 
@@ -412,7 +470,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/planets
 
 ## Redis Cloud
 
-`--provider rediscloud` - Managed database
+`--provider rediscloud` (Managed database)
 
 Grain: cost-report line item (subscription/database x usage period).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -426,7 +484,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/rediscl
 
 ## RespanAI
 
-`--provider respanai` - AI gateway / observability
+`--provider respanai` (AI gateway / observability)
 
 Grain: day x model x upstream provider (request spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -441,7 +499,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/respana
 
 ## RunPod
 
-`--provider runpod` - Cloud (GPU)
+`--provider runpod` (Cloud (GPU))
 
 Grain: billed cost record (pod/endpoint x GPU type x day).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -455,7 +513,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/runpod
 
 ## Scaleway
 
-`--provider scaleway` - Cloud (IaaS)
+`--provider scaleway` (Cloud (IaaS))
 
 Grain: billing charge (project x SKU x resource), daily allocation.
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -471,7 +529,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/scalewa
 
 ## STACKIT
 
-`--provider stackit` - Cloud (IaaS)
+`--provider stackit` (Cloud (IaaS))
 
 Grain: cost report datapoint (project x service/SKU, daily).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -489,7 +547,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/stackit
 
 ## TrueFoundry
 
-`--provider truefoundry` - AI gateway
+`--provider truefoundry` (AI gateway)
 
 Grain: day x model x virtual account (gateway-computed spend).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -503,7 +561,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/truefou
 
 ## Vercel
 
-`--provider vercel` - Frontend cloud / PaaS
+`--provider vercel` (Frontend cloud / PaaS)
 
 Grain: day x service x project (FOCUS-native charges).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.
@@ -517,7 +575,7 @@ Provider documentation: https://docs.costgraph.ai/costgraph/integrations/vercel
 
 ## xAI
 
-`--provider xai` - AI / LLM
+`--provider xai` (AI / LLM)
 
 Grain: day x model (billed cost).
 Reads the current month by default; pass `--month` or `--start`/`--end` for another window.

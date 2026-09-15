@@ -110,7 +110,8 @@
                       "costgraph/integrations/modal",
                       "costgraph/integrations/runpod",
                       "costgraph/integrations/depot",
-                      "costgraph/integrations/daytona"
+                      "costgraph/integrations/daytona",
+                      "costgraph/integrations/microsandbox"
                     ]
                   },
                   {

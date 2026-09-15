@@ -1,0 +1,86 @@
+---
+title: Baseten
+description: "Bring Baseten model APIs, dedicated serving, and training cost into CostGraph"
+---
+
+Baseten runs serverless model APIs priced per token, dedicated model serving
+priced per minute of deployment uptime, and training. Input, cached input, and
+output each carry their own rate.
+
+CostGraph reads Baseten as **FOCUS 1.2** records, one per priced unit: per model
+per token type per day for model APIs, and per deployment per day for dedicated
+serving.
+
+## Choose how the data reaches us
+
+<CardGroup cols={2}>
+  <Card title="CostGraph pulls it" icon="cloud-arrow-down">
+    You supply a read-only key and we call Baseten once a day. Nothing to run.
+  </Card>
+  <Card title="You push it" icon="cloud-arrow-up">
+    You send us FOCUS records over the API. Credentials never leave your infrastructure.
+  </Card>
+</CardGroup>
+
+## Before you begin
+
+- In the Baseten console, go to **Settings > API keys** and create a key. It
+  reads your whole organization's billing, not just your own usage.
+
+## Let CostGraph pull
+
+1. Open **Settings > Integrations** and pick **Baseten**.
+2. Name the connection and pick the tenant these charges belong to.
+3. Enter the key you copied.
+4. Select **Connect**.
+
+CostGraph verifies the credentials with a short fetch before saving, so a wrong
+value or a missing permission fails while you are still on the form.
+
+<Note>
+Credentials are encrypted at rest and used only to read billing data. Revoke them in
+Baseten at any time and the connection stops; nothing else is affected.
+</Note>
+
+## Push it yourself
+
+Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
+the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads Baseten on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider baseten --sink costgraph
+```
+
+[Run the exporter](/costgraph/integrations/exporter) covers the three ways to run
+it and the variables it reads.
+
+## Baseten behavior
+
+Baseten's billing summary reports token counts and rounds its own money to whole
+cents, which reads as zero for anything smaller. CostGraph prices each token type
+from the rates Baseten publishes for that model instead, so a fraction of a cent
+still lands as a real figure. Cached input is priced well under uncached input.
+
+A model that is not in Baseten's catalogue is skipped rather than priced at a
+guessed rate, and billing lags behind usage, so a sync run immediately after
+traffic can read empty.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up into
+daily cost. From there Baseten spend appears in Cost Overview and in anomaly
+detection alongside every other provider.
+
+Two signals ride along:
+
+- **Cache savings.** Cached input is much cheaper than uncached, and Baseten
+  reports the split, so you can see how much of a bill the prompt cache avoided.
+- **Idle deployments.** A dedicated deployment reports billed minutes and the
+  requests it served on the same row, so one that is paid for and barely used
+  stands out.

@@ -32,6 +32,7 @@ GET /allocation/compute
 GET /allocation/summary
 GET /allocation/compute/summary
 GET /assets
+GET /cloudCost
 ```
 
 `/allocation` and `/allocation/compute` are the same query, as they are in
@@ -98,6 +99,23 @@ node's bill. A disk carries its provisioned bytes and storage class.
 
 Load balancers aren't reported.
 
+## Cloud cost
+
+`GET /cloudCost` returns what your vendors billed you, as opposed to how
+CostGraph allocated it. It takes `window`, `aggregate`, `step`, and
+`accumulate`.
+
+`aggregate` accepts `invoiceEntityID`, `accountID`, `regionID`,
+`availabilityZone`, `provider`, `providerID`, `category`, and `service`. It
+defaults to `provider,service`.
+
+Every vendor CostGraph ingests a bill for appears here, SaaS and cloud alike, so
+aggregating by `provider` returns Datadog and GitHub next to AWS. Costs come
+from the bill, so they exclude CostGraph's own allocation of that spend.
+
+`kubernetesPercent` reports `0`. Filling it in means matching each billed
+resource back to a Kubernetes node, which CostGraph doesn't resolve today.
+
 ## Cost model
 
 CostGraph bills CPU and memory on the greater of a container's request and its
@@ -110,15 +128,22 @@ node so an over-committed node can't offset an empty one. Ask for it with
 
 ## What CostGraph doesn't serve
 
-CostGraph implements the allocation and asset queries. The following parts of
-the OpenCost API return no data.
+CostGraph implements the allocation, asset, and cloud cost queries. The
+following parts of the OpenCost API return no data.
 
 | Parameter or route | Behavior |
 | --- | --- |
 | `filter` | Ignored. Aggregate to the grain you want instead. |
 | `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
-| `/cloudCost` | Not served. Read cloud spend through the CostGraph cost API. |
-| `/customCost` | Not served. |
+| `/customCost/total`, `/customCost/timeseries` | Not served. SaaS spend is reported by `/cloudCost` instead. |
+
+### Why SaaS spend isn't on customCost
+
+OpenCost splits its API because it ingests cloud bills and third-party costs
+through two different pipelines. CostGraph ingests every vendor the same way,
+into one FOCUS dataset. Splitting the response again would mean inventing a
+boundary and classifying each new vendor against it, so `/cloudCost` reports
+both.
 
 Allocation covers CPU and memory. Storage, network, and load balancer cost
 aren't part of the response, so `pvCost`, `networkCost`, and

@@ -24,12 +24,19 @@ https://api.costgraph.ai/api/v1/tenant/opencost
 X-API-Key: bl_your_key
 ```
 
-CostGraph serves the allocation query at both paths OpenCost uses:
+CostGraph serves these routes:
 
 ```text
 GET /allocation
 GET /allocation/compute
+GET /allocation/summary
+GET /allocation/compute/summary
+GET /assets
 ```
+
+`/allocation` and `/allocation/compute` are the same query, as they are in
+OpenCost. The summary routes return the same data in OpenCost's lighter summary
+shape.
 
 A client that lets you set a base URL needs no other change. A client that
 hardcodes `http://opencost:9003` needs that value replaced.
@@ -80,6 +87,17 @@ by allocation name.
 }
 ```
 
+## Assets
+
+`GET /assets` returns the nodes and disks billed over the window, keyed the way
+OpenCost keys them. It takes `window` and `step`.
+
+A node carries its instance type, the cores and bytes it offered over the
+window, and its cost split across CPU and memory. The two parts add back to the
+node's bill. A disk carries its provisioned bytes and storage class.
+
+Load balancers aren't reported.
+
 ## Cost model
 
 CostGraph bills CPU and memory on the greater of a container's request and its
@@ -92,15 +110,15 @@ node so an over-committed node can't offset an empty one. Ask for it with
 
 ## What CostGraph doesn't serve
 
-CostGraph implements the allocation query. The following parts of the OpenCost
-API return no data.
+CostGraph implements the allocation and asset queries. The following parts of
+the OpenCost API return no data.
 
 | Parameter or route | Behavior |
 | --- | --- |
 | `filter` | Ignored. Aggregate to the grain you want instead. |
 | `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
-| `/assets`, `/cloudCost` | Not served. Read cloud spend through the CostGraph cost API. |
-| `/allocation/summary` | Not served. |
+| `/cloudCost` | Not served. Read cloud spend through the CostGraph cost API. |
+| `/customCost` | Not served. |
 
 Allocation covers CPU and memory. Storage, network, and load balancer cost
 aren't part of the response, so `pvCost`, `networkCost`, and

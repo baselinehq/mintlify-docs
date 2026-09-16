@@ -5,8 +5,9 @@ description: "Bring Blacksmith CI runner cost into CostGraph, pulled by us or pu
 
 Blacksmith runs managed GitHub Actions runners and bills the CI minutes they burn.
 
-CostGraph reads Blacksmith as **FOCUS 1.2** records at a grain of one record per
-org per day.
+CostGraph reads Blacksmith as **FOCUS 1.2** records, one per org per day. When
+Blacksmith serves usage without cost, the grain is one record per org per month.
+See [What you get with an organization token](#what-you-get-with-an-organization-token).
 
 ## Choose how the data reaches us
 
@@ -25,6 +26,30 @@ org per day.
 - Note the GitHub organization login exactly as GitHub shows it, including case.
   Blacksmith resolves the installation by the exact login, so `acmecorp` returns a 404
   where `AcmeCorp` succeeds.
+- Optionally, find your price per billable minute on a recent Blacksmith invoice.
+
+## What you get with an organization token
+
+Blacksmith serves its own cost figures only to a signed-in dashboard session. An
+organization token, which is what an unattended integration uses, reads usage but
+not cost.
+
+So CostGraph ingests your **billable minutes** per month, plus the free-minute
+allowance. That is enough to track CI consumption and see how far past the free tier
+you are running.
+
+To turn those minutes into spend, supply your price per billable minute when you
+connect. CostGraph multiplies it out and reports the result as cost. Leave it empty
+and the minutes arrive with no cost attached, flagged so nothing reads them as free.
+
+<Note>
+CostGraph doesn't pick a rate for you. Blacksmith prices by runner size, and an
+organization token can't read your runner mix. A default would be a number we
+invented and reported as your spend.
+</Note>
+
+A blended rate from your invoice stays accurate while your runner mix holds. Revisit
+it if you change runner sizes.
 
 ## Let CostGraph pull
 
@@ -67,3 +92,6 @@ Records land as raw billing rows, are normalised into line items, and roll up in
 daily cost. From there Blacksmith spend appears in Cost Overview and in anomaly
 detection alongside every other provider, so runners billed for more than they
 actually ran stand out as waste.
+
+When only minutes are available, they chart as usage. A month that jumps well past
+the free allowance surfaces the same way a cost spike does.

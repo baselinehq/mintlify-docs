@@ -1,0 +1,113 @@
+---
+title: OpenCost API
+description: "Read Kubernetes allocation from tools that already speak OpenCost"
+---
+
+CostGraph serves the OpenCost allocation API. Tools built against OpenCost, such
+as Grafana dashboards, cost scrapers, and CI budget checks, read CostGraph by
+changing the address they point at.
+
+The response is the allocation format OpenCost defines, field for field. You
+don't map or rename anything.
+
+## Before you begin
+
+- An API key with the `operator:read` scope. Create one in **Settings > API keys**.
+- At least one connected Kubernetes cluster.
+
+## Endpoint
+
+Point your client at the base URL and send the key as a header.
+
+```text
+https://api.costgraph.ai/api/v1/tenant/opencost
+X-API-Key: bl_your_key
+```
+
+CostGraph serves the allocation query at both paths OpenCost uses:
+
+```text
+GET /allocation
+GET /allocation/compute
+```
+
+A client that lets you set a base URL needs no other change. A client that
+hardcodes `http://opencost:9003` needs that value replaced.
+
+## Query parameters
+
+`window` is required. Everything else is optional.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report. Accepts a duration (`24h`, `7d`), `today`, `yesterday`, or a comma-separated pair of RFC3339 timestamps. |
+| `aggregate` | string | A comma-separated list of properties to group by. Omit it to get one allocation per container. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `accumulate` | boolean | Collapse the range into a single set. |
+| `includeIdle` | boolean | Return unallocated cluster cost as its own `__idle__` allocation. Off by default. |
+| `shareIdle` | boolean | Distribute idle across the other allocations instead, weighted by what each one consumes. |
+
+`aggregate` accepts `cluster`, `node`, `namespace`, `controller`, `pod`, and
+`container`. Names are composed the way OpenCost composes them: the properties
+you asked for, joined by `/`. A controller is rendered as its kind and name, so
+`aggregate=controller` returns `deployment:api`. A property with no value
+returns `__unallocated__`.
+
+## Response
+
+The response is a `data` array holding one allocation set per step, each keyed
+by allocation name.
+
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "kube-system": {
+        "name": "kube-system",
+        "properties": { "cluster": "prod", "namespace": "kube-system" },
+        "window": { "start": "2026-09-01T00:00:00Z", "end": "2026-09-02T00:00:00Z" },
+        "cpuCoreHours": 24,
+        "cpuCost": 1.5,
+        "cpuEfficiency": 0.5,
+        "ramByteHours": 2147483648,
+        "ramCost": 0.5,
+        "totalCost": 2,
+        "totalEfficiency": 0.5
+      }
+    }
+  ]
+}
+```
+
+## Cost model
+
+CostGraph bills CPU and memory on the greater of a container's request and its
+usage, which is what the OpenCost specification defines as workload cost. A
+container that reserves more than it uses is billed for the reservation.
+
+Idle is the part of a node's bill that no container accounts for, measured per
+node so an over-committed node can't offset an empty one. Ask for it with
+`includeIdle=true` and workload cost plus idle equals the cluster bill.
+
+## What CostGraph doesn't serve
+
+CostGraph implements the allocation query. The following parts of the OpenCost
+API return no data.
+
+| Parameter or route | Behavior |
+| --- | --- |
+| `filter` | Ignored. Aggregate to the grain you want instead. |
+| `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
+| `/assets`, `/cloudCost` | Not served. Read cloud spend through the CostGraph cost API. |
+| `/allocation/summary` | Not served. |
+
+Allocation covers CPU and memory. Storage, network, and load balancer cost
+aren't part of the response, so `pvCost`, `networkCost`, and
+`loadBalancerCost` report `0`.
+
+## Limits
+
+A request that asks for more than 10,000 steps, such as a 30 day window at a one
+second step, returns `400`. A query returning more than 200,000 allocations
+returns `400`. Widen the step or narrow the window.

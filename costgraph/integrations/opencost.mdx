@@ -145,9 +145,10 @@ into one FOCUS dataset. Splitting the response again would mean inventing a
 boundary and classifying each new vendor against it, so `/cloudCost` reports
 both.
 
-Allocation covers CPU and memory. Storage, network, and load balancer cost
-aren't part of the response, so `pvCost`, `networkCost`, and
-`loadBalancerCost` report `0`.
+Allocation covers CPU and memory. CostGraph doesn't calculate storage, network
+or load balancer cost, so `pvCost`, `networkCost` and `loadBalancerCost` are
+present in every allocation and hold `0`. A client can read them without a nil
+check, and must not read that `0` as a measured zero.
 
 ## Limits
 

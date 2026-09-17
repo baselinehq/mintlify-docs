@@ -3,19 +3,19 @@ title: OpenCost API
 description: "Read Kubernetes allocation from tools that already speak OpenCost"
 ---
 
-CostGraph serves the OpenCost allocation API. Tools built against OpenCost, such
-as Grafana dashboards, cost scrapers, and CI budget checks, read CostGraph by
-changing the address they point at.
+CostGraph serves the OpenCost API. Tools built against OpenCost, such as Grafana
+dashboards, cost scrapers, and CI budget checks, read CostGraph when you change
+the address they point at.
 
-The response is the allocation format OpenCost defines, field for field. You
-don't map or rename anything.
+Responses use the formats OpenCost defines, field for field. You don't map or
+rename anything.
 
 ## Before you begin
 
 - An API key with the `operator:read` scope. Create one in **Settings > API keys**.
 - At least one connected Kubernetes cluster.
 
-## Endpoint
+## Connect a client
 
 Point your client at the base URL and send the key as a header.
 
@@ -23,6 +23,9 @@ Point your client at the base URL and send the key as a header.
 https://api.costgraph.ai/api/v1/tenant/opencost
 X-API-Key: bl_your_key
 ```
+
+A client that lets you set a base URL needs no other change. A client that
+hardcodes `http://opencost:9003` needs that value replaced.
 
 CostGraph serves these routes:
 
@@ -35,33 +38,27 @@ GET /assets
 GET /cloudCost
 ```
 
-`/allocation` and `/allocation/compute` are the same query, as they are in
-OpenCost. The summary routes return the same data in OpenCost's lighter summary
-shape.
+`/allocation` and `/allocation/compute` run the same query, as they do in
+OpenCost. The summary routes return the same data in the lighter summary shape.
 
-A client that lets you set a base URL needs no other change. A client that
-hardcodes `http://opencost:9003` needs that value replaced.
-
-## Query parameters
+## Query allocation
 
 `window` is required. Everything else is optional.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `window` | string | The period to report. Accepts a duration (`24h`, `7d`), `today`, `yesterday`, or a comma-separated pair of RFC3339 timestamps. |
+| `window` | string | The period to report. Accepts a duration such as `24h` or `7d`, the words `today` or `yesterday`, or a comma-separated pair of RFC3339 timestamps. |
 | `aggregate` | string | A comma-separated list of properties to group by. Omit it to get one allocation per container. |
 | `step` | string | The duration of each returned set. Defaults to the whole window. |
-| `accumulate` | boolean | Collapse the range into a single set. |
-| `includeIdle` | boolean | Return unallocated cluster cost as its own `__idle__` allocation. Off by default. |
-| `shareIdle` | boolean | Distribute idle across the other allocations instead, weighted by what each one consumes. |
+| `accumulate` | boolean | Collapses the range into a single set. |
+| `includeIdle` | boolean | Returns unallocated cluster cost as its own `__idle__` allocation. Off by default. |
+| `shareIdle` | boolean | Distributes idle across the other allocations, weighted by what each one consumes. |
 
 `aggregate` accepts `cluster`, `node`, `namespace`, `controller`, `pod`, and
-`container`. Names are composed the way OpenCost composes them: the properties
-you asked for, joined by `/`. A controller is rendered as its kind and name, so
+`container`. CostGraph composes names the way OpenCost does, joining the
+properties you asked for with `/`. A controller carries its kind and name, so
 `aggregate=controller` returns `deployment:api`. A property with no value
 returns `__unallocated__`.
-
-## Response
 
 The response is a `data` array holding one allocation set per step, each keyed
 by allocation name.
@@ -88,33 +85,31 @@ by allocation name.
 }
 ```
 
-## Assets
+## Query assets
 
 `GET /assets` returns the nodes and disks billed over the window, keyed the way
 OpenCost keys them. It takes `window` and `step`.
 
 A node carries its instance type, the cores and bytes it offered over the
 window, and its cost split across CPU and memory. The two parts add back to the
-node's bill. A disk carries its provisioned bytes and storage class.
+node's bill. A disk carries its provisioned bytes and storage class. Load
+balancers aren't reported.
 
-Load balancers aren't reported.
+## Query cloud cost
 
-## Cloud cost
-
-`GET /cloudCost` returns what your vendors billed you, as opposed to how
-CostGraph allocated it. It takes `window`, `aggregate`, `step`, and
-`accumulate`.
+`GET /cloudCost` returns what your vendors billed you, rather than how CostGraph
+allocated that spend to your workloads. It takes `window`, `aggregate`, `step`,
+and `accumulate`.
 
 `aggregate` accepts `invoiceEntityID`, `accountID`, `regionID`,
 `availabilityZone`, `provider`, `providerID`, `category`, and `service`. It
 defaults to `provider,service`.
 
-Every vendor CostGraph ingests a bill for appears here, SaaS and cloud alike, so
-aggregating by `provider` returns Datadog and GitHub next to AWS. Costs come
-from the bill, so they exclude CostGraph's own allocation of that spend.
+Every vendor you connect appears here, software services and cloud providers
+alike, so aggregating by `provider` returns Datadog and GitHub next to AWS.
 
-`kubernetesPercent` reports `0`. Filling it in means matching each billed
-resource back to a Kubernetes node, which CostGraph doesn't resolve today.
+`kubernetesPercent` reports `0`, because CostGraph doesn't yet attribute a
+billed resource back to the Kubernetes node that used it.
 
 ## Cost model
 
@@ -122,36 +117,28 @@ CostGraph bills CPU and memory on the greater of a container's request and its
 usage, which is what the OpenCost specification defines as workload cost. A
 container that reserves more than it uses is billed for the reservation.
 
-Idle is the part of a node's bill that no container accounts for, measured per
-node so an over-committed node can't offset an empty one. Ask for it with
+Idle is the part of a node's bill that no container accounts for. CostGraph
+measures it per node, so an over-committed node can't offset an empty one. Pass
 `includeIdle=true` and workload cost plus idle equals the cluster bill.
 
 ## What CostGraph doesn't serve
 
-CostGraph implements the allocation, asset, and cloud cost queries. The
-following parts of the OpenCost API return no data.
+CostGraph serves the allocation, asset, and cloud cost queries. The following
+parts of the OpenCost API return no data.
 
 | Parameter or route | Behavior |
 | --- | --- |
 | `filter` | Ignored. Aggregate to the grain you want instead. |
-| `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
-| `/customCost/total`, `/customCost/timeseries` | Not served. SaaS spend is reported by `/cloudCost` instead. |
+| `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
+| `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
 
-### Why SaaS spend isn't on customCost
-
-OpenCost splits its API because it ingests cloud bills and third-party costs
-through two different pipelines. CostGraph ingests every vendor the same way,
-into one FOCUS dataset. Splitting the response again would mean inventing a
-boundary and classifying each new vendor against it, so `/cloudCost` reports
-both.
-
-Allocation covers CPU and memory. CostGraph doesn't calculate storage, network
-or load balancer cost, so `pvCost`, `networkCost` and `loadBalancerCost` are
-present in every allocation and hold `0`. A client can read them without a nil
-check, and must not read that `0` as a measured zero.
+Allocation covers CPU and memory. CostGraph doesn't calculate storage, network,
+or load balancer cost, so `pvCost`, `networkCost`, and `loadBalancerCost` appear
+in every allocation and hold `0`. Read them without a nil check, and don't read
+that `0` as a measured zero.
 
 ## Limits
 
-A request that asks for more than 10,000 steps, such as a 30 day window at a one
-second step, returns `400`. A query returning more than 200,000 allocations
-returns `400`. Widen the step or narrow the window.
+Two limits return `400`. A request produces more than 10,000 sets, such as a
+30-day window at a one-second step. A request returns more than 200,000
+allocations. Widen the step or narrow the window.

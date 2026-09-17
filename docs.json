@@ -211,7 +211,8 @@
                 "group": "Compatibility",
                 "icon": "plug",
                 "pages": [
-                  "costgraph/integrations/opencost"
+                  "costgraph/integrations/opencost",
+                  "costgraph/integrations/migrate-from-opencost"
                 ]
               }
             ]

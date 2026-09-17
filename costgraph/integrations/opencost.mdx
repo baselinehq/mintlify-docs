@@ -77,7 +77,10 @@ by allocation name.
         "cpuEfficiency": 0.5,
         "ramByteHours": 2147483648,
         "ramCost": 0.5,
-        "totalCost": 2,
+        "pvCost": 0.75,
+        "networkCost": 0.2,
+        "loadBalancerCost": 0.1,
+        "totalCost": 3.05,
         "totalEfficiency": 0.5
       }
     }
@@ -116,10 +119,32 @@ billed resource back to the Kubernetes node that used it.
 CostGraph bills CPU and memory on the greater of a container's request and its
 usage, which is what the OpenCost specification defines as workload cost. A
 container that reserves more than it uses is billed for the reservation.
+Storage, network, and load balancers are billed on what the vendor charged.
 
 Idle is the part of a node's bill that no container accounts for. CostGraph
 measures it per node, so an over-committed node can't offset an empty one. Pass
 `includeIdle=true` and workload cost plus idle equals the cluster bill.
+
+### Storage
+
+A volume's cost reaches the container that mounts it. Each allocation lists the
+volumes behind it in `pvs`, and `pvCost` is their total. A volume mounted by
+several containers is divided between them, so the shares add back to the
+volume's bill.
+
+### Network
+
+CostGraph prices traffic by locality, so crossing a zone or leaving for the
+internet costs where staying inside a zone doesn't. An edge charged in both
+directions gives half to each end. An edge charged one way gives the whole cost
+to that end. A workload's traffic is then divided between the pods running it,
+so a controller sees the whole and a pod sees its share.
+
+### Load balancers
+
+A load balancer's cost reaches the pods its Service selects, divided between
+them. Credits and tax name no resource on the vendor's bill, so they belong to
+no pod and are left out.
 
 ## What CostGraph doesn't serve
 
@@ -131,11 +156,6 @@ parts of the OpenCost API return no data.
 | `filter` | Ignored. Aggregate to the grain you want instead. |
 | `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
 | `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
-
-Allocation covers CPU and memory. CostGraph doesn't calculate storage, network,
-or load balancer cost, so `pvCost`, `networkCost`, and `loadBalancerCost` appear
-in every allocation and hold `0`. Read them without a nil check, and don't read
-that `0` as a measured zero.
 
 ## Limits
 

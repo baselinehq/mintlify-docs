@@ -107,16 +107,19 @@ client can notice.
 | OpenCost | CostGraph |
 | --- | --- |
 | `http://opencost:9003/allocation` | `https://api.costgraph.ai/api/v1/tenant/opencost/allocation` with `X-API-Key` |
-| `filter` parameters | Ignored. Aggregate to the grain you want instead. |
+| `filter` parameters | Honored, over cluster, node, namespace, controller, pod, and container. |
 | `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
-| `pvCost`, `networkCost`, `loadBalancerCost` | Present and `0`. CostGraph allocates CPU and memory. |
+| `pvCost`, `networkCost`, `loadBalancerCost` | Filled in from what the vendor charged, alongside CPU and memory. |
+| `gpuCost` | Present and `0`. GPU use is not metered per container yet. |
 | `opencost_*` Prometheus metrics | Not served. |
 | Grafana dashboards on those metrics | Not supported. Read the allocation API or the CostGraph dashboard. |
-| `kubectl cost` | Not supported. It port-forwards to the in-cluster OpenCost service. |
+| `kubectl cost` | Supported. Turn on the operator's in-cluster Service, which the plugin reaches the same way it reached OpenCost. |
 | `/customCost` routes | Not served. `/cloudCost` reports software service spend with cloud spend. |
 
-The full parameter list, the naming rules for `aggregate`, and the request
-limits are on the [OpenCost API](/costgraph/integrations/opencost) page.
+The [OpenCost API](/costgraph/integrations/opencost) page has the full parameter
+list, the naming rules for `aggregate`, and the request limits. It also covers
+serving the API from a Service inside the cluster, which is what `kubectl cost`
+reads.
 
 ## Remove OpenCost
 

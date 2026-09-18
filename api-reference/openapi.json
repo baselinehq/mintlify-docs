@@ -4189,11 +4189,20 @@
       "ComputeRecommendation": {
         "type": "object",
         "properties": {
+          "cost_per_work_unit": {
+            "type": "number"
+          },
+          "cpu_class": {
+            "type": "string"
+          },
           "pricing": {
             "$ref": "#/components/schemas/ComputePrice"
           },
           "savings": {
             "$ref": "#/components/schemas/types.Savings"
+          },
+          "work_unit": {
+            "type": "string"
           }
         }
       },
@@ -4211,6 +4220,10 @@
           },
           "usage": {
             "$ref": "#/components/schemas/github_com_baselinehq_golang-shared_types.VM"
+          },
+          "workload_class": {
+            "type": "string",
+            "description": "WorkloadClass selects which accelerator gates a compute recommendation\napplies: inference_single, inference_multi or training_distributed. Empty\nmeans inference_multi, which is what the recommender did before the\nclasses existed. Disk requests do not carry one."
           }
         }
       },
@@ -4569,6 +4582,10 @@
           },
           "usage": {
             "$ref": "#/components/schemas/types.Disk"
+          },
+          "workload_class": {
+            "type": "string",
+            "description": "WorkloadClass selects which accelerator gates a compute recommendation\napplies: inference_single, inference_multi or training_distributed. Empty\nmeans inference_multi, which is what the recommender did before the\nclasses existed. Disk requests do not carry one."
           }
         }
       },
@@ -4993,7 +5010,28 @@
           "PlanetScale",
           "STACKIT",
           "Akamai",
-          "Base"
+          "Base",
+          "Akash",
+          "Clore",
+          "CoreWeave",
+          "Crusoe",
+          "CUDO",
+          "DataCrunch",
+          "Denvr",
+          "HotAisle",
+          "Hyperbolic",
+          "Hyperstack",
+          "Lambda",
+          "Latitude",
+          "MassedCompute",
+          "Nebius",
+          "OCI",
+          "PrimeIntellect",
+          "RunPod",
+          "Salad",
+          "Scaleway",
+          "Vast",
+          "Vultr"
         ],
         "x-enum-comments": {
           "Base": "Base provider for default pricing, no specific cloud provider"
@@ -5008,7 +5046,28 @@
           "",
           "",
           "",
-          "Base provider for default pricing, no specific cloud provider"
+          "Base provider for default pricing, no specific cloud provider",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
         ],
         "x-enum-varnames": [
           "GCP",
@@ -5020,7 +5079,28 @@
           "PlanetScale",
           "STACKIT",
           "Akamai",
-          "Base"
+          "Base",
+          "Akash",
+          "Clore",
+          "CoreWeave",
+          "Crusoe",
+          "CUDO",
+          "DataCrunch",
+          "Denvr",
+          "HotAisle",
+          "Hyperbolic",
+          "Hyperstack",
+          "Lambda",
+          "Latitude",
+          "MassedCompute",
+          "Nebius",
+          "OCI",
+          "PrimeIntellect",
+          "RunPod",
+          "Salad",
+          "Scaleway",
+          "Vast",
+          "Vultr"
         ]
       },
       "github_com_baselinehq_golang-shared_types.UsageType": {
@@ -5196,7 +5276,28 @@
           "STACKITDatabase",
           "AkamaiLinode",
           "AkamaiBlockStorage",
-          "AkamaiDatabase"
+          "AkamaiDatabase",
+          "AkashCompute",
+          "CloreCompute",
+          "CoreWeaveCompute",
+          "CrusoeCompute",
+          "CUDOCompute",
+          "DataCrunchCompute",
+          "DenvrCompute",
+          "HotAisleCompute",
+          "HyperbolicCompute",
+          "HyperstackCompute",
+          "LambdaCompute",
+          "LatitudeCompute",
+          "MassedComputeCompute",
+          "NebiusCompute",
+          "OCICompute",
+          "PrimeIntellectCompute",
+          "RunPodCompute",
+          "SaladCompute",
+          "ScalewayCompute",
+          "VastCompute",
+          "VultrCompute"
         ],
         "x-enum-varnames": [
           "ComputeEngine",
@@ -5225,7 +5326,28 @@
           "STACKITDatabase",
           "AkamaiLinode",
           "AkamaiBlockStorage",
-          "AkamaiDatabase"
+          "AkamaiDatabase",
+          "AkashCompute",
+          "CloreCompute",
+          "CoreWeaveCompute",
+          "CrusoeCompute",
+          "CUDOCompute",
+          "DataCrunchCompute",
+          "DenvrCompute",
+          "HotAisleCompute",
+          "HyperbolicCompute",
+          "HyperstackCompute",
+          "LambdaCompute",
+          "LatitudeCompute",
+          "MassedComputeCompute",
+          "NebiusCompute",
+          "OCICompute",
+          "PrimeIntellectCompute",
+          "RunPodCompute",
+          "SaladCompute",
+          "ScalewayCompute",
+          "VastCompute",
+          "VultrCompute"
         ]
       }
     },

@@ -44,8 +44,8 @@ OpenCost. The summary routes return the same data in the lighter summary shape.
 ## Serve the API inside the cluster
 
 Clients that take a URL need only the address and the key. Others reach a
-Kubernetes Service instead. `kubectl cost` is one of them: it resolves a Service
-and port rather than calling a host, so it needs one to exist.
+Kubernetes Service instead. `kubectl cost` is one: it resolves a Service and
+port rather than calling a host, so it needs one to exist.
 
 The operator can stand that Service up. Enable it when you install or upgrade:
 
@@ -61,14 +61,21 @@ The Service answers on the name and port OpenCost uses, and carries the
 operator's key. It filters to the cluster it runs in, so a tool run here reports
 this cluster rather than every cluster on your account.
 
-`kubectl cost` then reads CostGraph. Pass `--kubecost-namespace` when the
-operator isn't in a namespace called `opencost`. Pass `--historical` to see what
-the window cost, rather than the monthly rate the plugin projects by default:
+`kubectl cost --opencost` looks for a Service named `opencost` on port 9003 in a
+namespace called `opencost`. The chart creates the Service with that name and
+port, but in the namespace you install the release into. Install the operator
+into `opencost` and the plugin finds it with no flags. Anywhere else, name the
+namespace:
 
 ```shell
 kubectl cost namespace --opencost --kubecost-namespace costgraph \
   --window 1d --historical
 ```
+
+`--historical` shows what the window cost. Without it the plugin projects a
+monthly rate instead. If you also change `openCostApi.service.name` or `.port`,
+pass `--service-name` and `--service-port` to match, and `--allocation-path
+/allocation/compute`, which is the path `--opencost` sets for you.
 
 ```text
 +----------------------------+-------------------+------------------+-----------------+
@@ -81,8 +88,49 @@ kubectl cost namespace --opencost --kubecost-namespace costgraph \
 +----------------------------+-------------------+------------------+-----------------+
 ```
 
-Leave it off on a cluster still running OpenCost, which already has a Service by
-that name.
+Leave the component off on a cluster still running OpenCost, which already has a
+Service by that name.
+
+## Replace Kubecost
+
+Kubecost clients look for a different name, port and path: a Service called
+`kubecost-cost-analyzer` on port 9090, serving the API under `/model`. Turn on
+the compatibility Service and CostGraph answers to those too:
+
+```shell
+helm upgrade --install costgraph-operator costgraph/costgraph-operator \
+  --namespace kubecost --create-namespace \
+  --set global.clusterName=$CLUSTER_NAME \
+  --set global.apiKey=$COSTGRAPH_API_KEY \
+  --set openCostApi.enabled=true \
+  --set openCostApi.kubecostCompat.enabled=true
+```
+
+Install into the `kubecost` namespace, or pass `--kubecost-namespace`.
+`kubectl cost` then works with no flags at all:
+
+```shell
+kubectl cost namespace --window 1d --historical
+```
+
+```text
++----------------------------+-------------------+------------------+-----------------+
+| CLUSTER                    | NAMESPACE         | TOTAL COST (ALL) | COST EFFICIENCY |
++----------------------------+-------------------+------------------+-----------------+
+| cg-opencost-migration-demo | shop              |         0.401680 |        0.000768 |
+| __idle__                   | __idle__          |         0.329750 |        0.000000 |
+| cg-opencost-migration-demo | costgraph         |         0.117650 |        0.140446 |
+|                            | kube-system       |         0.108550 |        0.098295 |
+|                            | prometheus-system |         0.008790 |        1.000000 |
+|                            | opencost          |         0.006950 |        0.226988 |
++----------------------------+-------------------+------------------+-----------------+
+| SUMMED                     |                   |         0.973370 |                 |
++----------------------------+-------------------+------------------+-----------------+
+```
+
+The `namespace`, `controller`, `deployment`, `pod` and `node` views all read
+CostGraph. `kubectl cost predict` and `kubectl cost tui` do not: prediction is a
+Kubecost endpoint CostGraph does not serve.
 
 ## Query allocation
 

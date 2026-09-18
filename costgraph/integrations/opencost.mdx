@@ -53,12 +53,32 @@ OpenCost. The summary routes return the same data in the lighter summary shape.
 | `accumulate` | boolean | Collapses the range into a single set. |
 | `includeIdle` | boolean | Returns unallocated cluster cost as its own `__idle__` allocation. Off by default. |
 | `shareIdle` | boolean | Distributes idle across the other allocations, weighted by what each one consumes. |
+| `filter` | string | Restricts the result. See [Filter the result](#filter-the-result). |
 
 `aggregate` accepts `cluster`, `node`, `namespace`, `controller`, `pod`, and
 `container`. CostGraph composes names the way OpenCost does, joining the
 properties you asked for with `/`. A controller carries its kind and name, so
 `aggregate=controller` returns `deployment:api`. A property with no value
 returns `__unallocated__`.
+
+### Filter the result
+
+`filter` narrows the result using OpenCost's filter syntax.
+
+```text
+filter=cluster:"aws-prod-use1"
+filter=cluster:"prod"+namespace:"kube-system"
+```
+
+You can filter on `cluster`, `node`, `namespace`, `controllerName`,
+`controllerKind`, `pod`, and `container`, and combine terms with and, or, and
+not. A filter naming anything else, a label among them, returns `400` rather
+than being ignored.
+
+Idle follows the filter. Filtering to one cluster reports that cluster's idle,
+not every cluster's.
+
+### Response
 
 The response is a `data` array holding one allocation set per step, each keyed
 by allocation name.
@@ -153,7 +173,6 @@ parts of the OpenCost API return no data.
 
 | Parameter or route | Behavior |
 | --- | --- |
-| `filter` | Ignored. Aggregate to the grain you want instead. |
 | `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
 | `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
 

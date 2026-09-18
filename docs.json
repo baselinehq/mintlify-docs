@@ -206,6 +206,13 @@
                   "costgraph/integrations/exports/orb",
                   "costgraph/integrations/exports/stripe"
                 ]
+              },
+              {
+                "group": "Compatibility",
+                "icon": "plug",
+                "pages": [
+                  "costgraph/integrations/opencost"
+                ]
               }
             ]
           }

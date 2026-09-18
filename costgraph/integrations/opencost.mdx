@@ -41,6 +41,49 @@ GET /cloudCost
 `/allocation` and `/allocation/compute` run the same query, as they do in
 OpenCost. The summary routes return the same data in the lighter summary shape.
 
+## Serve the API inside the cluster
+
+Clients that take a URL need only the address and the key. Others reach a
+Kubernetes Service instead. `kubectl cost` is one of them: it resolves a Service
+and port rather than calling a host, so it needs one to exist.
+
+The operator can stand that Service up. Enable it when you install or upgrade:
+
+```shell
+helm upgrade --install costgraph-operator costgraph/costgraph-operator \
+  --namespace costgraph --create-namespace \
+  --set global.clusterName=$CLUSTER_NAME \
+  --set global.apiKey=$COSTGRAPH_API_KEY \
+  --set openCostApi.enabled=true
+```
+
+The Service answers on the name and port OpenCost uses, and carries the
+operator's key. It filters to the cluster it runs in, so a tool run here reports
+this cluster rather than every cluster on your account.
+
+`kubectl cost` then reads CostGraph. Pass `--kubecost-namespace` when the
+operator isn't in a namespace called `opencost`. Pass `--historical` to see what
+the window cost, rather than the monthly rate the plugin projects by default:
+
+```shell
+kubectl cost namespace --opencost --kubecost-namespace costgraph \
+  --window 1d --historical
+```
+
+```text
++----------------------------+-------------------+------------------+-----------------+
+| CLUSTER                    | NAMESPACE         | TOTAL COST (ALL) | COST EFFICIENCY |
++----------------------------+-------------------+------------------+-----------------+
+| cg-opencost-migration-demo | shop              |         0.396250 |        0.000766 |
+| __idle__                   | __idle__          |         0.255250 |        0.000000 |
+| cg-opencost-migration-demo | costgraph         |         0.116060 |        0.140385 |
+|                            | kube-system       |         0.107080 |        0.098260 |
++----------------------------+-------------------+------------------+-----------------+
+```
+
+Leave it off on a cluster still running OpenCost, which already has a Service by
+that name.
+
 ## Query allocation
 
 `window` is required. Everything else is optional.

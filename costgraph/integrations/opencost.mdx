@@ -266,13 +266,13 @@ no pod and are left out.
 
 ### What one allocation looks like
 
-A single entry from `aggregate=controller` over a two-day window, with the
-volume and network cost the workload carries:
+An entry from `aggregate=controller` over a two-day window, carrying every cost
+type an allocation can report:
 
 ```json
 {
-  "name": "statefulset:tsdb-vmstorage-long",
-  "properties": { "controller": "tsdb-vmstorage-long", "controllerKind": "StatefulSet" },
+  "name": "statefulset:inference-worker",
+  "properties": { "controller": "inference-worker", "controllerKind": "StatefulSet" },
   "window": { "start": "2026-09-17T00:00:00Z", "end": "2026-09-19T00:00:00Z" },
   "minutes": 2880,
   "cpuCoreHours": 0.24,
@@ -281,8 +281,20 @@ volume and network cost the workload carries:
   "ramByteHours": 8178892800,
   "ramCost": 0.03067,
   "ramEfficiency": 0.65273,
+  "gpuCount": 2,
+  "gpuHours": 96,
+  "gpuCost": 75.744,
+  "gpuEfficiency": 0.6125,
+  "networkTransferBytes": 41203847168,
+  "networkReceiveBytes": 18734280704,
   "networkCost": 0.26078,
-  "loadBalancerCost": 0,
+  "loadBalancerCost": 0.91613,
+  "lbAllocations": {
+    "aws-prod-use1/inference/inference-gateway": {
+      "service": "inference/inference-gateway",
+      "cost": 0.91613
+    }
+  },
   "pvBytes": 119677474133.33,
   "pvByteHours": 5744518758400,
   "pvCost": 0.6,
@@ -300,19 +312,16 @@ volume and network cost the workload carries:
       "cost": 0.2
     }
   },
-  "gpuCount": 0,
-  "gpuHours": 0,
-  "gpuCost": 0,
-  "totalCost": 0.8987,
+  "totalCost": 76.65,
   "totalEfficiency": 0.6106
 }
 ```
 
-Three volumes, each billed $0.20, add to the `pvCost` of $0.60. An
-internet-facing workload reads the same way with `loadBalancerCost` filled in.
-The ingress controller on this cluster carries $0.92 of load balancer and $0.22
-of network cost against $0.01 of CPU and memory. That is why the four are
-reported separately.
+Read the cost fields together. Three volumes at $0.20 each add to the `pvCost` of
+$0.60, and the load balancer in `lbAllocations` accounts for the whole
+`loadBalancerCost`. Two GPUs over the window dominate everything
+else. That is why the types are reported separately: a workload whose compute
+costs a cent can still carry $76 of accelerator and $1 of traffic.
 
 ## What CostGraph doesn't serve
 
@@ -323,9 +332,6 @@ parts of the OpenCost API return no data.
 | --- | --- |
 | `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
 | `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
-| `gpuCost`, `gpuCount`, `gpuHours` | Always `0`. CostGraph prices GPU instance types but does not yet meter GPU use per container, so GPU cost stays in the node's bill and lands in idle. |
-| `networkTransferBytes`, `networkReceiveBytes` | Always `0`. `networkCost` is filled in; the byte counters behind it are not carried on the allocation. |
-| `lbAllocations` | Always `null`. `loadBalancerCost` is filled in, without the per-Service breakdown. |
 
 ## Next steps
 

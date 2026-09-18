@@ -132,9 +132,9 @@ kubectl cost namespace --window 1d --historical
 +----------------------------+-------------------+------------------+-----------------+
 ```
 
-The `namespace`, `controller`, `deployment`, `pod` and `node` views all read
-CostGraph. `kubectl cost predict` and `kubectl cost tui` do not: prediction is a
-Kubecost endpoint CostGraph does not serve.
+The `namespace`, `controller`, `deployment`, `pod`, `node`, and `label` views
+all read CostGraph. `kubectl cost predict` and `kubectl cost tui` do not:
+prediction is a Kubecost endpoint CostGraph does not serve.
 
 ## Query allocation
 
@@ -150,11 +150,26 @@ Kubecost endpoint CostGraph does not serve.
 | `shareIdle` | boolean | Distributes idle across the other allocations, weighted by what each one consumes. |
 | `filter` | string | Restricts the result. See [Filter the result](#filter-the-result). |
 
-`aggregate` accepts `cluster`, `node`, `namespace`, `controller`, `pod`, and
-`container`. CostGraph composes names the way OpenCost does, joining the
-properties you asked for with `/`. A controller carries its kind and name, so
-`aggregate=controller` returns `deployment:api`. A property with no value
-returns `__unallocated__`.
+`aggregate` accepts `cluster`, `node`, `namespace`, `controller`,
+`controllerKind`, `pod`, `container`, and `label:<key>`. CostGraph composes
+names the way OpenCost does, joining the properties you asked for with `/`. A
+controller carries its kind and name, so `aggregate=controller` returns
+`deployment:api`. A property with no value returns `__unallocated__`.
+
+To group by one kind of controller, ask for it by name: `deployment`,
+`statefulset`, `daemonset`, `job`, or `cronjob`. Each returns the controllers of
+that kind and gathers everything else under `__unallocated__`, so the cost still
+adds up to the same total.
+
+`label:<key>` groups by a pod label. `aggregate=label:team` returns one
+allocation per team, and pods without the label land in `__unallocated__`.
+Combine it with anything else: `aggregate=namespace,label:app`.
+
+<Note>
+CostGraph resolves a pod to the controller a person recognizes. A pod created by
+a CronJob belongs to the CronJob, not to the Job it ran in, so it appears under
+`aggregate=cronjob` rather than `aggregate=job`. OpenCost stops at the Job.
+</Note>
 
 ### Filter the result
 

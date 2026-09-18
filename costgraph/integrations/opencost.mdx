@@ -67,19 +67,32 @@ this cluster rather than every cluster on your account.
 
 `kubectl cost --opencost` looks for a Service named `opencost` on port 9003 in a
 namespace called `opencost`. The chart creates the Service with that name and
-port, but in the namespace you install the release into. Install the operator
-into `opencost` and the plugin finds it with no flags. Anywhere else, name the
-namespace:
+port, in the namespace you install the release into. Install the operator into
+`opencost` and the plugin finds it with no flags:
 
 ```shell
-kubectl cost namespace --opencost --kubecost-namespace costgraph \
-  --window 1d --historical
+kubectl cost namespace --opencost --window 1d --historical
 ```
 
 `--historical` shows what the window cost. Without it the plugin projects a
-monthly rate instead. If you also change `openCostApi.service.name` or `.port`,
-pass `--service-name` and `--service-port` to match, and `--allocation-path
-/allocation/compute`, which is the path `--opencost` sets for you.
+monthly rate instead.
+
+<Warning>
+`--opencost` sets the namespace along with the name, port, and path, and it wins
+over `--kubecost-namespace` whatever order you write them in. To read a release
+installed anywhere else, set the four values yourself instead of passing
+`--opencost`:
+</Warning>
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph \
+  --service-name opencost --service-port 9003 \
+  --allocation-path /allocation/compute \
+  --window 1d --historical
+```
+
+Change `--service-name` and `--service-port` to match if you also change
+`openCostApi.service.name` or `.port`.
 
 ```text
 +----------------------------+-------------------+------------------+-----------------+
@@ -110,11 +123,17 @@ helm upgrade --install costgraph-operator costgraph/costgraph-operator \
   --set openCostApi.kubecostCompat.enabled=true
 ```
 
-Install into the `kubecost` namespace, or pass `--kubecost-namespace`.
-`kubectl cost` then works with no flags at all:
+Install into the `kubecost` namespace and `kubectl cost` needs no flags at all:
 
 ```shell
 kubectl cost namespace --window 1d --historical
+```
+
+Elsewhere, `--kubecost-namespace` is enough on its own. The Kubecost defaults
+are not bundled behind a flag, the way `--opencost` bundles them:
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph --window 1d --historical
 ```
 
 ```text

@@ -264,6 +264,56 @@ A load balancer's cost reaches the pods its Service selects, divided between
 them. Credits and tax name no resource on the vendor's bill, so they belong to
 no pod and are left out.
 
+### What one allocation looks like
+
+A single entry from `aggregate=controller` over a two-day window, with the
+volume and network cost the workload carries:
+
+```json
+{
+  "name": "statefulset:tsdb-vmstorage-long",
+  "properties": { "controller": "tsdb-vmstorage-long", "controllerKind": "StatefulSet" },
+  "window": { "start": "2026-09-17T00:00:00Z", "end": "2026-09-19T00:00:00Z" },
+  "minutes": 2880,
+  "cpuCoreHours": 0.24,
+  "cpuCost": 0.00725,
+  "cpuEfficiency": 0.43235,
+  "ramByteHours": 8178892800,
+  "ramCost": 0.03067,
+  "ramEfficiency": 0.65273,
+  "networkCost": 0.26078,
+  "loadBalancerCost": 0,
+  "pvBytes": 119677474133.33,
+  "pvByteHours": 5744518758400,
+  "pvCost": 0.6,
+  "pvs": {
+    "cluster=aws-prod-use1:name=pvc-0810d81f-53d7-43d8-8f8b-dda763c041c2": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    },
+    "cluster=aws-prod-use1:name=pvc-1d6803a3-e1ed-4be2-a704-92729a6b3d5e": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    },
+    "cluster=aws-prod-use1:name=pvc-31ad6050-3f0b-44c5-b2bb-01c5c91e578e": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    }
+  },
+  "gpuCount": 0,
+  "gpuHours": 0,
+  "gpuCost": 0,
+  "totalCost": 0.8987,
+  "totalEfficiency": 0.6106
+}
+```
+
+Three volumes, each billed $0.20, add to the `pvCost` of $0.60. An
+internet-facing workload reads the same way with `loadBalancerCost` filled in.
+The ingress controller on this cluster carries $0.92 of load balancer and $0.22
+of network cost against $0.01 of CPU and memory. That is why the four are
+reported separately.
+
 ## What CostGraph doesn't serve
 
 CostGraph serves the allocation, asset, and cloud cost queries. The following
@@ -273,6 +323,15 @@ parts of the OpenCost API return no data.
 | --- | --- |
 | `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
 | `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
+| `gpuCost`, `gpuCount`, `gpuHours` | Always `0`. CostGraph prices GPU instance types but does not yet meter GPU use per container, so GPU cost stays in the node's bill and lands in idle. |
+| `networkTransferBytes`, `networkReceiveBytes` | Always `0`. `networkCost` is filled in; the byte counters behind it are not carried on the allocation. |
+| `lbAllocations` | Always `null`. `loadBalancerCost` is filled in, without the per-Service breakdown. |
+
+## Next steps
+
+Already running OpenCost? See [Migrate from
+OpenCost](/costgraph/integrations/migrate-from-opencost) for the order to do it
+in and what changes.
 
 ## Limits
 

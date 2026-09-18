@@ -72,8 +72,11 @@ filter=cluster:"prod"+namespace:"kube-system"
 
 You can filter on `cluster`, `node`, `namespace`, `controllerName`,
 `controllerKind`, `pod`, and `container`, and combine terms with and, or, and
-not. A filter naming anything else, a label among them, returns `400` rather
-than being ignored.
+not.
+
+Any other field returns `400` rather than being ignored. That includes label and
+annotation selectors such as `label[app]:"web"`, and the `services`, `provider`,
+and `account` fields.
 
 Idle follows the filter. Filtering to one cluster reports that cluster's idle,
 not every cluster's.

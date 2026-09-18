@@ -57,6 +57,10 @@ helm upgrade --install costgraph-operator costgraph/costgraph-operator \
   --set openCostApi.enabled=true
 ```
 
+The proxy calls hosted CostGraph at `api.costgraph.ai`. On a self-hosted
+install, point it at your own backend with
+`--set openCostApi.config.apiHost=<your-backend-host>`.
+
 The Service answers on the name and port OpenCost uses, and carries the
 operator's key. It filters to the cluster it runs in, so a tool run here reports
 this cluster rather than every cluster on your account.

@@ -107,7 +107,8 @@ client can notice.
 | OpenCost | CostGraph |
 | --- | --- |
 | `http://opencost:9003/allocation` | `https://api.costgraph.ai/api/v1/tenant/opencost/allocation` with `X-API-Key` |
-| `filter` parameters | Honored, over cluster, node, namespace, controller, pod, and container. |
+| `filter` parameters | Honored, over cluster, node, namespace, controllerName, controllerKind, pod, and container. |
+| `aggregate` values | Honored, including `controllerKind`, `label:<key>`, and a controller kind by name. |
 | `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
 | `pvCost`, `networkCost`, `loadBalancerCost` | Filled in from what the vendor charged, alongside CPU and memory. |
 | `gpuCost` | Present and `0`. GPU use is not metered per container yet. |

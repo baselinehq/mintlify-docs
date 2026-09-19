@@ -67,19 +67,32 @@ this cluster rather than every cluster on your account.
 
 `kubectl cost --opencost` looks for a Service named `opencost` on port 9003 in a
 namespace called `opencost`. The chart creates the Service with that name and
-port, but in the namespace you install the release into. Install the operator
-into `opencost` and the plugin finds it with no flags. Anywhere else, name the
-namespace:
+port, in the namespace you install the release into. Install the operator into
+`opencost` and the plugin finds it with no flags:
 
 ```shell
-kubectl cost namespace --opencost --kubecost-namespace costgraph \
-  --window 1d --historical
+kubectl cost namespace --opencost --window 1d --historical
 ```
 
 `--historical` shows what the window cost. Without it the plugin projects a
-monthly rate instead. If you also change `openCostApi.service.name` or `.port`,
-pass `--service-name` and `--service-port` to match, and `--allocation-path
-/allocation/compute`, which is the path `--opencost` sets for you.
+monthly rate instead.
+
+<Warning>
+`--opencost` sets the namespace along with the name, port, and path, and it wins
+over `--kubecost-namespace` whatever order you write them in. To read a release
+installed anywhere else, set the four values yourself instead of passing
+`--opencost`:
+</Warning>
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph \
+  --service-name opencost --service-port 9003 \
+  --allocation-path /allocation/compute \
+  --window 1d --historical
+```
+
+Change `--service-name` and `--service-port` to match if you also change
+`openCostApi.service.name` or `.port`.
 
 ```text
 +----------------------------+-------------------+------------------+-----------------+
@@ -110,11 +123,17 @@ helm upgrade --install costgraph-operator costgraph/costgraph-operator \
   --set openCostApi.kubecostCompat.enabled=true
 ```
 
-Install into the `kubecost` namespace, or pass `--kubecost-namespace`.
-`kubectl cost` then works with no flags at all:
+Install into the `kubecost` namespace and `kubectl cost` needs no flags at all:
 
 ```shell
 kubectl cost namespace --window 1d --historical
+```
+
+Elsewhere, `--kubecost-namespace` is enough on its own. The Kubecost defaults
+are not bundled behind a flag, the way `--opencost` bundles them:
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph --window 1d --historical
 ```
 
 ```text
@@ -132,9 +151,9 @@ kubectl cost namespace --window 1d --historical
 +----------------------------+-------------------+------------------+-----------------+
 ```
 
-The `namespace`, `controller`, `deployment`, `pod` and `node` views all read
-CostGraph. `kubectl cost predict` and `kubectl cost tui` do not: prediction is a
-Kubecost endpoint CostGraph does not serve.
+The `namespace`, `controller`, `deployment`, `pod`, `node`, and `label` views
+all read CostGraph. `kubectl cost predict` and `kubectl cost tui` do not:
+prediction is a Kubecost endpoint CostGraph does not serve.
 
 ## Query allocation
 
@@ -150,11 +169,26 @@ Kubecost endpoint CostGraph does not serve.
 | `shareIdle` | boolean | Distributes idle across the other allocations, weighted by what each one consumes. |
 | `filter` | string | Restricts the result. See [Filter the result](#filter-the-result). |
 
-`aggregate` accepts `cluster`, `node`, `namespace`, `controller`, `pod`, and
-`container`. CostGraph composes names the way OpenCost does, joining the
-properties you asked for with `/`. A controller carries its kind and name, so
-`aggregate=controller` returns `deployment:api`. A property with no value
-returns `__unallocated__`.
+`aggregate` accepts `cluster`, `node`, `namespace`, `controller`,
+`controllerKind`, `pod`, `container`, and `label:<key>`. CostGraph composes
+names the way OpenCost does, joining the properties you asked for with `/`. A
+controller carries its kind and name, so `aggregate=controller` returns
+`deployment:api`. A property with no value returns `__unallocated__`.
+
+To group by one kind of controller, ask for it by name: `deployment`,
+`statefulset`, `daemonset`, `job`, or `cronjob`. Each returns the controllers of
+that kind and gathers everything else under `__unallocated__`, so the cost still
+adds up to the same total.
+
+`label:<key>` groups by a pod label. `aggregate=label:team` returns one
+allocation per team, and pods without the label land in `__unallocated__`.
+Combine it with anything else: `aggregate=namespace,label:app`.
+
+<Note>
+CostGraph resolves a pod to the controller a person recognizes. A pod created by
+a CronJob belongs to the CronJob, not to the Job it ran in, so it appears under
+`aggregate=cronjob` rather than `aggregate=job`. OpenCost stops at the Job.
+</Note>
 
 ### Filter the result
 

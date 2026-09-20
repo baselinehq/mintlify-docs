@@ -12,7 +12,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 </ParamField>
 
 <ParamField body="global.apiKey" type="string">
-  API key for authenticating with CostGraph. Don't commit a real key - prefer `existingSecret` in production.
+  API key for authenticating with CostGraph. Don't commit a real key. Prefer `existingSecret` in production.
 </ParamField>
 
 <ParamField body="global.existingSecret" type="string">
@@ -33,7 +33,7 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 </ParamField>
 
 <ParamField body="imagePullSecrets" type="array">
-  Top level, not under `global`. It does not reach the component workloads - see
+  Top level, not under `global`. It does not reach the component workloads. See
   the component pattern below.
 </ParamField>
 
@@ -49,8 +49,8 @@ The CostGraph Operator is configured through Helm `values.yaml`. The defaults wo
 
 ## The component pattern
 
-All four CostGraph components in this chart - `operatorKubernetes`,
-`operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - take the same shape:
+All four CostGraph components in this chart (`operatorKubernetes`,
+`operatorPrometheus`, `aiGatewayScraper` and `flowtrace`) take the same shape:
 
 ```yaml
 <component>:
@@ -125,7 +125,7 @@ Its workload settings sit under `operatorKubernetes.deployment`.
 </ParamField>
 
 <ParamField body="operatorKubernetes.deployment.replicas" type="number" default="1">
-  Keep at `1` - the exporter is not designed to run multiple replicas.
+  Keep at `1`. The exporter is not designed to run multiple replicas.
 </ParamField>
 
 <ParamField body="operatorKubernetes.deployment.image" type="object">
@@ -219,7 +219,7 @@ operator's scraped metrics.
 </ParamField>
 
 It takes **no** `scrapeTargets`. Targets are served by CostGraph from the
-connections you create in **Settings -> Integrations**, fetched at start and
+connections you create in **Settings > Integrations**, fetched at start and
 refreshed while it runs, so connecting a gateway never edits these values. See
 [AI gateways](/costgraph/integrations/ai-gateways).
 
@@ -233,8 +233,8 @@ metric-name filter.
 
 <Note>
   The DaemonSet mounts the host filesystems at:
-  - **cgroupfs** - `/host/sys/fs/cgroup`.
-  - **procfs** - `/host/proc`.
+  - **cgroupfs**: `/host/sys/fs/cgroup`.
+  - **procfs**: `/host/proc`.
 </Note>
 
 <ParamField body="flowtrace.enabled" type="boolean" default="true">
@@ -278,7 +278,7 @@ metric-name filter.
 
 ### Scrape targets
 
-`operatorPrometheus.scrapeTargets` is a map of the in-cluster `/metrics` endpoints to scrape. The chart ships defaults for cAdvisor, kube-state-metrics, node-exporter, and the kubelet (DCGM is off). Add a source by appending an entry - no new operator image is required.
+`operatorPrometheus.scrapeTargets` is a map of the in-cluster `/metrics` endpoints to scrape. The chart ships defaults for cAdvisor, kube-state-metrics, node-exporter, and the kubelet (DCGM is off). Add a source by appending an entry. No new operator image is required.
 
 Each entry accepts:
 
@@ -291,7 +291,7 @@ Each entry accepts:
 </ParamField>
 
 <ParamField body="namespace" type="string">
-  Pod targets only - namespace to discover pods in.
+  Pod targets only. Namespace to discover pods in.
 </ParamField>
 
 <ParamField body="labelSelector" type="string">
@@ -299,7 +299,7 @@ Each entry accepts:
 </ParamField>
 
 <ParamField body="port" type="number">
-  Pod targets only - port the exporter listens on.
+  Pod targets only. Port the exporter listens on.
 </ParamField>
 
 <ParamField body="path" type="string" default="/metrics">

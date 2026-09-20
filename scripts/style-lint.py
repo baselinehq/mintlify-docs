@@ -73,8 +73,10 @@ def lint(path):
         body = text[fm.end():]
     offset = text[: len(text) - len(body)].count("\n")
 
-    for m in re.finditer(r"^(#{1,6})\s+(.+?)\s*$", body, re.M):
-        line = offset + body[: m.start()].count("\n") + 1
+    outside_code = re.sub(r"```.*?```", blank, body, flags=re.S)
+
+    for m in re.finditer(r"^(#{1,6})\s+(.+?)\s*$", outside_code, re.M):
+        line = offset + outside_code[: m.start()].count("\n") + 1
         words = m.group(2).split()
         if words and re.match(r"^[A-Z][a-z]+ing$", words[0]) and words[0] not in ("Billing", "Pricing"):
             warns.append((line, f"heading starts with -ing: {m.group(2)!r}; prefer a bare verb or noun phrase"))

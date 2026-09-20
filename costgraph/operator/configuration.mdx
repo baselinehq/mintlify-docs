@@ -314,6 +314,63 @@ Each entry accepts:
   Keep only metric families whose names match one of these prefixes. Empty keeps everything.
 </ParamField>
 
+## OpenCost API
+
+`openCostApi` serves the OpenCost allocation API from inside the cluster, for
+tools that resolve a Kubernetes Service rather than call a URL. `kubectl cost`
+is one. The component is an nginx that proxies to CostGraph and attaches the
+operator's API key. It pins every request to `global.clusterName`, so a tool run
+here reports this cluster rather than every cluster on your account.
+
+Leave it off while OpenCost or Kubecost still runs in the cluster. They own
+these Service names until you remove them.
+
+<ParamField body="openCostApi.enabled" type="boolean" default="false">
+  Deploy the proxy and a Service named for OpenCost.
+</ParamField>
+
+<ParamField body="openCostApi.service.name" type="string" default="opencost">
+  Service name. `kubectl cost --opencost` looks for `opencost`.
+</ParamField>
+
+<ParamField body="openCostApi.service.port" type="integer" default="9003">
+  Service and container port.
+</ParamField>
+
+<ParamField body="openCostApi.kubecostCompat.enabled" type="boolean" default="false">
+  Add a second Service under the name Kubecost clients resolve. The `/model`
+  path those clients request is served either way; this adds the name and port.
+</ParamField>
+
+<ParamField body="openCostApi.kubecostCompat.name" type="string" default="kubecost-cost-analyzer">
+  Name of that second Service.
+</ParamField>
+
+<ParamField body="openCostApi.kubecostCompat.port" type="integer" default="9090">
+  Its port.
+</ParamField>
+
+<ParamField body="openCostApi.config.apiHost" type="string" default="api.costgraph.ai">
+  Where the proxy sends requests. A self-hosted install points this at its own
+  backend.
+</ParamField>
+
+<ParamField body="openCostApi.config.basePath" type="string" default="/api/v1/tenant/opencost">
+  Path prefix on that host.
+</ParamField>
+
+<ParamField body="openCostApi.config.resolver" type="string" default="kube-dns.kube-system.svc.cluster.local">
+  DNS server nginx resolves the upstream with.
+</ParamField>
+
+<ParamField body="openCostApi.deployment" type="object">
+  Its workload, same keys as `operatorPrometheus.deployment`.
+</ParamField>
+
+The Service is created in the namespace you install the release into, while the
+plugin looks in `opencost` or `kubecost`. See [OpenCost
+API](/costgraph/integrations/opencost) for the flags that cover the difference.
+
 ## Bundled exporters
 
 The chart pulls in the metrics sources as subcharts. Disable any you already run in the cluster. Disable `flowtrace` if you do not need network tracing.

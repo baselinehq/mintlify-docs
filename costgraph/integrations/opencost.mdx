@@ -12,7 +12,9 @@ rename anything.
 
 ## Before you begin
 
-- An API key with the `operator:read` scope. Create one in **Settings > API keys**.
+- An API key. Create one in **Settings > API keys**. Allocation and assets need
+  the `operator:read` scope; cloud cost needs `focus:read`. Grant both to read
+  every route with one key.
 - At least one connected Kubernetes cluster.
 
 ## Connect a client
@@ -243,7 +245,14 @@ by allocation name.
 ## Query assets
 
 `GET /assets` returns the nodes and disks billed over the window, keyed the way
-OpenCost keys them. It takes `window` and `step`.
+OpenCost keys them.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report, in the same forms `/allocation` accepts. Required. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `filter` | string | Restricts the result, in the syntax `/allocation` uses. An asset carries two fields, `cluster` and `node`, and naming any other is a `400`. |
+| `filterTypes` | string | A comma-separated list of `Node` and `Disk`. Defaults to both. |
 
 A node carries its instance type, the cores and bytes it offered over the
 window, and its cost split across CPU and memory. The two parts add back to the
@@ -253,8 +262,18 @@ balancers aren't reported.
 ## Query cloud cost
 
 `GET /cloudCost` returns what your vendors billed you, rather than how CostGraph
-allocated that spend to your workloads. It takes `window`, `aggregate`, `step`,
-and `accumulate`.
+allocated that spend to your workloads.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report, in the same forms `/allocation` accepts. Required. |
+| `aggregate` | string | A comma-separated list of properties to group by. Defaults to `provider,service`. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `accumulate` | boolean | Collapses the range into a single set. |
+
+This route reads billing data rather than cluster data, so it needs the
+`focus:read` scope. A key with only `operator:read` reads allocation and assets
+and gets `403` here.
 
 `aggregate` accepts `invoiceEntityID`, `accountID`, `regionID`,
 `availabilityZone`, `provider`, `providerID`, `category`, and `service`. It
@@ -366,12 +385,6 @@ parts of the OpenCost API return no data.
 | --- | --- |
 | `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
 | `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
-
-## Next steps
-
-Already running OpenCost? See [Migrate from
-OpenCost](/costgraph/integrations/migrate-from-opencost) for the order to do it
-in and what changes.
 
 ## Limits
 

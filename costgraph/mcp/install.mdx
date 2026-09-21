@@ -7,26 +7,36 @@ You already debug your infrastructure inside a coding agent. CostGraph's MCP put
 
 ## Prerequisites
 
-- An API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys).
+- A CostGraph account with an active billing plan. OAuth-capable clients sign in with your account when they connect; no key required.
 
 <Warning>
   MCP access requires an active billing plan. Set up billing in the [CostGraph platform](https://app.costgraph.ai/billing) before connecting.
 </Warning>
 
-Point your agent at the endpoint below, using that key.
+Point your agent at the endpoint below. When it connects, it asks you to sign in with your CostGraph account in the browser.
 
 ```text
 https://mcp.costgraph.ai
-X-API-Key: bl_your_key
 ```
+
+<Note>
+  Running headless or in CI, where a browser sign-in is not an option? Create an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys) and send it in the `X-API-Key` header instead, as shown in the tabs below.
+</Note>
 
 ## Connect your agent
 
 Pick your agent and drop in the config.
 
 <Tabs>
+  <Tab title="Claude" icon="/images/mcp/claude.svg">
+    Run this once and Claude Code registers the server. On first connect, Claude Code opens your browser to sign in with your CostGraph account:
+
+    ```bash
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai
+    ```
+  </Tab>
   <Tab title="Codex" icon="/images/mcp/codex.svg">
-    Add CostGraph to `~/.codex/config.toml`:
+    Add CostGraph to `~/.codex/config.toml`, with an API key:
 
     ```toml
     [mcp_servers.costgraph]
@@ -34,16 +44,8 @@ Pick your agent and drop in the config.
     http_headers = { "X-API-Key" = "bl_your_key" }
     ```
   </Tab>
-  <Tab title="Claude" icon="/images/mcp/claude.svg">
-    Run this once and Claude Code registers the server:
-
-    ```bash
-    claude mcp add --transport http costgraph https://mcp.costgraph.ai \
-      --header "X-API-Key: bl_your_key"
-    ```
-  </Tab>
   <Tab title="Amp" icon="/images/mcp/amp.svg">
-    Add CostGraph to your Amp `settings.json`:
+    Add CostGraph to your Amp `settings.json`, with an API key:
 
     ```json
     {
@@ -57,7 +59,7 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="OpenCode" icon="/images/mcp/opencode.svg">
-    Add CostGraph to your `opencode.json`:
+    Add CostGraph to your `opencode.json`, with an API key:
 
     ```json
     {
@@ -74,7 +76,7 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="Generic" icon="plug">
-    Generic MCP configuration. Add this to your agent's MCP server config.
+    Generic MCP configuration. OAuth-capable agents only need the URL and prompt you to sign in on first connect; otherwise add an API key:
 
     ```json
     {
@@ -98,7 +100,10 @@ Once it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
     No. CostGraph is read-only over MCP. It hands back recommendations, pricing, and your inventory. Your agent, using its own git or kubectl access, is what actually applies a change or opens a PR.
   </Accordion>
   <Accordion title="Which credential does it use?">
-    Your `bl_` API key, sent in the `X-API-Key` header. Every read is scoped to the tenant that key belongs to, so an agent only ever sees your own data.
+    Interactive clients sign in with your CostGraph account and use a short-lived token that refreshes itself. Headless and CI setups send a `bl_` API key in the `X-API-Key` header. Either way, every read is scoped to your own tenant, so an agent only ever sees your data.
+  </Accordion>
+  <Accordion title="How do I revoke an agent's access?">
+    Sign-in sessions are managed in your account settings, and revoking a session cuts off that client on its next token refresh. API keys can be deactivated or rotated at any time from [Settings](https://app.costgraph.ai/settings/account/api-keys).
   </Accordion>
   <Accordion title="What can my agent see?">
     Cost recommendations, live pricing, and your tenant's inventory and metrics. See [Usage](/costgraph/mcp/usage) for the kinds of questions that maps to.

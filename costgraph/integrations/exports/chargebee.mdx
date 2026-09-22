@@ -1,0 +1,71 @@
+---
+title: Chargebee
+description: "Record attributed cloud spend against a Chargebee metered item price"
+---
+
+CostGraph records each customer's attributed cloud spend against a metered item
+price on their [Chargebee](https://www.chargebee.com) subscription. Chargebee
+invoices it at the end of the billing term. The shared model, tag rules, and
+nightly behavior are on the [Billing exports](/costgraph/integrations/exports/overview)
+page.
+
+Chargebee attaches usage to a subscription and an item price, not to a
+customer. This page says "recorded" rather than "reported" because Chargebee
+keeps one record per day and CostGraph overwrites it.
+
+## Before you begin
+
+- Enable **Automated Metered Billing** on your Chargebee site. Without it, the
+  usage API rejects every record.
+- Create an item with **metered** enabled and give it a price. Price per cent.
+- Add that item price to every subscription you intend to bill, from the date
+  you want billing to start. See [Chargebee behavior](#chargebee-behavior).
+- Copy an API key from **Settings > Configure Chargebee > API keys**.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Chargebee**, enter the API key, and enter your
+    site name. The site name is the subdomain, so `acme-test` for
+    `acme-test.chargebee.com`. CostGraph verifies the key against Chargebee
+    before it saves anything, and stores it encrypted.
+  </Step>
+  <Step title="Bind an item price">
+    Bind a `chargebee_` tag key to one of your metered item prices. CostGraph
+    offers only item prices whose item is marked metered.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be a Chargebee subscription id. A customer with two
+subscriptions needs the tag to name the one that carries the cloud spend.
+Chargebee rejects usage for a subscription that doesn't exist or doesn't
+include the item price. CostGraph records the day with the rejection instead
+of billing it.
+
+## Usage record
+
+Chargebee keeps one usage record per subscription, item price, and day. Each
+night CostGraph writes the day's absolute total and replaces the record it
+wrote before. A day revised downward replaces the earlier figure with the
+lower one, with no credit note, as long as the term hasn't been invoiced.
+
+| Field | Value |
+|-------|-------|
+| `subscription_id` | The tag value for that day |
+| `item_price_id` | The item price the meter is bound to |
+| `quantity` | The day's total attributed spend, in cents |
+| `usage_date` | The day the spend belongs to |
+| `note` | The shared reconciliation fields: the day, whether this replaced an earlier figure, and what that figure was |
+
+## Chargebee behavior
+
+Chargebee accepts a usage date only if it falls inside the period the item
+price was active on the subscription. A meter bound to an item price you added
+today records nothing for earlier days. Those days are rejected and recorded
+as such, so add the item price from the date billing starts.
+
+A day in a term Chargebee has already invoiced can't be replaced. Late
+restatements to a closed term need a manual adjustment in Chargebee.

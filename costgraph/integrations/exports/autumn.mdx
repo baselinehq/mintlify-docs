@@ -1,0 +1,48 @@
+---
+title: Autumn
+description: "Report attributed cloud spend to an Autumn meter"
+---
+
+CostGraph reports each customer's attributed cloud spend to an
+[Autumn](https://useautumn.com) meter as usage events. Autumn turns them into
+invoices through Stripe. The shared model, tag rules, and nightly behavior are
+on the [Billing exports](/costgraph/integrations/exports/overview) page.
+
+## Before you begin
+
+- Create a meter in Autumn and attach a price to it. Price per cent, or use
+  Autumn's billing units to group 100 units into one priced dollar.
+- Copy a secret key from **Developer > Secret keys**. A sandbox key exercises
+  the whole flow without invoicing anyone.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Autumn** and enter the secret key. CostGraph
+    verifies the key against Autumn before it saves anything, and stores it
+    encrypted.
+  </Step>
+  <Step title="Bind a meter">
+    Bind an `autumn_` tag key to one of your Autumn meters through the
+    CostGraph API.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be an Autumn customer id. Autumn creates a customer the
+first time it sees an id, so a mistyped tag value becomes a new billable
+customer. Check the tag's values before you bind the meter, and review what
+was reported after any rule change.
+
+## Event payload
+
+Each customer-day is one usage event on the meter, carrying the shared
+reconciliation fields as properties you can group by in Autumn.
+
+## Autumn behavior
+
+Autumn bills every event into the customer's current cycle. A correction to an
+old day appears on the next invoice, and `usage_date` shows which day it
+belongs to.

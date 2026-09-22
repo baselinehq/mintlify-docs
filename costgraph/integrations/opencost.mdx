@@ -1,0 +1,393 @@
+---
+title: OpenCost API
+description: "Read Kubernetes allocation from tools that already speak OpenCost"
+---
+
+CostGraph serves the OpenCost API. Tools built against OpenCost, such as Grafana
+dashboards, cost scrapers, and CI budget checks, read CostGraph when you change
+the address they point at.
+
+Responses use the formats OpenCost defines, field for field. You don't map or
+rename anything.
+
+## Before you begin
+
+- An API key. Create one in **Settings > API keys**. Allocation and assets need
+  the `operator:read` scope; cloud cost needs `focus:read`. Grant both to read
+  every route with one key.
+- At least one connected Kubernetes cluster.
+
+## Connect a client
+
+Point your client at the base URL and send the key as a header.
+
+```text
+https://api.costgraph.ai/api/v1/tenant/opencost
+X-API-Key: bl_your_key
+```
+
+A client that lets you set a base URL needs no other change. A client that
+hardcodes `http://opencost:9003` needs that value replaced.
+
+CostGraph serves these routes:
+
+```text
+GET /allocation
+GET /allocation/compute
+GET /allocation/summary
+GET /allocation/compute/summary
+GET /assets
+GET /cloudCost
+```
+
+`/allocation` and `/allocation/compute` run the same query, as they do in
+OpenCost. The summary routes return the same data in the lighter summary shape.
+
+## Serve the API inside the cluster
+
+Clients that take a URL need only the address and the key. Others reach a
+Kubernetes Service instead. `kubectl cost` is one: it resolves a Service and
+port rather than calling a host, so it needs one to exist.
+
+The operator can stand that Service up. Enable it when you install or upgrade:
+
+```shell
+helm upgrade --install costgraph-operator costgraph/costgraph-operator \
+  --namespace costgraph --create-namespace \
+  --set global.clusterName=$CLUSTER_NAME \
+  --set global.apiKey=$COSTGRAPH_API_KEY \
+  --set openCostApi.enabled=true
+```
+
+The proxy calls hosted CostGraph at `api.costgraph.ai`. On a self-hosted
+install, point it at your own backend with
+`--set openCostApi.config.apiHost=<your-backend-host>`.
+
+The Service answers on the name and port OpenCost uses, and carries the
+operator's key. It filters to the cluster it runs in, so a tool run here reports
+this cluster rather than every cluster on your account.
+
+`kubectl cost --opencost` looks for a Service named `opencost` on port 9003 in a
+namespace called `opencost`. The chart creates the Service with that name and
+port, in the namespace you install the release into. Install the operator into
+`opencost` and the plugin finds it with no flags:
+
+```shell
+kubectl cost namespace --opencost --window 1d --historical
+```
+
+`--historical` shows what the window cost. Without it the plugin projects a
+monthly rate instead.
+
+<Warning>
+`--opencost` sets the namespace along with the name, port, and path, and it wins
+over `--kubecost-namespace` whatever order you write them in. To read a release
+installed anywhere else, set the four values yourself instead of passing
+`--opencost`:
+</Warning>
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph \
+  --service-name opencost --service-port 9003 \
+  --allocation-path /allocation/compute \
+  --window 1d --historical
+```
+
+Change `--service-name` and `--service-port` to match if you also change
+`openCostApi.service.name` or `.port`.
+
+```text
++----------------------------+-------------------+------------------+-----------------+
+| CLUSTER                    | NAMESPACE         | TOTAL COST (ALL) | COST EFFICIENCY |
++----------------------------+-------------------+------------------+-----------------+
+| cg-opencost-migration-demo | shop              |         0.396250 |        0.000766 |
+| __idle__                   | __idle__          |         0.255250 |        0.000000 |
+| cg-opencost-migration-demo | costgraph         |         0.116060 |        0.140385 |
+|                            | kube-system       |         0.107080 |        0.098260 |
++----------------------------+-------------------+------------------+-----------------+
+```
+
+Leave the component off on a cluster still running OpenCost, which already has a
+Service by that name.
+
+## Replace Kubecost
+
+Kubecost clients look for a different name, port and path: a Service called
+`kubecost-cost-analyzer` on port 9090, serving the API under `/model`. Turn on
+the compatibility Service and CostGraph answers to those too:
+
+```shell
+helm upgrade --install costgraph-operator costgraph/costgraph-operator \
+  --namespace kubecost --create-namespace \
+  --set global.clusterName=$CLUSTER_NAME \
+  --set global.apiKey=$COSTGRAPH_API_KEY \
+  --set openCostApi.enabled=true \
+  --set openCostApi.kubecostCompat.enabled=true
+```
+
+Install into the `kubecost` namespace and `kubectl cost` needs no flags at all:
+
+```shell
+kubectl cost namespace --window 1d --historical
+```
+
+Elsewhere, `--kubecost-namespace` is enough on its own. The Kubecost defaults
+are not bundled behind a flag, the way `--opencost` bundles them:
+
+```shell
+kubectl cost namespace --kubecost-namespace costgraph --window 1d --historical
+```
+
+```text
++----------------------------+-------------------+------------------+-----------------+
+| CLUSTER                    | NAMESPACE         | TOTAL COST (ALL) | COST EFFICIENCY |
++----------------------------+-------------------+------------------+-----------------+
+| cg-opencost-migration-demo | shop              |         0.401680 |        0.000768 |
+| __idle__                   | __idle__          |         0.329750 |        0.000000 |
+| cg-opencost-migration-demo | costgraph         |         0.117650 |        0.140446 |
+|                            | kube-system       |         0.108550 |        0.098295 |
+|                            | prometheus-system |         0.008790 |        1.000000 |
+|                            | opencost          |         0.006950 |        0.226988 |
++----------------------------+-------------------+------------------+-----------------+
+| SUMMED                     |                   |         0.973370 |                 |
++----------------------------+-------------------+------------------+-----------------+
+```
+
+The `namespace`, `controller`, `deployment`, `pod`, `node`, and `label` views
+all read CostGraph. `kubectl cost predict` and `kubectl cost tui` do not:
+prediction is a Kubecost endpoint CostGraph does not serve.
+
+## Query allocation
+
+`window` is required. Everything else is optional.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report. Accepts a duration such as `24h` or `7d`, the words `today` or `yesterday`, or a comma-separated pair of RFC3339 timestamps. |
+| `aggregate` | string | A comma-separated list of properties to group by. Omit it to get one allocation per container. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `accumulate` | boolean | Collapses the range into a single set. |
+| `includeIdle` | boolean | Returns unallocated cluster cost as its own `__idle__` allocation. Off by default. |
+| `shareIdle` | boolean | Distributes idle across the other allocations, weighted by what each one consumes. |
+| `filter` | string | Restricts the result. See [Filter the result](#filter-the-result). |
+
+`aggregate` accepts `cluster`, `node`, `namespace`, `controller`,
+`controllerKind`, `pod`, `container`, and `label:<key>`. CostGraph composes
+names the way OpenCost does, joining the properties you asked for with `/`. A
+controller carries its kind and name, so `aggregate=controller` returns
+`deployment:api`. A property with no value returns `__unallocated__`.
+
+To group by one kind of controller, ask for it by name: `deployment`,
+`statefulset`, `daemonset`, `job`, or `cronjob`. Each returns the controllers of
+that kind and gathers everything else under `__unallocated__`, so the cost still
+adds up to the same total.
+
+`label:<key>` groups by a pod label. `aggregate=label:team` returns one
+allocation per team, and pods without the label land in `__unallocated__`.
+Combine it with anything else: `aggregate=namespace,label:app`.
+
+<Note>
+CostGraph resolves a pod to the controller a person recognizes. A pod created by
+a CronJob belongs to the CronJob, not to the Job it ran in, so it appears under
+`aggregate=cronjob` rather than `aggregate=job`. OpenCost stops at the Job.
+</Note>
+
+### Filter the result
+
+`filter` narrows the result using OpenCost's filter syntax.
+
+```text
+filter=cluster:"aws-prod-use1"
+filter=cluster:"prod"+namespace:"kube-system"
+```
+
+You can filter on `cluster`, `node`, `namespace`, `controllerName`,
+`controllerKind`, `pod`, and `container`, and combine terms with and, or, and
+not.
+
+Any other field returns `400` rather than being ignored. That includes label and
+annotation selectors such as `label[app]:"web"`, and the `services`, `provider`,
+and `account` fields.
+
+Idle follows the filter. Filtering to one cluster reports that cluster's idle,
+not every cluster's.
+
+### Response
+
+The response is a `data` array holding one allocation set per step, each keyed
+by allocation name.
+
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "kube-system": {
+        "name": "kube-system",
+        "properties": { "cluster": "prod", "namespace": "kube-system" },
+        "window": { "start": "2026-09-01T00:00:00Z", "end": "2026-09-02T00:00:00Z" },
+        "cpuCoreHours": 24,
+        "cpuCost": 1.5,
+        "cpuEfficiency": 0.5,
+        "ramByteHours": 2147483648,
+        "ramCost": 0.5,
+        "pvCost": 0.75,
+        "networkCost": 0.2,
+        "loadBalancerCost": 0.1,
+        "totalCost": 3.05,
+        "totalEfficiency": 0.5
+      }
+    }
+  ]
+}
+```
+
+## Query assets
+
+`GET /assets` returns the nodes and disks billed over the window, keyed the way
+OpenCost keys them.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report, in the same forms `/allocation` accepts. Required. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `filter` | string | Restricts the result, in the syntax `/allocation` uses. An asset carries two fields, `cluster` and `node`, and naming any other is a `400`. |
+| `filterTypes` | string | A comma-separated list of `Node` and `Disk`. Defaults to both. |
+
+A node carries its instance type, the cores and bytes it offered over the
+window, and its cost split across CPU and memory. The two parts add back to the
+node's bill. A disk carries its provisioned bytes and storage class. Load
+balancers aren't reported.
+
+## Query cloud cost
+
+`GET /cloudCost` returns what your vendors billed you, rather than how CostGraph
+allocated that spend to your workloads.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `window` | string | The period to report, in the same forms `/allocation` accepts. Required. |
+| `aggregate` | string | A comma-separated list of properties to group by. Defaults to `provider,service`. |
+| `step` | string | The duration of each returned set. Defaults to the whole window. |
+| `accumulate` | boolean | Collapses the range into a single set. |
+
+This route reads billing data rather than cluster data, so it needs the
+`focus:read` scope. A key with only `operator:read` reads allocation and assets
+and gets `403` here.
+
+`aggregate` accepts `invoiceEntityID`, `accountID`, `regionID`,
+`availabilityZone`, `provider`, `providerID`, `category`, and `service`. It
+defaults to `provider,service`.
+
+Every vendor you connect appears here, software services and cloud providers
+alike, so aggregating by `provider` returns Datadog and GitHub next to AWS.
+
+`kubernetesPercent` reports `0`, because CostGraph doesn't yet attribute a
+billed resource back to the Kubernetes node that used it.
+
+## Cost model
+
+CostGraph bills CPU and memory on the greater of a container's request and its
+usage, which is what the OpenCost specification defines as workload cost. A
+container that reserves more than it uses is billed for the reservation.
+Storage, network, and load balancers are billed on what the vendor charged.
+
+Idle is the part of a node's bill that no container accounts for. CostGraph
+measures it per node, so an over-committed node can't offset an empty one. Pass
+`includeIdle=true` and workload cost plus idle equals the cluster bill.
+
+### Storage
+
+A volume's cost reaches the container that mounts it. Each allocation lists the
+volumes behind it in `pvs`, and `pvCost` is their total. A volume mounted by
+several containers is divided between them, so the shares add back to the
+volume's bill.
+
+### Network
+
+CostGraph prices traffic by locality, so crossing a zone or leaving for the
+internet costs where staying inside a zone doesn't. An edge charged in both
+directions gives half to each end. An edge charged one way gives the whole cost
+to that end. A workload's traffic is then divided between the pods running it,
+so a controller sees the whole and a pod sees its share.
+
+### Load balancers
+
+A load balancer's cost reaches the pods its Service selects, divided between
+them. Credits and tax name no resource on the vendor's bill, so they belong to
+no pod and are left out.
+
+### What one allocation looks like
+
+An entry from `aggregate=controller` over a two-day window, carrying every cost
+type an allocation can report:
+
+```json
+{
+  "name": "statefulset:inference-worker",
+  "properties": { "controller": "inference-worker", "controllerKind": "StatefulSet" },
+  "window": { "start": "2026-09-17T00:00:00Z", "end": "2026-09-19T00:00:00Z" },
+  "minutes": 2880,
+  "cpuCoreHours": 0.24,
+  "cpuCost": 0.00725,
+  "cpuEfficiency": 0.43235,
+  "ramByteHours": 8178892800,
+  "ramCost": 0.03067,
+  "ramEfficiency": 0.65273,
+  "gpuCount": 2,
+  "gpuHours": 96,
+  "gpuCost": 75.744,
+  "gpuEfficiency": 0.6125,
+  "networkTransferBytes": 41203847168,
+  "networkReceiveBytes": 18734280704,
+  "networkCost": 0.26078,
+  "loadBalancerCost": 0.91613,
+  "lbAllocations": {
+    "aws-prod-use1/inference/inference-gateway": {
+      "service": "inference/inference-gateway",
+      "cost": 0.91613
+    }
+  },
+  "pvBytes": 119677474133.33,
+  "pvByteHours": 5744518758400,
+  "pvCost": 0.6,
+  "pvs": {
+    "cluster=aws-prod-use1:name=pvc-0810d81f-53d7-43d8-8f8b-dda763c041c2": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    },
+    "cluster=aws-prod-use1:name=pvc-1d6803a3-e1ed-4be2-a704-92729a6b3d5e": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    },
+    "cluster=aws-prod-use1:name=pvc-31ad6050-3f0b-44c5-b2bb-01c5c91e578e": {
+      "byteHours": 1914839586133.33,
+      "cost": 0.2
+    }
+  },
+  "totalCost": 76.65,
+  "totalEfficiency": 0.6106
+}
+```
+
+Read the cost fields together. Three volumes at $0.20 each add to the `pvCost` of
+$0.60, and the load balancer in `lbAllocations` accounts for the whole
+`loadBalancerCost`. Two GPUs over the window dominate everything
+else. That is why the types are reported separately: a workload whose compute
+costs a cent can still carry $76 of accelerator and $1 of traffic.
+
+## What CostGraph doesn't serve
+
+CostGraph serves the allocation, asset, and cloud cost queries. The following
+parts of the OpenCost API return no data.
+
+| Parameter or route | Behavior |
+| --- | --- |
+| `idleByNode` | Accepted and ignored. CostGraph reports idle for the cluster. |
+| `/customCost/total`, `/customCost/timeseries` | Not served. `/cloudCost` reports software service spend alongside cloud spend, so you read both from one route. |
+
+## Limits
+
+Two limits return `400`. A request produces more than 10,000 sets, such as a
+30-day window at a one-second step. A request returns more than 200,000
+allocations. Widen the step or narrow the window.

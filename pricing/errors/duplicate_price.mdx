@@ -1,0 +1,23 @@
+---
+title: 'Duplicate price'
+description: 'HTTP 409, code duplicate_price'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/duplicate_price`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/duplicate_price",
+  "title": "Duplicate price",
+  "status": 409,
+  "code": "duplicate_price"
+}
+```
+
+## When you see it
+
+Reserved. No operation returns this code today: publishing a marketplace price is a natural-key upsert, so re-posting a key that already exists updates it (keeping its id) rather than conflicting.
+
+## What to do
+
+If a future operation does return it, the key already exists and the response names it; update the existing row instead of creating another.

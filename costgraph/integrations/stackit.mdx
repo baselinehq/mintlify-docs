@@ -18,12 +18,21 @@ CostGraph reads STACKIT as **FOCUS 1.2** records at a grain of day x project x s
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the STACKIT portal, create a service account and a key for it. The key JSON
+  carries the credentials CostGraph signs its token request with.
+- Grant the service account the `cost-management.cost.reader` role on the customer
+  account.
+- Note the customer account id. STACKIT removed its token flow on 2025-12-17, so the
+  key flow is the only way in.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **STACKIT**.
+1. Open **Settings > Integrations** and pick **STACKIT**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables STACKIT
-   needs, marks which are optional, and explains the permission each one requires.
+3. Enter the values you copied. The form lists what STACKIT needs and marks the
+   optional ones.
 4. Select **Connect**.
 
 The service account key JSON is always required, as a value or a file path. If you
@@ -46,6 +55,62 @@ STACKIT at any time and the connection stops; nothing else is affected.
 
 Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads STACKIT on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider stackit --sink costgraph
+```
+
+Your STACKIT credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/exporter) covers the three
+ways to run it and the variables it reads.
+
+That reads the Cost API, at a grain of day x project x service. If you have the
+FOCUS report below, point the same exporter at the bucket instead and you get a
+row per resource.
+
+### If you have STACKIT's FOCUS report
+
+STACKIT publishes its own FOCUS report, in beta, to an S3-compatible Object Storage
+bucket as `part_000X.csv.gz`, with a new file every million records. Schedule it daily
+or monthly; a daily schedule delivers at 12:00 UTC. Ask STACKIT support to enable it.
+
+That report is worth having: it carries a row per **resource**, where the Cost API we
+pull describes spend per project and service. Resource-level rows are what let
+CostGraph name the machine behind a charge and compare it against what the same shape
+costs elsewhere.
+
+[Run the exporter](/costgraph/integrations/exporter) against that bucket and it
+reads the report and pushes it, so there is no converter to write and no paging
+to get right:
+
+```yaml
+provider: objectstore
+sink: costgraph
+OBJECTSTORE_ENDPOINT: https://object.storage.eu01.stackit.schwarz
+OBJECTSTORE_BUCKET: my-cost-reports
+OBJECTSTORE_LAYOUT: latest-run
+OBJECTSTORE_ACCESS_KEY_ID: ...
+OBJECTSTORE_SECRET_ACCESS_KEY: ...
+```
+
+`latest-run` matters here: STACKIT rewrites a whole billing period on every
+scheduled run, so reading every run would count the period once per run. The
+exporter reads only the most recent one.
+
+If you would rather send the rows yourself,
+[Paging a large export](/costgraph/integrations/focus-push#paging-a-large-export)
+has the contract: one `batch_id` for the run, with `row_offset` counting across
+the parts rather than restarting at each one.
+
+Two things in that file we repair rather than reject, so you do not need to
+pre-process them either way: `ChargeDescription` is null on every row, and the
+service categories are STACKIT's own names rather than the FOCUS ones.
 
 ## What CostGraph does with it
 

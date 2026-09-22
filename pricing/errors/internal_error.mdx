@@ -1,0 +1,23 @@
+---
+title: 'Internal error'
+description: 'HTTP 500, code internal_error'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/internal_error`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/internal_error",
+  "title": "Internal error",
+  "status": 500,
+  "code": "internal_error"
+}
+```
+
+## When you see it
+
+The request could not be completed.
+
+## What to do
+
+Reads, deletes, and marketplace creates are safe to retry once after a short delay: creates are natural-key upserts, so a repeat lands on the same row. For a `PATCH`, check the current value before retrying, since the first attempt may have committed. If the error persists, contact support and quote the request path and time.

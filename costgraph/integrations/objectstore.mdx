@@ -1,0 +1,72 @@
+---
+title: Object Store
+description: "Read a bill your provider already publishes to storage - S3, Azure Blob, or anything S3-compatible - and push it to CostGraph"
+---
+
+Some providers do not answer a billing API; they write the bill to storage on a
+schedule. AWS Data Exports writes Parquet to S3, Azure Cost Management writes to
+Azure Blob Storage, and STACKIT publishes `part_000X.csv.gz` to its own Object
+Storage. The Object Store integration reads any of them: the rows are already
+FOCUS when they arrive, so nothing is normalized - the exporter reads, repairs
+the deviations it knows about, and pushes.
+
+This integration runs in **your** environment via the
+[exporter](/costgraph/integrations/exporter) - your storage credentials never
+reach CostGraph, and only the finished FOCUS records do.
+
+## Where the bill can live
+
+| Where the bill is | Set |
+| --- | --- |
+| AWS S3 | `OBJECTSTORE_BUCKET`, and nothing else if the exporter's role can read it |
+| Azure Blob Storage | `OBJECTSTORE_ENDPOINT=https://<account>.blob.core.windows.net` and the container in `OBJECTSTORE_BUCKET` |
+| S3-compatible (STACKIT, R2, MinIO, Ceph) | `OBJECTSTORE_ENDPOINT` and a read-only key pair |
+| Files you already have | `OBJECTSTORE_ENDPOINT=file:///bills` |
+
+`.csv`, `.csv.gz` and `.parquet` are all read. Credentials are read-only by
+intent: the exporter never writes to your bucket, so give it a key that cannot
+either.
+
+## Which files make up a period
+
+`OBJECTSTORE_LAYOUT` answers one question: given all the files in the bucket,
+which ones belong to a billing period?
+
+| Layout | Reads | Use it for |
+| --- | --- | --- |
+| `flat` (default) | every file under the prefix | a bucket that holds one copy of each file |
+| `latest-run` | only the newest export of each period | a provider that rewrites the whole period on every run, like STACKIT |
+| `manifest` | exactly the files a published manifest lists | AWS Data Exports and Azure, which write one naming their data files |
+
+Prefer `manifest` where the export publishes one: nothing is guessed from file
+names, and a run that lands while the exporter is reading cannot be read
+half-written.
+
+## Connect
+
+1. Open **Settings -> Integrations** and choose **Object Store**. Pick the
+   tenant the charges belong to and copy the **connection id** (`fpc_...`).
+2. Create an API key with the **`focus:write`** scope - and
+   **`deployment:register`** if you will run the exporter's container.
+3. Run the exporter where the bill is reachable:
+
+```bash
+OBJECTSTORE_BUCKET=my-focus-export \
+OBJECTSTORE_LAYOUT=manifest \
+COSTGRAPH_API_KEY=... COSTGRAPH_CONNECTION_ID=fpc_... \
+focus-exporter --provider objectstore --sink costgraph
+```
+
+[Run the exporter](/costgraph/integrations/exporter) covers the container, the
+Helm chart, and the binary; the
+[provider reference](/costgraph/integrations/exporter-reference) lists every
+variable. Without `--month` the current month is read, which is what a schedule
+wants; a month can be pushed again at any time - a push replaces the window it
+covers rather than doubling it.
+
+## What CostGraph does with it
+
+Records land as raw billing rows, are normalised into line items, and roll up
+into daily cost. One connection carries one provider's rows - the provider is
+stamped on first push - so exporting bills from two providers means two
+connections.

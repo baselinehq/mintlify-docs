@@ -124,6 +124,25 @@ and external ID.
 4. CostGraph assumes the role, validates it can read the export, and starts the first
    sync.
 
+## Push it yourself
+
+If you would rather not grant a cross-account role,
+[run the exporter](/costgraph/integrations/exporter) in your own account instead.
+It reads the same Data Export from S3 and pushes the records, so nothing but the
+FOCUS rows leaves your account:
+
+```yaml
+provider: objectstore
+sink: costgraph
+OBJECTSTORE_BUCKET: my-focus-export
+OBJECTSTORE_PREFIX: focus-1-2/
+OBJECTSTORE_LAYOUT: manifest
+```
+
+No keys: give the exporter's role `s3:ListBucket` and `s3:GetObject` on the
+export bucket and it uses the role it runs as. `manifest` reads exactly the
+files the export names, which is what AWS writes beside the data.
+
 ## What CostGraph does with it
 
 - **Cost**: FOCUS line items normalized to the same canonical model as every other

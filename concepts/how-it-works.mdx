@@ -17,7 +17,7 @@ CostGraph is a tool that provides recommendations for the requests and limits of
     3. Filtering is done on the data retrieved to remove outliers and optimise the stable trend of the captured window.
     4. We use the filtered data to generate recommendations for the requests and limits.
     5. The generated recommendations are computed per container and node per each namespace the application runs.
-    6. Each recommendation is deployed to parquet and the resulting files are ingested into Postgres.
+    6. Recommendations are stored and served through the CostGraph API.
   </Tab>
   <Tab title="QoS Algorithm">
     In obtaining the requests and limits, CostGraph uses the algorithm:

@@ -1,0 +1,71 @@
+---
+title: Stripe
+description: "Report attributed cloud spend to a Stripe billing meter"
+---
+
+CostGraph reports each customer's attributed cloud spend to a
+[Stripe](https://stripe.com) billing meter as meter events. A usage-based
+price on the meter turns them into invoices. The shared model, tag rules, and
+nightly behavior are on the [Billing exports](/costgraph/integrations/exports/overview)
+page.
+
+## Before you begin
+
+- Create a meter in **Billing > Meters** with a **sum** aggregation. CostGraph
+  reports against its event name.
+- Attach a usage-based price to the meter. Price per cent, or use a transform
+  quantity to group 100 units into one priced dollar.
+- Copy a secret key from **Developers > API keys**. A test key exercises the
+  whole flow without invoicing anyone.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Stripe** and enter the secret key. CostGraph
+    verifies the key against Stripe before it saves anything, and stores it
+    encrypted.
+  </Step>
+  <Step title="Bind a meter">
+    Bind a `stripe_` tag key to one of your active meters. CostGraph lists
+    meters by event name.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be a Stripe customer id, such as `cus_NciAYcXfLnqBoz`.
+Stripe rejects an event for a customer that doesn't exist, and CostGraph
+records the day with the rejection instead of billing it. Customer ids are
+opaque, so check the tag's values against your Stripe customers before you
+bind the meter.
+
+## Event payload
+
+Each customer-day is one meter event. Its `identifier` is derived from the day
+and the totals, so a run retried inside Stripe's deduplication window counts
+once. The payload carries the following keys along with the shared
+reconciliation fields:
+
+| Payload key | Meaning |
+|-------------|---------|
+| `stripe_customer_id` | The tag value for that day |
+| `value` | The amount reported, in cents |
+
+Stripe reads the keys your meter is configured with and stores the rest with
+the event.
+
+Corrections are sent as the difference, so a day revised downward sends a
+negative value. The meter must use a **sum** aggregation for the total to
+settle.
+
+## Stripe behavior
+
+Stripe won't accept a meter event timestamped more than 35 days back. That
+matches CostGraph's reconciliation window, so the oldest day in the window can
+be rejected and is recorded as such.
+
+Stripe assigns an event to the period its timestamp falls in. A correction
+that arrives while that period's invoice is a draft lands on it. After the
+invoice is finalized, the event no longer changes it. Settle the difference
+with a credit note or an adjustment in Stripe.

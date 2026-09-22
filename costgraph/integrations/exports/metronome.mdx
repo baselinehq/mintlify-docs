@@ -1,0 +1,57 @@
+---
+title: Metronome
+description: "Report attributed cloud spend to Metronome as usage events for a billable metric"
+---
+
+CostGraph reports each customer's attributed cloud spend to
+[Metronome](https://metronome.com) as usage events under an event type. A
+billable metric aggregates them, and its rate turns them into invoices. The
+shared model, tag rules, and nightly behavior are on the
+[Billing exports](/costgraph/integrations/exports/overview) page.
+
+## Before you begin
+
+- Create a billable metric with an **event type filter** and a **sum**
+  aggregation over the `value` property. CostGraph offers a metric once per
+  event type in its filter. A metric with no event type filter matches every
+  event and isn't offered.
+- Attach a rate to the metric. Price per cent, or divide by 100 in the metric.
+- Copy an API token from **Settings > API tokens**.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Metronome** and enter the API token.
+    CostGraph verifies the token against Metronome before it saves anything,
+    and stores it encrypted.
+  </Step>
+  <Step title="Bind a billable metric">
+    Bind a `metronome_` tag key to one of your billable metrics. CostGraph
+    reports events under the metric's event type.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be a Metronome customer id, such as
+`4e2f8a10-4c1d-4b7e-9f3a-2d6c8e1f0a5b`. Metronome accepts events for ids it
+doesn't recognize and leaves them unmatched, so a mistyped tag value looks
+like a successful report while billing nobody. Check the tag's values against
+your Metronome customers before you bind the metric, and reconcile the first
+few invoices.
+
+## Event payload
+
+Each customer-day is one usage event. Its `transaction_id` is derived from the
+day and the totals, so a retried run is ignored as a duplicate. The properties
+carry `value`, the amount in cents, and the shared reconciliation fields.
+
+Corrections are sent as the difference and can be negative. The metric must
+sum `value` for the total to settle.
+
+## Metronome behavior
+
+Metronome ignores a transaction id it has seen in the last 34 days. A
+correction carries totals that differ from the last report, so its transaction
+id differs too and isn't mistaken for a replay.

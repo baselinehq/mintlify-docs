@@ -1,0 +1,97 @@
+---
+title: Billing exports
+description: "Report each customer's attributed cloud spend to the platform that invoices them"
+---
+
+CostGraph reports each customer's attributed cloud spend to your billing
+platform every night. You decide which customer each charge belongs to with a
+virtual tag. The platform prices and invoices what CostGraph reports.
+
+This is your customers' billing. It has nothing to do with how you pay
+CostGraph.
+
+## How the export works
+
+1. A **virtual tag** assigns each charge to a customer. Every value the tag
+   produces is an id in your billing platform.
+2. A **meter** binds that tag key to one meter in the platform. Each night
+   CostGraph reports every customer's spend for each settled day to that meter.
+3. The **platform prices and invoices** what was reported.
+
+CostGraph reports spend in integer cents. Price the meter per cent, or divide
+by 100 on the platform. No platform checks the unit, so a price set as if the
+values were dollars bills 100 times too much.
+
+## Platform differences
+
+The platforms disagree on what they bill and how they treat corrections. The
+following table shows what each one expects; the platform pages cover the
+details.
+
+| Platform | Tag value | Meter | Unknown id | Corrections |
+|----------|-----------|-------|------------|-------------|
+| [Autumn](/costgraph/integrations/exports/autumn) | Customer id | Meter | Creates the customer | Sent as the difference |
+| [Chargebee](/costgraph/integrations/exports/chargebee) | Subscription id | Metered item price | Rejected | Replaces the day's record |
+| [Lago](/costgraph/integrations/exports/lago) | External subscription id | Billable metric | Rejected | Sent as the difference |
+| [Metronome](/costgraph/integrations/exports/metronome) | Customer id | Event type | Accepted, bills nobody | Sent as the difference |
+| [OpenMeter](/costgraph/integrations/exports/openmeter) | Subject | Meter | Creates the subject | Sent as the difference |
+| [Orb](/costgraph/integrations/exports/orb) | External customer id | Event name | Rejected | Sent as the difference |
+| [Stripe](/costgraph/integrations/exports/stripe) | Customer id | Meter | Rejected | Sent as the difference |
+
+Where a platform creates an unknown id, a mistyped tag value becomes a new
+billable customer. Where it accepts one silently, the spend is reported but
+not invoiced. Check the tag's values against the platform before you bind a
+meter, and review the first night's report after any rule change.
+
+## Tag spend by customer
+
+Create a virtual tag key with the platform's prefix, such as
+`stripe_customer`. Only prefixed keys can be bound to a meter. The value a rule
+assigns is the id the spend is reported under, so set the **Tag value** to the
+customer's id in the platform.
+
+The following rule bills everything in one linked account to one customer:
+
+| Field | Operator | Match value | Tag value |
+|-------|----------|-------------|-----------|
+| Account id | is | `416508157375` | `acme-corp` |
+
+Any field works as the match: a linked account, a resource name prefix, a
+project, or an existing tag. CostGraph doesn't report spend the tag doesn't
+match. See [Virtual tags](/costgraph/virtual-tags/usage) for the rule builder
+and how overlapping rules resolve.
+
+Group the cost overview by the tag key to see what each customer is billed
+before it's reported.
+
+### Protected days
+
+A bound tag key drives invoices, so CostGraph protects days it has already
+reported. Rules on the key can't be reordered. A new or edited rule must start
+on a date that hasn't been reported yet. To retire a rule, give it an end date
+instead of editing it in place.
+
+## Nightly runs
+
+Cloud providers restate recent spend. CostGraph holds each day for two days
+before reporting it, then keeps reconciling the last 35 days. A day that
+changes after it was reported is sent again as a correction.
+
+Each run reports only what changed, so an unchanged day sends nothing.
+
+Every report carries the same reconciliation fields. They let you explain any
+charge from the platform's side:
+
+| Property | Meaning |
+|----------|---------|
+| `usage_date` | The day the spend belongs to |
+| `correction` | Whether this report adjusts a day reported earlier |
+| `previous_total` / `new_total` | What the day's total was, and is now |
+| `currency` | The currency the meter is denominated in |
+
+CostGraph holds a day back rather than report it wrong when its spend mixes
+currencies or a quantity meter meets an unexpected unit. Each held day is
+recorded with its reason.
+
+Deactivating a meter stops reporting but keeps its history. Reactivating it
+resumes from what was already sent, so the window isn't billed twice.

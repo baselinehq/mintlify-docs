@@ -18,17 +18,45 @@ CostGraph reads OVHcloud as **FOCUS 1.2** records at a grain of bill line item.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- In the [OVHcloud Control Panel](https://www.ovh.com/manager/), go to
+  **Identity, Security & Operations > Identities > Service account** and click
+  **Add a service account**. Name it, describe it, and click **Create**.
+- Copy both values from the confirmation window. The **service account name** is the
+  client id and the **password** is the client secret. OVHcloud displays the secret only at
+  creation and can't retrieve or regenerate it, so a lost secret means a new service
+  account.
+- Attach an IAM policy to the service account under
+  **Identity, Security & Operations > Identities > Policies**. The following table
+  lists what CostGraph calls. OVHcloud's managed **Global billingAccount** permission
+  group covers the billing side across every product.
+
+| API call | IAM action | Why CostGraph needs it |
+|----------|------------|------------------------|
+| `GET /me` | `account:apiovh:me/get` | Identify the billing account |
+| `GET /me/bill` and its details | billing read | Read invoices and their line items |
+| `GET /cloud/project` | `publicCloudProject:apiovh:get` | List Public Cloud projects |
+| `GET /cloud/project/{id}/usage/current` | `publicCloudProject:apiovh:usage/current/get` | Read the running month before it's invoiced |
+
+The client id prefix selects the API region and must match the region your account
+lives in: `EU.`, `CA.`, or `US.`. A client id from another region fails with
+`invalid_client`. The API console shows the IAM action each route needs on its
+**IAM actions** line. For the full walkthrough, see OVHcloud's
+[service account guide](https://docs.ovhcloud.com/en/guides/manage-and-operate/api/manage-service-account).
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **OVHcloud**.
+1. Open **Settings > Integrations** and pick **OVHcloud**.
 2. Name the connection and pick the tenant these charges belong to.
-3. Fill in the values the form asks for. It lists exactly the variables OVHcloud
-   needs, marks which are optional, and explains the permission each one requires.
-   The client id carries the API region as its prefix (`EU.`, `CA.` or `US.`).
+3. Enter the client id and client secret. Add a Public Cloud project id to scope the
+   running month to one project, or leave it empty for every project the service
+   account reads.
 4. Select **Connect**.
 
-CostGraph verifies the credentials with a short fetch before saving, so a wrong
-value or a missing permission fails while you are still on the form.
+CostGraph verifies the credentials with a short fetch before saving, so a wrong value
+or a missing permission fails while you are still on the form. An account with no
+recent invoice still connects, because CostGraph reads the billing account from `/me`.
 
 <Note>
 Credentials are encrypted at rest and used only to read billing data. Revoke them in
@@ -39,6 +67,20 @@ OVHcloud at any time and the connection stops; nothing else is affected.
 
 Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads OVHcloud on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider ovhcloud --sink costgraph
+```
+
+Your OVHcloud credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/exporter) covers the three
+ways to run it and the variables it reads.
 
 ## What CostGraph does with it
 

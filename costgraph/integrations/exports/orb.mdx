@@ -1,0 +1,68 @@
+---
+title: Orb
+description: "Report attributed cloud spend to Orb as events for a billable metric"
+---
+
+CostGraph reports each customer's attributed cloud spend to
+[Orb](https://www.withorb.com) as events under an event name. A billable
+metric queries those events, and its price turns them into invoices. The
+shared model, tag rules, and nightly behavior are on the
+[Billing exports](/costgraph/integrations/exports/overview) page.
+
+## Before you begin
+
+- Create a billable metric that filters on an event name and sums `value`:
+
+  ```sql
+  SELECT SUM(value) FROM events WHERE event_name = 'cloud_cost'
+  ```
+
+- Attach a price to the metric. Price per cent, or divide by 100 in the
+  metric.
+- Copy an API key from **Settings > Developers**.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Orb** and enter the API key. CostGraph
+    verifies the key against Orb before it saves anything, and stores it
+    encrypted.
+  </Step>
+  <Step title="Bind an event name">
+    Bind an `orb_` tag key to the event name your metric queries, for example
+    `cloud_cost`. Orb keeps the event name inside the metric's SQL, so
+    CostGraph can't list the names for you. Enter it as it appears in the
+    metric.
+  </Step>
+</Steps>
+
+<Warning>
+Orb accepts events under any name. An event name that doesn't match the metric
+produces events that no metric counts, so the spend looks reported but bills
+nobody. Check the first night's events in Orb against the metric before you
+rely on it.
+</Warning>
+
+## Tag spend by customer
+
+The tag value must be an Orb external customer id. That is the stable id from
+your own system that you set on the Orb customer, not Orb's internal id. Orb reports an
+unknown external customer id as a validation failure, and CostGraph records
+the day with that failure instead of billing it.
+
+## Event payload
+
+Each customer-day is one event. Its `idempotency_key` is derived from the day
+and the totals, so a retried run counts once. The properties carry `value`,
+the amount in cents, and the shared reconciliation fields.
+
+Corrections are sent as the difference and can be negative. The metric must
+sum `value` for the total to settle.
+
+## Orb behavior
+
+Orb assigns an event to the period its timestamp falls in. A correction that
+arrives while that period's invoice is pending is reflected in it. After the
+invoice is issued, Orb's backfill recalculates the usage but doesn't change
+what was billed. Settle the difference in Orb.

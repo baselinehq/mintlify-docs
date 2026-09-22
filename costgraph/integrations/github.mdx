@@ -20,14 +20,22 @@ repository, carrying both gross and net billed cost.
   </Card>
 </CardGroup>
 
+## Before you begin
+
+- Create a token that reads the organization's billing. A fine-grained personal access
+  token needs the organization permission **Administration: read**, plus **Copilot:
+  read** for per-seat data. A classic token needs `repo`, `read:org`, and `copilot`.
+  [Create a classic token with the scopes prefilled](https://github.com/settings/tokens/new?scopes=repo,read:org,copilot&description=costgraph-billing).
+- If the organization enforces SAML single sign-on, authorize the token for that
+  organization. An unauthorized token returns 403.
+- Note the organization login.
+
 ## Let CostGraph pull
 
-1. Open **Settings -> Integrations** and pick **GitHub**.
+1. Open **Settings > Integrations** and pick **GitHub**.
 2. Name the connection, pick the tenant these charges belong to, and enter the
    organization login whose billing you want.
-3. Supply a token with read access to the organization's billing. A fine-grained
-   personal access token needs **Administration: read**; a classic token needs the
-   billing read scope.
+3. Enter the token.
 4. Select **Connect**.
 
 CostGraph verifies the token with a short fetch before saving, so a wrong value or a
@@ -42,6 +50,20 @@ in GitHub at any time and the connection stops; nothing else is affected.
 
 Send the charges to CostGraph as FOCUS records instead. [Push FOCUS data](/costgraph/integrations/focus-push) covers the connection id,
 the `focus:write` key, and the request shape.
+
+## Run the exporter
+
+Rather than build that request yourself, run our exporter. It reads GitHub on a
+schedule and pushes the records for you, wherever you want to run it: a container, a
+Kubernetes `CronJob`, or a binary on a machine you already have.
+
+```bash
+focus-exporter --provider github --sink costgraph
+```
+
+Your GitHub credential stays where you put it, and only the finished FOCUS records
+reach CostGraph. [Run the exporter](/costgraph/integrations/exporter) covers the three
+ways to run it and the variables it reads.
 
 ## What CostGraph does with it
 

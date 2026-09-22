@@ -1,0 +1,65 @@
+---
+title: OpenMeter
+description: "Report attributed cloud spend to an OpenMeter meter, including on Kong Konnect"
+---
+
+CostGraph reports each customer's attributed cloud spend to an
+[OpenMeter](https://openmeter.io) meter as CloudEvents. OpenMeter aggregates
+them per subject for your billing system or its own billing to price. The
+shared model, tag rules, and nightly behavior are on the
+[Billing exports](/costgraph/integrations/exports/overview) page.
+
+OpenMeter is also the metering behind Kong Konnect. A Konnect account
+connects the same way, with a different API URL.
+
+## Before you begin
+
+- Create a meter with a **sum** aggregation whose value property is `$.value`.
+  CostGraph reports against its event type.
+- Price per cent, or divide by 100 downstream.
+- Copy an API token from your OpenMeter settings. On Kong Konnect, use a
+  personal access token, which starts with `kpat_`.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **OpenMeter** and enter the API token. Leave
+    **API URL** empty for OpenMeter Cloud. For anything else, set it to the API
+    root including its version, not only the host:
+
+    - Self-hosted: your instance URL ending in `/api/v1`
+    - Kong Konnect: `https://{region}.api.konghq.com/v3/openmeter`, with the
+      region of your Konnect organization
+
+    CostGraph verifies the token before it saves anything, and stores it
+    encrypted.
+  </Step>
+  <Step title="Bind a meter">
+    Bind an `openmeter_` tag key to one of your meters. CostGraph lists meters
+    by event type.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be an OpenMeter subject, the identifier for whoever the
+usage belongs to. OpenMeter creates a subject the first time it sees one, so a
+mistyped tag value becomes a new metered subject. Check the tag's values before
+you bind the meter, and review what was reported after any rule change.
+
+## Event payload
+
+Each customer-day is one CloudEvent. Its `source` is `costgraph`, its `type`
+is the meter's event type, and its `subject` is the tag value. The event
+`id` is derived from the day and the totals, so a retried run is deduplicated.
+The data carries `value`, the amount in cents, and the shared reconciliation
+fields.
+
+Corrections are sent as the difference and can be negative. The meter must
+sum `$.value` for the total to settle.
+
+## OpenMeter behavior
+
+Each event is timestamped with the day it belongs to. A correction lands in
+that day's window, not the day it was sent.

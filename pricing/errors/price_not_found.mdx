@@ -1,0 +1,23 @@
+---
+title: 'Price not found'
+description: 'HTTP 404, code price_not_found'
+---
+
+<Note>The problem document's `type` field points here: `https://docs.costgraph.ai/pricing/errors/price_not_found`</Note>
+
+```json
+{
+  "type": "https://docs.costgraph.ai/pricing/errors/price_not_found",
+  "title": "Price not found",
+  "status": 404,
+  "code": "price_not_found"
+}
+```
+
+## When you see it
+
+No catalog price matches the requested shape in the requested region.
+
+## What to do
+
+Check `provider`, `service`, `region`, `instance_type` and `usage_type`, or publish your own rate on the marketplace and pin the resource to it.

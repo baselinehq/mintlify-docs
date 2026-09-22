@@ -1,0 +1,57 @@
+---
+title: Lago
+description: "Report attributed cloud spend to a Lago billable metric"
+---
+
+CostGraph reports each customer's attributed cloud spend to a
+[Lago](https://getlago.com) billable metric as usage events. A charge on the
+metric turns them into invoices. The shared model, tag rules, and nightly
+behavior are on the [Billing exports](/costgraph/integrations/exports/overview)
+page.
+
+## Before you begin
+
+- Create a billable metric that aggregates `value` with a **sum**. CostGraph
+  offers only metrics it can see in the connected account.
+- Attach a charge to the metric. Price per cent, or divide by 100 in the
+  metric.
+- Copy an API key from **Developers > API keys**.
+
+## Connect
+
+<Steps>
+  <Step title="Connect the account">
+    In **Integrations**, click **Lago** and enter the API key. If you
+    self-host Lago or use a region other than the default, set **API URL** to
+    your instance, for example `https://lago.internal`. Leave it empty for Lago
+    Cloud. CostGraph verifies the key against Lago before it saves anything,
+    and stores it encrypted.
+  </Step>
+  <Step title="Bind a billable metric">
+    Bind a `lago_` tag key to one of your billable metrics.
+  </Step>
+</Steps>
+
+## Tag spend by customer
+
+The tag value must be a Lago external subscription id, not a customer id. Lago
+attributes usage to a subscription, so a customer with two subscriptions needs
+the tag to name the one that carries the cloud spend. Lago rejects an event
+for a subscription that doesn't exist, and CostGraph records the day with the
+rejection instead of billing it.
+
+## Event payload
+
+Each customer-day is one event on the metric. Its `transaction_id` is derived
+from the day and the totals, so a retried run counts once. The properties
+carry `value`, the amount in cents, and the shared reconciliation fields.
+
+Corrections are sent as the difference and can be negative. The metric must
+sum `value` for the total to settle.
+
+## Lago behavior
+
+Lago assigns an event to the period its timestamp falls in. A correction that
+arrives while that period's invoice is a draft is included in it. After the
+invoice is finalized, Lago doesn't move the event to a later one. Settle the
+difference with a manual adjustment in Lago.

@@ -7,41 +7,54 @@ You already debug your infrastructure inside a coding agent. CostGraph's MCP put
 
 ## Prerequisites
 
-- A CostGraph account with an active billing plan. OAuth-capable clients sign in with your account when they connect; no key required.
+- A CostGraph account with an active billing plan. For non-OAuth capable clients, an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys).
 
 <Warning>
   MCP access requires an active billing plan. Set up billing in the [CostGraph platform](https://app.costgraph.ai/billing) before connecting.
 </Warning>
 
-Point your agent at the endpoint below. When it connects, it asks you to sign in with your CostGraph account in the browser.
-
-```text
-https://mcp.costgraph.ai
-```
-
 <Note>
   Running headless or in CI, where a browser sign-in is not an option? Create an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys) and send it in the `X-API-Key` header instead, as shown in the tabs below.
 </Note>
 
-## Connect your agent
+## Connect your agent via OAuth or API key
 
 Pick your agent and drop in the config.
 
 <Tabs>
-  <Tab title="Claude" icon="/images/mcp/claude.svg">
-    Run this once and Claude Code registers the server. On first connect, Claude Code opens your browser to sign in with your CostGraph account:
-
-    ```bash
-    claude mcp add --transport http costgraph https://mcp.costgraph.ai
-    ```
-  </Tab>
   <Tab title="Codex" icon="/images/mcp/codex.svg">
-    Add CostGraph to `~/.codex/config.toml`, with an API key:
+    Add Costgraph to `~/.codex/config.toml` to sign in via OAuth:
+    ```toml
+    [mcp_servers.costgraph]
+    url = "https://mcp.costgraph.ai/mcp"
+    
+    [mcp_servers.example.oauth]
+    client_id = "6peb1hopcd2bndd7rbn6e4vhed"
+    callback_url = "http://127.0.0.1/callback"
+    ```
+    Or, with an API key:
 
     ```toml
     [mcp_servers.costgraph]
-    url = "https://mcp.costgraph.ai"
+    url = "https://mcp.costgraph.ai/mcp"
     http_headers = { "X-API-Key" = "bl_your_key" }
+    ```
+  </Tab>
+  <Tab title="Claude" icon="/images/mcp/claude.svg">
+    On first connect, Claude Code opens your browser to sign in with your CostGraph account:
+    
+    ```bash
+    claude mcp add --transport http \
+      --callback-port 8080 \
+      --client-id 6peb1hopcd2bndd7rbn6e4vhed \
+    costgraph https://mcp.costgraph.ai/mcp
+    ```
+
+    Or run this once and Claude Code registers the server with your API key.
+
+    ```bash
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai/mcp \
+      --header "X-API-Key: bl_your_key"
     ```
   </Tab>
   <Tab title="Amp" icon="/images/mcp/amp.svg">
@@ -51,7 +64,7 @@ Pick your agent and drop in the config.
     {
       "amp.mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai",
+          "url": "https://mcp.costgraph.ai/mcp",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }
@@ -59,7 +72,7 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="OpenCode" icon="/images/mcp/opencode.svg">
-    Add CostGraph to your `opencode.json`, with an API key:
+    Add Costgraph to your `opencode.json` to sign in via OAuth:
 
     ```json
     {
@@ -67,7 +80,25 @@ Pick your agent and drop in the config.
       "mcp": {
         "costgraph": {
           "type": "remote",
-          "url": "https://mcp.costgraph.ai",
+          "url": "https://mcp.costgraph.ai/mcp",
+          "oauth": {
+            "client_id": "6peb1hopcd2bndd7rbn6e4vhed"
+            "redirect_uri": "http://127.0.0.1:19876/callback",
+          }
+        }
+      }
+    }
+    ```
+
+    Or, with an API key:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "costgraph": {
+          "type": "remote",
+          "url": "https://mcp.costgraph.ai/mcp",
           "headers": { "X-API-Key": "bl_your_key" },
           "enabled": true
         }
@@ -76,13 +107,26 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="Generic" icon="plug">
-    Generic MCP configuration. OAuth-capable agents only need the URL and prompt you to sign in on first connect; otherwise add an API key:
+    Generic MCP configuration. For OAuth-enabled sign in:
+    ```json
+    {
+      "mcpServers": {
+        "costgraph": {
+          "url": "https://mcp.costgraph.ai/mcp",
+          "client_id": "6peb1hopcd2bndd7rbn6e4vhed"
+          "redirect_uri": "http://localhost:3335/callback"
+        }
+      }
+    }
+    ```
+
+    Or, with an API key:
 
     ```json
     {
       "mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai",
+          "url": "https://mcp.costgraph.ai/mcp",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }

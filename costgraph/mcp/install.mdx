@@ -17,13 +17,13 @@ You already debug your infrastructure inside a coding agent. CostGraph's MCP put
   Running headless or in CI, where a browser sign-in is not an option? Create an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys) and send it in the `X-API-Key` header instead, as shown in the tabs below.
 </Note>
 
-## Connect your agent via OAuth or API key
+## Connect your agent through OAuth or API key
 
 Pick your agent and drop in the config.
 
 <Tabs>
   <Tab title="Codex" icon="/images/mcp/codex.svg">
-    Add Costgraph to `~/.codex/config.toml` to sign in via OAuth:
+    Add Costgraph to `~/.codex/config.toml` to sign in by using OAuth:
     ```toml
     [mcp_servers.costgraph]
     url = "https://mcp.costgraph.ai/mcp"
@@ -50,7 +50,7 @@ Pick your agent and drop in the config.
     costgraph https://mcp.costgraph.ai/mcp
     ```
 
-    Or run this once and Claude Code registers the server with your API key.
+    Or run this and Claude Code registers the server with your API key.
 
     ```bash
     claude mcp add --transport http costgraph https://mcp.costgraph.ai/mcp \
@@ -72,7 +72,7 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="OpenCode" icon="/images/mcp/opencode.svg">
-    Add Costgraph to your `opencode.json` to sign in via OAuth:
+    Add Costgraph to your `opencode.json` to sign in by using OAuth:
 
     ```json
     {
@@ -135,7 +135,7 @@ Pick your agent and drop in the config.
   </Tab>
 </Tabs>
 
-Once it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
+After it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
 
 ## FAQ
 

@@ -190,7 +190,11 @@
                 "group": "Telemetry",
                 "icon": "chart-line",
                 "pages": [
-                  "costgraph/integrations/ai-gateways"
+                  "costgraph/integrations/ai-gateways",
+                  "costgraph/integrations/ai-gateways/envoy-ai-gateway",
+                  "costgraph/integrations/ai-gateways/agentgateway",
+                  "costgraph/integrations/ai-gateways/apisix",
+                  "costgraph/integrations/ai-gateways/vllm"
                 ]
               },
               {

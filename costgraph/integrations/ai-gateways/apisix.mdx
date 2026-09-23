@@ -1,0 +1,48 @@
+---
+title: Apache APISIX
+description: "What CostGraph scrapes from Apache APISIX and how its token metrics are priced"
+---
+
+APISIX reports prompt and completion tokens as two separate metrics from its
+Prometheus plugin. See the upstream
+[prometheus plugin reference](https://apisix.apache.org/docs/apisix/plugins/prometheus/).
+
+## What CostGraph scrapes
+
+| | |
+|---|---|
+| Namespace | `apisix` |
+| Pod selector | `app.kubernetes.io/name=apisix` |
+| Port and path | `9091` `/apisix/prometheus/metrics` |
+| Metrics | names starting `apisix_llm_` |
+
+APISIX only starts reporting LLM metrics after the first AI request passes
+through it, so an empty scrape before any traffic is expected.
+
+## How the metrics map
+
+Both become
+[`costgraph_gen_ai_usage_total`](/costgraph/integrations/ai-gateways#send-from-anything-else),
+with the direction set by which metric the value came from:
+
+| APISIX metric | `costgraph_usage_kind` |
+|---|---|
+| `apisix_llm_prompt_tokens` | `input` |
+| `apisix_llm_completion_tokens` | `output` |
+
+| APISIX label | CostGraph label |
+|---|---|
+| `llm_model` | `costgraph_model` |
+| `consumer` | `costgraph_sub_account` |
+
+The unit is always `tokens`.
+
+## Attribute usage to your customers
+
+Nothing to configure. Give each customer its own APISIX consumer; the `consumer`
+label is already on every LLM metric, because consumers are APISIX's own auth
+identities.
+
+<Card title="AI gateways" icon="chart-line" href="/costgraph/integrations/ai-gateways">
+  Connecting, pricing, and sending usage yourself.
+</Card>

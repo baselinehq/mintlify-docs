@@ -26,14 +26,16 @@ This is its own way to connect, alongside pull, push, and exports:
 
 | Gateway | Attribute usage to your customers |
 | --- | --- |
-| Envoy AI Gateway | Yes, from a request header |
-| Solo.io agentgateway | Yes, from any request expression |
-| Apache APISIX | Yes, already on every metric |
-| vLLM | Per workload only, see below |
+| [Envoy AI Gateway](/costgraph/integrations/ai-gateways/envoy-ai-gateway) | Yes, from a request header |
+| [Solo.io agentgateway](/costgraph/integrations/ai-gateways/agentgateway) | Yes, from any request expression |
+| [Apache APISIX](/costgraph/integrations/ai-gateways/apisix) | Yes, already on every metric |
+| [vLLM](/costgraph/integrations/ai-gateways/vllm) | Per workload only, see below |
 
 Each was run and measured rather than read about: every one reports tokens
 differently, and two of them do not follow the OpenTelemetry GenAI conventions
-at all. CostGraph normalises that for you.
+at all. CostGraph normalises that for you. Each of the preceding pages lists the
+metrics we read, how their labels map, and the upstream metrics reference it was
+built against.
 
 ## Connect
 
@@ -122,6 +124,8 @@ per-customer usage shows up wherever you already group by sub-account.
 
     The attribute `customer.id` arrives as the label `customer_id` - dots become
     underscores on the Prometheus side.
+
+    See [Envoy AI Gateway](/costgraph/integrations/ai-gateways/envoy-ai-gateway).
   </Accordion>
 
   <Accordion title="Solo.io agentgateway">
@@ -138,6 +142,8 @@ per-customer usage shows up wherever you already group by sub-account.
               - name: customer
                 expression: request.headers["x-customer-id"]
     ```
+
+    See [Solo.io agentgateway](/costgraph/integrations/ai-gateways/agentgateway).
   </Accordion>
 
   <Accordion title="Apache APISIX">
@@ -147,11 +153,13 @@ per-customer usage shows up wherever you already group by sub-account.
 
     APISIX only starts reporting LLM metrics after the first AI request passes
     through it, so an empty scrape before any traffic is expected.
+
+    See [Apache APISIX](/costgraph/integrations/ai-gateways/apisix).
   </Accordion>
 
   <Accordion title="vLLM">
     Not available per request. vLLM is a model server, not an auth boundary, and
-    reports only the model name - no configuration changes that.
+    reports only the model name, so no configuration changes that.
 
     Either front it with a gateway that can attribute per request, or run one
     deployment per customer and annotate the workload:
@@ -160,6 +168,9 @@ per-customer usage shows up wherever you already group by sub-account.
     kubectl annotate deployment/llama-serving \
       costgraph.ai/sub-account=acme-corp
     ```
+
+    See [vLLM](/costgraph/integrations/ai-gateways/vllm) for the metrics we read
+    and how a model you host yourself is priced.
   </Accordion>
 </AccordionGroup>
 

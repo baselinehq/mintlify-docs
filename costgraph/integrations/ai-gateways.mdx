@@ -39,7 +39,7 @@ built against.
 
 ## Connect
 
-1. Open **Settings -> Integrations** and pick your gateway.
+1. Open **Settings > Integrations** and pick your gateway.
 2. Name the connection and pick the tenant this usage belongs to.
 3. Select the cluster the gateway runs in.
 4. Select **Connect**.
@@ -58,11 +58,9 @@ gateway later changes nothing in your Helm values.
 A connection is picked up within five minutes of being created; the scraper
 refreshes its served targets on that interval rather than at start only.
 
-<Note>
-  A served target always carries a metric-name filter, so it only ever collects
-  the token metrics it was configured for. A target you set yourself in
-  `operatorPrometheus.scrapeTargets` always wins over a served one.
-</Note>
+A served target always carries a metric-name filter, so it collects only the
+token metrics it was configured for. A target you set yourself in
+`operatorPrometheus.scrapeTargets` takes precedence over a served one.
 
 <Warning>
   **agentgateway has no stock scrape location.** Its token metrics come from the
@@ -122,7 +120,7 @@ per-customer usage shows up wherever you already group by sub-account.
       --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
     ```
 
-    The attribute `customer.id` arrives as the label `customer_id` - dots become
+    The attribute `customer.id` arrives as the label `customer_id`. Dots become
     underscores on the Prometheus side.
 
     See [Envoy AI Gateway](/costgraph/integrations/ai-gateways/envoy-ai-gateway).
@@ -213,7 +211,7 @@ than no number.
 <Note>
   Only token usage prices today. Images, audio seconds and characters are
   captured and stored now, and will price once the catalog carries rates for
-  them - nothing is lost in the meantime.
+  them, so nothing is lost in the meantime.
 </Note>
 
 ## Send usage yourself
@@ -252,7 +250,7 @@ The key needs the **`focus:write`** scope.
 ## Send from anything else
 
 CostGraph reads one metric family. Anything that can write it can be a source -
-a Prometheus server, an OpenTelemetry Collector, Grafana Alloy - whether or not
+a Prometheus server, an OpenTelemetry Collector, or Grafana Alloy, whether or not
 it runs on Kubernetes:
 
 ```
@@ -290,7 +288,7 @@ than half-priced.
 
 Any other label rides along and is available to
 [attribution dimensions](#attribute-usage-to-your-customers), which read the
-labels your gateway already emits - `team`, `route`, `gen_ai_provider_name` -
+labels your gateway already emits, such as `team`, `route` or `gen_ai_provider_name`,
 into sub-account and cost extensions. Nothing needs renaming to
 `costgraph_` first.
 

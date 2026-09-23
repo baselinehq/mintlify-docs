@@ -34,6 +34,10 @@ you run it somewhere else.
 
 The unit is always `tokens`.
 
+Envoy AI Gateway also reports `gen_ai_token_type="total"`. CostGraph reads the
+input and output series and drops the total, so the same tokens are never
+counted twice.
+
 ## Attribute usage to your customers
 
 Map a request header onto the metrics. This is a controller-wide setting, so
@@ -41,9 +45,15 @@ every gateway that controller manages shares the mapping.
 
 ```bash
 helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
-  --version v1.1.0 -n envoy-ai-gateway-system \
+  --version v1.1.0 -n envoy-ai-gateway-system --reuse-values \
   --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
 ```
+
+<Warning>
+  `--reuse-values` keeps the settings the release already has. Without it, an
+  upgrade that passes only this one `--set` discards every other value you
+  configured.
+</Warning>
 
 The attribute `customer.id` arrives as the label `customer_id`: dots become
 underscores on the Prometheus side.

@@ -118,7 +118,7 @@ per-customer usage shows up wherever you already group by sub-account.
 
     ```bash
     helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
-      --version v1.1.0 -n envoy-ai-gateway-system \
+      --version v1.1.0 -n envoy-ai-gateway-system --reuse-values \
       --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
     ```
 
@@ -134,7 +134,16 @@ per-customer usage shows up wherever you already group by sub-account.
     come from a header, a JWT claim, or anything else in the request.
 
     ```yaml
+    apiVersion: agentgateway.dev/v1alpha1
+    kind: AgentgatewayPolicy
+    metadata:
+      name: costgraph-customer-attribution
+      namespace: my-namespace
     spec:
+      targetRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: my-gateway
       frontend:
         metrics:
           attributes:

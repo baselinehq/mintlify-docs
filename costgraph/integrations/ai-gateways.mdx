@@ -138,7 +138,7 @@ per-customer usage shows up wherever you already group by sub-account.
     kind: AgentgatewayPolicy
     metadata:
       name: costgraph-customer-attribution
-      namespace: my-namespace
+      namespace: my-gateway-namespace
     spec:
       targetRefs:
         - group: gateway.networking.k8s.io
@@ -151,6 +151,8 @@ per-customer usage shows up wherever you already group by sub-account.
               - name: customer
                 expression: request.headers["x-customer-id"]
     ```
+
+    The policy must live in the same namespace as the Gateway it targets.
 
     See [Solo.io agentgateway](/costgraph/integrations/ai-gateways/agentgateway).
   </Accordion>

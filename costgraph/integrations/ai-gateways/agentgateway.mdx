@@ -69,11 +69,11 @@ spec:
 ```
 
 <Note>
-  A policy applies only where it is targeted, so it needs `targetRefs` (or
-  `targetSelectors`) naming your Gateway, and it must live in the same namespace
-  as that Gateway - a policy cannot reach one in another namespace. If you
-  already have a policy targeting it, add the `attributes` block to that one
-  rather than creating a second.
+  A policy applies only where it is targeted, so it needs `targetRefs` or
+  `targetSelectors` naming your Gateway. It must also live in that Gateway's
+  namespace, because a policy cannot reach across namespaces. If a policy
+  already targets the Gateway, add the `attributes` block to that one instead
+  of creating a second.
 </Note>
 
 <Card title="AI gateways" icon="chart-line" href="/costgraph/integrations/ai-gateways">

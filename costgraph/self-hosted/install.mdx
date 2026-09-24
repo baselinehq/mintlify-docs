@@ -6,8 +6,9 @@ description: "Run the CostGraph self-hosted chart and connect your clusters to i
 ## Prerequisites
 
 From CostGraph, one thing: a **deployment API key**, created in the dashboard
-under [Settings -> API Keys](https://app.costgraph.ai/settings/account/api-keys). It is the only credential you need. The image
-registry authenticates with the same key, and the chart wires that up for you.
+under [**Settings > API keys**](https://app.costgraph.ai/settings/account/api-keys).
+It is the only credential you need. The image registry authenticates with the
+same key, and the chart wires that up for you.
 
 Self-hosting still starts with an account on
 [app.costgraph.ai](https://app.costgraph.ai). Sign up there, and that account is
@@ -121,7 +122,7 @@ global:
 <Warning>
   Evaluation only. Single replica, no backups, and the bundled Postgres image
   carries neither `pg_partman` nor `pg_cron`, so partition maintenance never
-  runs. A database holding your cost history should outlive a Helm release.
+  runs. A database holding your cost history must outlive a Helm release.
 </Warning>
 
 ### Keeping credentials out of values
@@ -257,9 +258,9 @@ kubectl label node/node-1 \
 ```
 
 <Accordion title="What is a pricing ID and why would I need it?">
-  A pricing ID is a rate you register once - what a piece of hardware you own
-  actually costs you - and then tag onto the resources that bill at it. Without
-  one, hardware you own is measured but has nothing to price against.
+  A pricing ID is a rate you register once: what a piece of hardware you own
+  actually costs you. You then tag it onto the resources that bill at it.
+  Without one, hardware you own is measured but has nothing to price against.
 
   <Card title="Pricing IDs" icon="tag" href="/costgraph/operator/on-prem-pricing">
     Registering rates, the label spellings each platform accepts, and how a rate
@@ -293,6 +294,27 @@ kubectl exec -n costgraph deploy/costgraph-selfhosted -- \
   selfhost-doctor -bundle -offline
 ```
 
+### If the deployment can't bootstrap
+
+On startup the backend registers with CostGraph and receives a signed
+configuration document. That document requires an active license on your
+organization, so bootstrap fails while your plan is still being set up:
+
+```
+no active license for this organization
+a deployment cannot bootstrap without one
+```
+
+Sign in at [app.costgraph.ai](https://app.costgraph.ai) and check that the
+organization holding your deployment API key has an active plan. If it does and
+the error persists, send the diagnostic bundle to [support@costgraph.ai](support@costgraph.ai).
+
+Sign-in on your deployment depends on the same document, because the Cognito
+user pool it names arrives inside it. A deployment that hasn't bootstrapped
+reports `Auth UserPool not configured` on the sign-up form. That message means
+the configuration hasn't arrived yet, not that you're missing a setting: there
+is no Cognito value for you to fill in. Fix the bootstrap and sign-in works.
+
 ## The one thing you must not delete
 
 On first install the chart generates encryption keys into a Secret named
@@ -308,15 +330,13 @@ nothing. But it cannot be regenerated.
   sync. See [Install path](/costgraph/self-hosted/values#install-path-use-helm-upgrade-not-argo-cd).
 </Warning>
 
-<Warning>
-  If that Secret is deleted, every API key your team issued stops working and
-  every connected cloud account has to be reconnected, because the stored
-  credentials can no longer be decrypted.
+If that Secret is deleted, every API key your team issued stops working and
+every connected cloud account has to be reconnected, because the stored
+credentials can no longer be decrypted.
 
-  Back it up alongside the database, and keep the two together. A database
-  restored next to a different Secret is a database whose credentials cannot be
-  read.
-</Warning>
+Back it up alongside the database, and keep the two together. A database
+restored next to a different Secret is a database whose credentials cannot be
+read.
 
 ```shell
 kubectl get secret costgraph-selfhosted-generated \

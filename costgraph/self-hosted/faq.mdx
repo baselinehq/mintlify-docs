@@ -1,0 +1,84 @@
+---
+title: FAQ
+description: "Answers to the questions that come up most often when running CostGraph yourself"
+---
+
+## Sign-in redirects to the wrong address
+
+Sign-in sends people to whatever `global.appBaseURL` says, so a wrong value
+sends them somewhere they can't reach. Symptoms are a redirect to an internal
+Service DNS name, to `localhost`, or to a domain you've moved off.
+
+Set it to the address people actually open in a browser, then upgrade:
+
+```shell
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --namespace costgraph \
+  -f my-values.yaml
+```
+
+Your deployment reports the new value to CostGraph the next time it registers,
+within a few minutes. Nobody at CostGraph can change it for you: whatever your
+deployment reports wins, so an edit on our side is overwritten on the next
+check-in.
+
+Google sign-in depends on the same value. CostGraph returns people to your
+deployment after they authenticate, and that return address is
+`global.appBaseURL`.
+
+## Sign-in says the user pool isn't configured
+
+Your deployment hasn't received its configuration from CostGraph yet. Sign-in
+details arrive in a signed document at startup, and that document needs an
+active license. See
+[the bootstrap failure](/costgraph/self-hosted/install).
+
+There's no user pool setting for you to fill in.
+
+## Google sign-in isn't offered
+
+Your deployment hasn't registered since Google sign-in became available, or it
+hasn't bootstrapped at all. Restart the backend to force a registration:
+
+```shell
+kubectl rollout restart deploy/costgraph-selfhosted -n costgraph
+```
+
+Your users' browsers need to reach `accounts.google.com` and CostGraph. Sign-in
+itself happens between the browser and the identity provider, so a browser
+without internet access can't complete it. Password sign-in still works.
+
+## A user gets no password reset email
+
+An account created with Google has no password, so there's nothing to reset and
+no code is sent. Sign in with Google instead.
+
+The same applies to someone added to your organization who hasn't finished
+signing up. Their account exists in CostGraph but not yet in the identity
+provider, so they must choose **Create an account** first.
+
+## Do you hold our cost data
+
+No. Your cost data stays in the database you run. Your deployment talks to
+CostGraph to register, check its license, and download cloud price lists.
+
+Sign-in is the exception worth knowing about: accounts live in CostGraph's
+identity provider, so browsers reach out to authenticate. See
+[Network access it needs](/costgraph/self-hosted/install#network-access-it-needs).
+
+## Can we run without internet access
+
+Not completely. Your deployment needs outbound HTTPS to register, validate its
+license, and pull images and prices, and browsers need to reach the identity
+provider to sign in.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Install" icon="download" href="/costgraph/self-hosted/install">
+    Prerequisites, the chart, and connecting your spend.
+  </Card>
+  <Card title="Every setting" icon="sliders" href="/costgraph/self-hosted/values">
+    Every value the chart accepts, including `global.appBaseURL`.
+  </Card>
+</CardGroup>

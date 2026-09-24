@@ -80,6 +80,7 @@
               "costgraph/self-hosted/overview",
               "costgraph/self-hosted/install",
               "costgraph/self-hosted/values",
+              "costgraph/self-hosted/faq",
               "costgraph/self-hosted/changelog"
             ]
           },

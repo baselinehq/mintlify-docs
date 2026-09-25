@@ -16,7 +16,7 @@ Together they collect:
 - **Container and host process network metrics** - per-container and, optionally, per-process bytes sent/received, packets sent/received, new-connection counts.
 - **Host metrics** - node CPU, memory, disk, and network from node-exporter and the kubelet.
 - **Kubernetes object metrics** - pod, deployment, and node state from kube-state-metrics.
-- **GPU metrics** - optional, from the NVIDIA DCGM exporter.
+- **GPU metrics** - optional, from the NVIDIA DCGM exporter. See [Accelerators](/costgraph/operator/accelerators).
 
 On the CostGraph platform, this data powers:
 
@@ -64,7 +64,7 @@ On the CostGraph platform, this data powers:
 </Steps>
 
 <Note>
-  Running GPU nodes? Enable the DCGM exporter for GPU metrics - see [Configuration](/costgraph/operator/configuration#subcharts).
+  Running GPU nodes? Enable the DCGM exporter for GPU metrics - see [Accelerators](/costgraph/operator/accelerators).
 </Note>
 
 The chart ships with sensible defaults. To tune scheduling, metrics sources, or the bundled exporters, see the [Configuration reference](/costgraph/operator/configuration).

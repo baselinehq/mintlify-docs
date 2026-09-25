@@ -392,7 +392,26 @@ The chart pulls in the metrics sources as subcharts. Disable any you already run
 </ParamField>
 
 <ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
-  NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`.
+  NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`. What CostGraph does with these measurements is covered in [Accelerators](/costgraph/operator/accelerators).
+</ParamField>
+
+<ParamField body="dcgmProfiling.enabled" type="boolean" default="false">
+  A second, isolated DCGM exporter carrying only the profiling counters (SM
+  active, SM occupancy, PCIe byte rates). It is separate because a card whose
+  driver refuses profiling makes the exporter exit, and keeping those counters
+  out of the shared exporter means such a node fails alone instead of taking
+  utilisation, memory and power down with it and stalling the rollout for every
+  other GPU. See [Accelerators](/costgraph/operator/accelerators#profiling-measurements-are-opt-in).
+</ParamField>
+
+<ParamField body="dcgmProfiling.port" type="number" default="9401">
+  Port the profiling exporter listens on. It shares a node with the exporter
+  above, which binds `9400`, so the two cannot share a port.
+</ParamField>
+
+<ParamField body="dcgmProfiling.nodeSelector" type="object" default="{}">
+  Narrow the profiling DaemonSet. By default it schedules wherever the shared
+  exporter does, and tolerates the `nvidia.com/gpu` taint the same way.
 </ParamField>
 
 <ParamField body="flowtrace.enabled" type="boolean" default="true">
@@ -441,6 +460,16 @@ dcgm-exporter:
   nodeSelector:
     accelerator: nvidia
   tolerations: []
+
+dcgmProfiling:
+  enabled: false
+  applicationName: costgraph-operator-dcgm-profiling
+  image:
+    repository: nvcr.io/nvidia/k8s/dcgm-exporter
+    tag: 3.3.9-3.6.1-ubuntu22.04
+    pullPolicy: IfNotPresent
+  port: 9401
+  nodeSelector: {}
 
 operatorKubernetes:
   enabled: true
@@ -506,6 +535,11 @@ operatorPrometheus:
       enabled: false
       labelSelector: "app.kubernetes.io/name=dcgm-exporter"
       port: 9400
+      nodeMetrics: true
+    dcgm-profiling:
+      enabled: false
+      labelSelector: "app.kubernetes.io/name=costgraph-operator-dcgm-profiling"
+      port: 9401
       nodeMetrics: true
 
 aiGatewayScraper:

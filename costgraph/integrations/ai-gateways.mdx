@@ -214,6 +214,83 @@ than no number.
   them, so nothing is lost in the meantime.
 </Note>
 
+## Connection settings
+
+Three fields tune how a connection's usage is priced and attributed. You set
+`model_map` and `attribution_spec` when you connect the gateway, and
+`tenant_map` on a connection that already exists.
+
+### Model map
+
+Your gateway reports whatever model string its callers asked for. `model_map`
+translates those raw identifiers into the keys the CostGraph model catalog
+prices. Usage that matched no rate starts pricing.
+
+Reach for it when a connection reports that models could not be priced. The
+message names the raw identifiers the gateway sent, and each one is a key you
+map:
+
+```json
+{
+  "model_map": {
+    "gpt4o-prod": "openai/gpt-4o",
+    "Qwen/Qwen2.5-0.5B-Instruct": "qwen/qwen2.5-0.5b-instruct"
+  }
+}
+```
+
+Keys match the reported identifier exactly, after trimming surrounding
+whitespace. A model with no entry resolves under the name it was reported with,
+and an entry mapping to an empty string is ignored.
+
+Map a model only where the catalog already knows the target key. For a model
+you host yourself that no catalog rate fits, leave it unmapped. Register your
+own rate instead, as described in the preceding rate order.
+
+### Tenant map
+
+Turns raw sub-account values into the names you want to read:
+
+```json
+{ "tenant_map": { "acct-7": "Acme" } }
+```
+
+This renames a value your gateway already reported. Usage the gateway left
+unlabelled stays unattributed, so a tenant map cannot assign spend to a customer
+on its own.
+
+### Attribution spec
+
+Declares where each attribution dimension is read from. Every rule names the
+dimension, its source, and the key to read:
+
+```json
+{
+  "attribution_spec": {
+    "sub_account_dimension": "customer",
+    "dimensions": [
+      { "name": "customer", "source": "prom_label", "key": "customer_id" },
+      { "name": "team", "source": "prom_label", "key": "team" }
+    ]
+  }
+}
+```
+
+`source` is `prom_label` for a gateway we scrape, `focus_field` for usage you
+push, or `static` for a fixed value carried in `key`. Adding
+`"transform": "sha256"` hashes the value before it is stored, for an identifier
+you would rather not keep in the clear. A rule marked `"required": true` fails
+the batch when its key is absent, rather than storing usage with the dimension
+missing.
+
+`sub_account_dimension` picks which dimension fills the FOCUS sub-account
+columns. The others ride along as cost extensions, so you can group by them
+alongside spend.
+
+Omit the spec and a connection still attributes usage: a single `sub_account`
+dimension reads `costgraph_sub_account` on a scraped gateway, and `SubAccountId`
+on a pushed row.
+
 ## Send usage yourself
 
 If your gateway runs outside a CostGraph-managed cluster, send the usage
@@ -287,7 +364,7 @@ or `costgraph_unit`, or reporting a value of zero or less, is skipped rather
 than half-priced.
 
 Any other label rides along and is available to
-[attribution dimensions](#attribute-usage-to-your-customers), which read the
+[attribution dimensions](#attribution-spec), which read the
 labels your gateway already emits, such as `team`, `route` or `gen_ai_provider_name`,
 into sub-account and cost extensions. Nothing needs renaming to
 `costgraph_` first.

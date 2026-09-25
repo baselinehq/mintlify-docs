@@ -1,0 +1,103 @@
+---
+title: FAQ
+description: "Answers to the questions that come up most often when running CostGraph yourself"
+---
+
+## Sign-in redirects to the wrong address
+
+Sign-in sends people to whatever `global.appBaseURL` says, so a wrong value
+sends them somewhere they can't reach. Symptoms are a redirect to an internal
+Service DNS name, to `localhost`, or to a domain you've moved off.
+
+Set it to the address people actually open in a browser, then upgrade:
+
+```shell
+helm upgrade costgraph costgraph/costgraph-selfhosted \
+  --namespace costgraph \
+  -f my-values.yaml
+```
+
+Your deployment reports the new value to CostGraph the next time it registers,
+within a few minutes. Nobody at CostGraph can change it for you: whatever your
+deployment reports wins, so an edit on our side is overwritten on the next
+check-in.
+
+Google sign-in depends on the same value. CostGraph returns people to your
+deployment after they authenticate, and that return address is
+`global.appBaseURL`.
+
+## Sign-in says the user pool isn't configured
+
+Your deployment hasn't received its configuration from CostGraph yet. Sign-in
+details arrive in a signed document at startup, and that document needs an
+active license. See
+[the bootstrap failure](/costgraph/self-hosted/install).
+
+There's no user pool setting for you to fill in.
+
+## Google sign-in isn't offered
+
+Your deployment registers with CostGraph at startup, and that registration is
+what enables Google sign-in. A deployment that hasn't restarted since upgrading
+won't have it yet. Restart the backend:
+
+```shell
+kubectl rollout restart deploy/costgraph-selfhosted -n costgraph
+```
+
+Your users' browsers need to reach `accounts.google.com` and CostGraph. Sign-in
+itself happens between the browser and the identity provider, so a browser
+without internet access can't complete it. Password sign-in still works.
+
+## A user gets no password reset email
+
+Check first that your deployment has bootstrapped. Until it receives its
+configuration from CostGraph, the sign-in page can't reach the identity provider
+at all, so no reset request is ever sent.
+
+If it has, the likely cause is an address the identity provider doesn't know.
+Someone added to your organization exists in CostGraph but not in the identity
+provider until they finish signing up. They must choose **Create an account**
+first.
+
+Signing in with Google doesn't prevent a reset. A Google account can use
+**Forgot password** to set a password, and afterwards signs in either way.
+
+## Turn on two-factor authentication
+
+Under **Settings > Security**, open **2 Factor authentication** and scan the code
+with an authenticator app. It's per user and optional; nobody is forced to
+enrol.
+
+CostGraph asks for the code when you sign in with a password, and when you
+change your password.
+
+Signing in with Google is different: Google verifies that sign-in, so CostGraph
+doesn't ask for a second code. Turn on 2-step verification in your Google
+account to protect it.
+
+## Do you hold our cost data
+
+No. Your cost data stays in the database you run. Your deployment talks to
+CostGraph to register, check its license, and download cloud price lists.
+
+Sign-in is the exception worth knowing about: accounts live in CostGraph's
+identity provider, so browsers reach out to authenticate. See
+[Network access it needs](/costgraph/self-hosted/install#network-access-it-needs).
+
+## Can we run without internet access
+
+Not completely. Your deployment needs outbound HTTPS to register, validate its
+license, and pull images and prices, and browsers need to reach the identity
+provider to sign in.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Install" icon="download" href="/costgraph/self-hosted/install">
+    Prerequisites, the chart, and connecting your spend.
+  </Card>
+  <Card title="Every setting" icon="sliders" href="/costgraph/self-hosted/values">
+    Every value the chart accepts, including `global.appBaseURL`.
+  </Card>
+</CardGroup>

@@ -37,8 +37,9 @@ There's no user pool setting for you to fill in.
 
 ## Google sign-in isn't offered
 
-Your deployment hasn't registered since Google sign-in became available, or it
-hasn't bootstrapped at all. Restart the backend to force a registration:
+Your deployment registers with CostGraph at startup, and that registration is
+what enables Google sign-in. A deployment that hasn't restarted since upgrading
+won't have it yet. Restart the backend:
 
 ```shell
 kubectl rollout restart deploy/costgraph-selfhosted -n costgraph
@@ -50,12 +51,30 @@ without internet access can't complete it. Password sign-in still works.
 
 ## A user gets no password reset email
 
-An account created with Google has no password, so there's nothing to reset and
-no code is sent. Sign in with Google instead.
+Check first that your deployment has bootstrapped. Until it receives its
+configuration from CostGraph, the sign-in page can't reach the identity provider
+at all, so no reset request is ever sent.
 
-The same applies to someone added to your organization who hasn't finished
-signing up. Their account exists in CostGraph but not yet in the identity
-provider, so they must choose **Create an account** first.
+If it has, the likely cause is an address the identity provider doesn't know.
+Someone added to your organization exists in CostGraph but not in the identity
+provider until they finish signing up. They must choose **Create an account**
+first.
+
+Signing in with Google doesn't prevent a reset. A Google account can use
+**Forgot password** to set a password, and afterwards signs in either way.
+
+## Turn on two-factor authentication
+
+Under **Settings > Security**, open **2 Factor authentication** and scan the code
+with an authenticator app. It's per user and optional; nobody is forced to
+enrol.
+
+CostGraph asks for the code when you sign in with a password, and when you
+change your password.
+
+Signing in with Google is different: Google verifies that sign-in, so CostGraph
+doesn't ask for a second code. Turn on 2-step verification in your Google
+account to protect it.
 
 ## Do you hold our cost data
 

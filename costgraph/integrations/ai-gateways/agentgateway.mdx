@@ -1,0 +1,81 @@
+---
+title: Solo.io agentgateway
+description: "What CostGraph scrapes from agentgateway and how its token metrics are priced"
+---
+
+agentgateway reports GenAI token usage from its data plane. See the upstream
+[LLM observability reference](https://agentgateway.dev/docs/kubernetes/main/llm/observability/).
+
+## What CostGraph scrapes
+
+| | |
+|---|---|
+| Namespace | none, you supply it |
+| Pod selector | none, you supply it |
+| Port and path | `15020` `/metrics` |
+| Metrics | names starting `agentgateway_gen_ai_` |
+
+<Warning>
+  Token metrics come from the per-Gateway data plane, not the control plane, and
+  those pods live in whichever namespace you created the Gateway in. An
+  agentgateway connection must name the namespace and the pod label selector, or
+  nothing can ever be scraped.
+</Warning>
+
+Read the labels off the running data plane pods and narrow the selector until it
+matches them and nothing else:
+
+```bash
+kubectl -n my-namespace get pods --show-labels
+```
+
+## How the metric maps
+
+`agentgateway_gen_ai_client_token_usage` becomes
+[`costgraph_gen_ai_usage_total`](/costgraph/integrations/ai-gateways#send-from-anything-else):
+
+| agentgateway label | CostGraph label |
+|---|---|
+| `gen_ai_response_model` | `costgraph_model` |
+| `gen_ai_token_type` | `costgraph_usage_kind` |
+| `gen_ai_system` | `costgraph_host` |
+| `customer` | `costgraph_sub_account` |
+
+The unit is always `tokens`.
+
+## Attribute usage to your customers
+
+Add a metric attribute computed from the request. On Kubernetes this goes in an
+AgentgatewayPolicy. The value is a CEL expression, so the identifier can come
+from a header, a JWT claim, or anything else in the request.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: costgraph-customer-attribution
+  namespace: my-gateway-namespace
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: my-gateway
+  frontend:
+    metrics:
+      attributes:
+        add:
+          - name: customer
+            expression: request.headers["x-customer-id"]
+```
+
+<Note>
+  A policy applies only where it is targeted, so it needs `targetRefs` or
+  `targetSelectors` naming your Gateway. It must also live in that Gateway's
+  namespace, because a policy cannot reach across namespaces. If a policy
+  already targets the Gateway, add the `attributes` block to that one instead
+  of creating a second.
+</Note>
+
+<Card title="AI gateways" icon="chart-line" href="/costgraph/integrations/ai-gateways">
+  Connecting, pricing, and sending usage yourself.
+</Card>

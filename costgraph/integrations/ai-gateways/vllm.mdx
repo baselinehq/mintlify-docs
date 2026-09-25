@@ -1,0 +1,69 @@
+---
+title: vLLM
+description: "What CostGraph scrapes from vLLM, and why attribution is per workload rather than per request"
+---
+
+vLLM is a model server, not a gateway. It serves models you host yourself and
+reports tokens per model, with no notion of a caller. See the upstream
+[production metrics reference](https://docs.vllm.ai/en/latest/usage/metrics/).
+
+## What CostGraph scrapes
+
+| | |
+|---|---|
+| Namespace | `inference` |
+| Pod selector | `app.kubernetes.io/name=vllm` |
+| Port and path | `8000` `/metrics` |
+| Metrics | names starting `vllm:` |
+
+Override the namespace or selector on the connection if you serve from
+somewhere else.
+
+## How the metrics map
+
+Both become
+[`costgraph_gen_ai_usage_total`](/costgraph/integrations/ai-gateways#send-from-anything-else),
+with the direction set by which metric the value came from:
+
+| vLLM metric | `costgraph_usage_kind` |
+|---|---|
+| `vllm:prompt_tokens_total` | `input` |
+| `vllm:generation_tokens_total` | `output` |
+
+`model_name` becomes `costgraph_model`, and the unit is always `tokens`. vLLM
+emits only `model_name` and `engine`, so there is no host or customer label to
+carry.
+
+## Attribution is per workload
+
+Per-request attribution isn't available, and no configuration changes that. You
+have two options:
+
+- Front vLLM with a gateway that attributes per request, such as
+  [Envoy AI Gateway](/costgraph/integrations/ai-gateways/envoy-ai-gateway),
+  [agentgateway](/costgraph/integrations/ai-gateways/agentgateway), or
+  [Apache APISIX](/costgraph/integrations/ai-gateways/apisix).
+- Run one deployment per customer and annotate the workload:
+
+```bash
+kubectl annotate deployment/llama-serving \
+  costgraph.ai/sub-account=acme-corp
+```
+
+<Note>
+  The annotation fills in a customer only where the gateway did not report one
+  itself, so annotating a shared gateway doesn't collapse its customers onto one
+  sub-account.
+</Note>
+
+## Pricing a model you host
+
+Because you serve the model, there is no vendor rate to read. CostGraph divides
+what the serving namespace cost that day by the tokens it served that day, so
+usage prices at what it actually cost you to run. Pin your own rate instead with
+a `costgraph.ai/pricing-id.model` label on the workload. See
+[Pricing IDs](/costgraph/operator/on-prem-pricing).
+
+<Card title="AI gateways" icon="chart-line" href="/costgraph/integrations/ai-gateways">
+  Connecting, pricing, and sending usage yourself.
+</Card>

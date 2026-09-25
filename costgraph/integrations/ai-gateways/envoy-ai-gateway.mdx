@@ -1,0 +1,63 @@
+---
+title: Envoy AI Gateway
+description: "What CostGraph scrapes from Envoy AI Gateway and how its token metrics are priced"
+---
+
+Envoy AI Gateway follows the OpenTelemetry GenAI conventions, so one metric
+carries both directions of a call. See the upstream
+[metrics reference](https://aigateway.envoyproxy.io/docs/capabilities/observability/metrics).
+
+## What CostGraph scrapes
+
+| | |
+|---|---|
+| Namespace | `envoy-ai-gateway-system` |
+| Pod selector | `app.kubernetes.io/name=envoy-ai-gateway` |
+| Port and path | `1064` `/metrics` |
+| Metrics | names starting `gen_ai_` |
+
+Connect the gateway in **Settings > Integrations** and CostGraph serves this
+target to the operator. Override the namespace or selector on the connection if
+you run it somewhere else.
+
+## How the metric maps
+
+`gen_ai_client_token_usage` becomes
+[`costgraph_gen_ai_usage_total`](/costgraph/integrations/ai-gateways#send-from-anything-else):
+
+| Envoy AI Gateway label | CostGraph label |
+|---|---|
+| `gen_ai_response_model` | `costgraph_model` |
+| `gen_ai_token_type` | `costgraph_usage_kind` |
+| `gen_ai_provider_name` | `costgraph_host` |
+| `customer_id` | `costgraph_sub_account` |
+
+The unit is always `tokens`.
+
+Envoy AI Gateway also reports `gen_ai_token_type="total"`. CostGraph reads the
+input and output series and drops the total, so the same tokens are never
+counted twice.
+
+## Attribute usage to your customers
+
+Map a request header onto the metrics. This is a controller-wide setting, so
+every gateway that controller manages shares the mapping.
+
+```bash
+helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
+  --version v1.1.0 -n envoy-ai-gateway-system --reuse-values \
+  --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
+```
+
+<Warning>
+  `--reuse-values` keeps the settings the release already has. Without it, an
+  upgrade that passes only this one `--set` discards every other value you
+  configured.
+</Warning>
+
+The attribute `customer.id` arrives as the label `customer_id`: dots become
+underscores on the Prometheus side.
+
+<Card title="AI gateways" icon="chart-line" href="/costgraph/integrations/ai-gateways">
+  Connecting, pricing, and sending usage yourself.
+</Card>

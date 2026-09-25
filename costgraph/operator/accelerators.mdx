@@ -1,0 +1,162 @@
+---
+title: Accelerators
+description: "What CostGraph measures on GPUs, how absence is reported, and what MIG and profiling change"
+---
+
+Per-card measurements come from the NVIDIA DCGM exporter, which the operator
+chart can deploy for you. It is off by default; turn it on with
+`dcgm-exporter.enabled`, and restrict it to GPU nodes. See
+[Configuration](/costgraph/operator/configuration#bundled-exporters).
+
+## What is measured
+
+Three measurements carry the fleet view:
+
+| | |
+|---|---|
+| Utilisation | how much of the card is busy |
+| Framebuffer memory | how much of the card's memory is in use, against its capacity |
+| Power | draw against the limit the driver enforces |
+
+Sixteen further signals are collected alongside them. Health: temperature,
+memory temperature, XID errors, correctable and uncorrectable remapped rows,
+row-remap failure. Throughput: SM clock, memory clock, total energy, PCIe
+transmit and receive bytes. Work: encoder, decoder and memory-copy utilisation,
+SM active, SM occupancy.
+
+### Units to watch
+
+**Total energy** is millijoules as the card reports it. The chartable series
+divides by 1000, so that one is joules. The stored report keeps the raw
+millijoules. Read the unit off whichever of the two you have in front of you.
+A cross-check from the verification cluster: 13,299 J over 5 minutes is 44.3 W,
+against a measured 48.6 W draw on the same card.
+
+**PCIe transmit and receive bytes** are a byte count over the sampling window
+DCGM used, and the sample carries no interval. Dividing it by a time produces a
+meaningless number. It is not a rate, and it is not a counter either. Three
+consecutive scrapes of one L4 read 1,705,867, then 1,705,867, then 1,675,230,
+so the value can fall.
+
+### Not every card reports every signal
+
+Which signals appear depends on the accelerator. Measured across three live
+exporters:
+
+- No profiling signals appear on the base exporter at all. They come from the
+  separate profiling DaemonSet covered later.
+- Remapped rows and row-remap failure appeared only on the L4.
+- The MIG-partitioned A100 reported no overall GPU utilisation, and no encoder,
+  decoder or memory-copy utilisation.
+- The T4 refuses profiling outright, so its profiling pod crash-loops and its
+  profiling signals are absent.
+
+Memory temperature is worth knowing about. A card with no memory-temperature
+sensor reports a literal 0, and those zeros are dropped before storage. Such a
+card shows as an absent series with an `unsupported` state, rather than as a
+zero reading. Live: the A100 reported 45 C, while the L4 and the T4 reported 0
+and were filtered out.
+
+## How an unmeasured card is reported
+
+An idle accelerator and an unmeasurable one look identical if absence is
+rendered as 0%. CostGraph reports the state of each measurement instead of a
+number it cannot read. Each of the nineteen signals carries its own state:
+
+| State | What it means |
+|---|---|
+| `supported` | the card measured it and reports a capacity to express it against |
+| `capacity_unknown` | the card measured it but reports no capacity, so there is a number but no percentage |
+| `unsupported` | the card is reporting, but cannot report this measurement at all |
+| `no_data` | nothing was measured; the card is not reporting |
+
+`capacity_unknown` is confined to the three measurements expressed as a ratio:
+utilisation, framebuffer memory and power. The other sixteen signals have no
+capacity to divide by, so they report `supported`, `unsupported` or `no_data`.
+
+How to read each one:
+
+- `no_data` is a collection problem. Check that the exporter is running and
+  scheduled on that node.
+- `unsupported` is the hardware, and no configuration changes it.
+- `capacity_unknown` is still usable. The raw measurement arrives, in mebibytes
+  for memory and watts for power, so you can read the value even though a
+  percentage would be a guess.
+- `supported` is the only state that gives a percentage.
+
+## MIG-partitioned cards
+
+On a card carved into MIG partitions:
+
+- Slices report no overall GPU utilisation. SM active and SM occupancy are the
+  utilisation signals a slice has, and both come from the profiling exporter
+  covered in the following section.
+- Card-scoped values, meaning power, energy and temperature, describe the whole
+  card. Where a card emits one copy per slice, summing them charges one card's
+  draw several times over. The queries collapse them, so a seven-slice A100 is
+  not billed seven times its energy. Treat that as a hazard the queries guard
+  against, rather than as something you are sure to see. The A100 on the
+  verification cluster emitted one series per field, carrying no partition
+  label at all.
+- Slices carry no namespace, pod, or container label. Per-workload attribution
+  on a MIG slice is limited as a result: the partition is visible, the workload
+  holding it is not.
+
+## Opt-in profiling counters
+
+SM active, SM occupancy and the PCIe byte counts are profiling counters. They
+need a second DCGM exporter reading only those counters. The chart deploys it
+as its own DaemonSet, `dcgmProfiling.enabled`, off by default.
+
+It is a separate DaemonSet for a reason. The profiling module is not a
+per-field opt-out: the exporter watches the whole counter set or exits. Some
+accelerators refuse profiling at the driver level. Asking the shared exporter
+for a profiling counter on such a card kills that exporter outright, so the
+node loses utilisation, memory and power too. A DaemonSet also rolls node by
+node, so the refusing pod stalls the rollout for every other GPU in the
+fleet.
+
+Which cards serve profiling is discoverable only at runtime, not from a model
+list. On a four-node cluster measured this week, L4 and A100-MIG nodes accepted
+profiling and a T4 node refused it with:
+
+```
+Failed to watch metrics: Error watching fields:
+The third-party Profiling module returned an unrecoverable error
+```
+
+Expect this on some hardware. On the refusing node the profiling pod
+crash-loops, while every other GPU node reports normally. That node's profiling
+measurements are reported as unavailable. Its base measurements are
+unaffected. Narrow the DaemonSet with
+`dcgmProfiling.nodeSelector` if you would rather it not schedule there at all.
+
+## Accelerator usage in the product
+
+Container usage can be viewed per accelerator dimension, not only cpu and
+memory: overall GPU utilisation, SM active, SM occupancy, framebuffer memory,
+and memory-copy utilisation.
+
+For overall GPU utilisation the request and the limit are the whole devices the
+container holds. Accelerators are requested as whole integer devices, and
+Kubernetes requires the request and the limit to be equal. There is therefore
+no fractional right-sizing. The only move is a different number of whole cards,
+or a differently carved card.
+
+## Accelerator cost
+
+Accelerator spend is reported two ways, and they are not the same number:
+
+- **Month to date** covers only the hours elapsed since the start of the current
+  UTC month, and excludes any hours before the card was first seen.
+- **Projected month** is what a whole month at the current fleet and rates would
+  come to. It is a projection, not spend so far.
+
+Both are estimated from the catalog rate rather than read off an invoice, so
+neither is billed cost. Where any accelerator in the fleet has no catalog rate,
+both are withheld rather than shown as zero: a partly priced fleet has no known
+total.
+
+<Card title="Configuration" icon="gear" href="/costgraph/operator/configuration#bundled-exporters">
+  The exporter values, including `dcgm-exporter` and `dcgmProfiling`.
+</Card>

@@ -219,12 +219,12 @@ operator's scraped metrics.
 </ParamField>
 
 It takes **no** `scrapeTargets`. Targets are served by CostGraph from the
-connections you create in **Settings > Integrations**, fetched at start and
-refreshed while it runs, so connecting a gateway never edits these values. See
-[AI gateways](/costgraph/integrations/ai-gateways).
+connections you create in **Settings > Integrations**. They are fetched at
+start and refreshed while it runs, so connecting a gateway leaves these values
+untouched. See [AI gateways](/costgraph/integrations/ai-gateways).
 
-A target you define yourself in `operatorPrometheus.scrapeTargets` always wins
-over a served one, and a served target is only applied when it carries a
+A target you define yourself in `operatorPrometheus.scrapeTargets` takes
+precedence over a served one. A served target is applied only when it carries a
 metric-name filter.
 
 ## Network Metrics scraper
@@ -243,8 +243,9 @@ metric-name filter.
 
 <ParamField body="flowtrace.daemonSet" type="object">
   Its workload. Same keys as a `deployment:` block, minus `replicas`. The
-  defaults set `containerSecurityContext.privileged` and `runAsUser: 0`, which
-  resolving container identity from other processes' `/proc` entries requires,
+  defaults set `containerSecurityContext.privileged` and `runAsUser: 0`.
+  Resolving container identity from other processes' `/proc` entries requires
+  both,
   and withhold the service account token because no Kubernetes API access is
   needed.
 </ParamField>
@@ -385,14 +386,33 @@ The chart pulls in the metrics sources as subcharts. Disable any you already run
 
 <ParamField body="prometheus-node-exporter.enabled" type="boolean" default="true">
   Host-level metrics (CPU, memory, disk, network). The port defaults to `9101`
-  rather than the upstream `9100`, because the subchart binds a hostPort and
-  `9100` collides with a node exporter the cluster already runs. The operator's
+  rather than the upstream `9100`. The subchart binds a hostPort, and `9100`
+  collides with a node exporter the cluster already runs. The operator's
   scrape target follows `prometheus-node-exporter.service.port`, so change it
   there only.
 </ParamField>
 
 <ParamField body="dcgm-exporter.enabled" type="boolean" default="false">
-  NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`.
+  NVIDIA GPU metrics. Enable only on clusters with GPU nodes; restrict it to GPU nodes with `dcgm-exporter.nodeSelector` and `dcgm-exporter.tolerations`. What CostGraph does with these measurements is covered in [Accelerators](/costgraph/operator/accelerators).
+</ParamField>
+
+<ParamField body="dcgmProfiling.enabled" type="boolean" default="false">
+  A second, isolated DCGM exporter carrying only the profiling counters (SM
+  active, SM occupancy, PCIe byte rates). It is separate because a card whose
+  driver refuses profiling makes the exporter exit. Keeping those counters out
+  of the shared exporter means such a node fails alone. Otherwise it takes
+  utilisation, memory and power down with it, and stalls the rollout for every
+  other GPU. See [Accelerators](/costgraph/operator/accelerators#opt-in-profiling-counters).
+</ParamField>
+
+<ParamField body="dcgmProfiling.port" type="number" default="9401">
+  Port the profiling exporter listens on. It shares a node with the preceding
+  exporter, which binds `9400`, so the two cannot share a port.
+</ParamField>
+
+<ParamField body="dcgmProfiling.nodeSelector" type="object" default="{}">
+  Narrow the profiling DaemonSet. By default it schedules wherever the shared
+  exporter does, and tolerates the `nvidia.com/gpu` taint the same way.
 </ParamField>
 
 <ParamField body="flowtrace.enabled" type="boolean" default="true">
@@ -441,6 +461,16 @@ dcgm-exporter:
   nodeSelector:
     accelerator: nvidia
   tolerations: []
+
+dcgmProfiling:
+  enabled: false
+  applicationName: costgraph-operator-dcgm-profiling
+  image:
+    repository: nvcr.io/nvidia/k8s/dcgm-exporter
+    tag: 3.3.9-3.6.1-ubuntu22.04
+    pullPolicy: IfNotPresent
+  port: 9401
+  nodeSelector: {}
 
 operatorKubernetes:
   enabled: true
@@ -506,6 +536,11 @@ operatorPrometheus:
       enabled: false
       labelSelector: "app.kubernetes.io/name=dcgm-exporter"
       port: 9400
+      nodeMetrics: true
+    dcgm-profiling:
+      enabled: false
+      labelSelector: "app.kubernetes.io/name=costgraph-operator-dcgm-profiling"
+      port: 9401
       nodeMetrics: true
 
 aiGatewayScraper:

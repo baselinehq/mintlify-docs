@@ -43,6 +43,7 @@
             "pages": [
               "costgraph/operator/overview",
               "costgraph/operator/configuration",
+              "costgraph/operator/accelerators",
               "costgraph/operator/on-prem-pricing",
               "costgraph/operator/changelog"
             ]

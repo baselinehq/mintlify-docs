@@ -26,9 +26,9 @@ Pick your agent and drop in the config.
     Add Costgraph to `~/.codex/config.toml` to sign in by using OAuth:
     ```toml
     [mcp_servers.costgraph]
-    url = "https://mcp.costgraph.ai/mcp"
+    url = "https://mcp.costgraph.ai/"
     
-    [mcp_servers.example.oauth]
+    [mcp_servers.costgraph.oauth]
     client_id = "6peb1hopcd2bndd7rbn6e4vhed"
     callback_url = "http://127.0.0.1/callback"
     ```
@@ -36,7 +36,7 @@ Pick your agent and drop in the config.
 
     ```toml
     [mcp_servers.costgraph]
-    url = "https://mcp.costgraph.ai/mcp"
+    url = "https://mcp.costgraph.ai/"
     http_headers = { "X-API-Key" = "bl_your_key" }
     ```
   </Tab>
@@ -45,15 +45,15 @@ Pick your agent and drop in the config.
     
     ```bash
     claude mcp add --transport http \
-      --callback-port 8080 \
+      --callback-port 9093 \
       --client-id 6peb1hopcd2bndd7rbn6e4vhed \
-    costgraph https://mcp.costgraph.ai/mcp
+    costgraph https://mcp.costgraph.ai/
     ```
 
     Or run this and Claude Code registers the server with your API key.
 
     ```bash
-    claude mcp add --transport http costgraph https://mcp.costgraph.ai/mcp \
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai/ \
       --header "X-API-Key: bl_your_key"
     ```
   </Tab>
@@ -64,7 +64,7 @@ Pick your agent and drop in the config.
     {
       "amp.mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai/",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }
@@ -80,7 +80,7 @@ Pick your agent and drop in the config.
       "mcp": {
         "costgraph": {
           "type": "remote",
-          "url": "https://mcp.costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai/",
           "oauth": {
             "clientId": "6peb1hopcd2bndd7rbn6e4vhed",
             "redirectUri": "http://127.0.0.1:19876/callback"
@@ -98,7 +98,7 @@ Pick your agent and drop in the config.
       "mcp": {
         "costgraph": {
           "type": "remote",
-          "url": "https://mcp.costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai/",
           "headers": { "X-API-Key": "bl_your_key" },
           "enabled": true
         }
@@ -112,7 +112,7 @@ Pick your agent and drop in the config.
     {
       "mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai/",
           "client_id": "6peb1hopcd2bndd7rbn6e4vhed"
           "redirect_uri": "http://localhost:3335/callback"
         }
@@ -126,7 +126,7 @@ Pick your agent and drop in the config.
     {
       "mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai/mcp",
+          "url": "https://mcp.costgraph.ai/",
           "headers": { "X-API-Key": "bl_your_key" }
         }
       }

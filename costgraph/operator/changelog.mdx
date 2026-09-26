@@ -22,10 +22,11 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     ### Updates
     - **The AI gateway scraper reports latency, capacity and configuration bindings again. Upgrade to get them back.** All three `costgraph-operator-prometheus` images move to `v0.5.1`. Two were pinned to a build identifier and one to `v0.5.0`, all of them one commit behind the usage contract that carries those fields. The scraper had no place to put them, so it dropped them while reading each payload. Token usage kept arriving, because the metric bindings name it explicitly. Latency and capacity stopped without an error anywhere. Any release still on an older tag is missing those signals today, and nothing in the cluster reports a failure.
     - `costgraph-operator-kubernetes` moves from `v0.1.1` to `v0.1.2`, rebuilt on Go 1.26.6. The rebuild clears the standard library advisories that applied to the previous build, so upgrade even if you need nothing else in this release.
-    - **New accelerator exporter, shipped off by default.** A DaemonSet attributes per-process accelerator usage to the pod and container that owns it, and serves those metrics on port `9405`. Turn it on with:
+    - **New accelerator exporter, shipped off by default.** A DaemonSet attributes per-process accelerator usage to the pod and container that owns it, and serves those metrics on port `9405`. Turn it on by upgrading with the values you installed with, because `helm upgrade` returns anything you do not pass back to the chart defaults:
 
       ```sh
       helm upgrade <release> costgraph/costgraph-operator \
+        -f your-values.yaml \
         --set gpuExporter.enabled=true
       ```
 

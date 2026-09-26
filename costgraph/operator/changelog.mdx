@@ -14,6 +14,25 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     Entries labelled `costgraph-operator vX.Y.Z` are releases of the current `costgraph-operator` chart, which deploys the domain-specific operators. Earlier entries labelled `vX.Y.Z` are releases of the deprecated single-binary `costgraph` chart. The two version series are independent, so the numbers do not run continuously.
 </Note>
 
+<Update label="2026-09-26" description="costgraph-operator v0.7.2">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - **The AI gateway scraper reports latency, capacity and configuration bindings again. Upgrade to get them back.** All three `costgraph-operator-prometheus` images move to `v0.5.1`. Two were pinned to a build identifier and one to `v0.5.0`, all of them one commit behind the usage contract that carries those fields. The scraper had no place to put them, so it dropped them while reading each payload. Token usage kept arriving, because the metric bindings name it explicitly. Latency and capacity stopped without an error anywhere. Any release still on an older tag is missing those signals today, and nothing in the cluster reports a failure.
+    - `costgraph-operator-kubernetes` moves from `v0.1.1` to `v0.1.2`, rebuilt on Go 1.26.6. The rebuild clears the standard library advisories that applied to the previous build, so upgrade even if you need nothing else in this release.
+    - **New accelerator exporter, shipped off by default.** A DaemonSet attributes per-process accelerator usage to the pod and container that owns it, and serves those metrics on port `9405`. Turn it on with:
+
+      ```sh
+      helm upgrade <release> costgraph/costgraph-operator \
+        --set gpuExporter.enabled=true
+      ```
+
+      It reads the host driver from `gpuExporter.driverInstallDir`, which defaults to the GKE path `/home/kubernetes/bin/nvidia`. Set it to your own driver directory on any other distribution. The pod runs as root on accelerator nodes only, and drops every capability.
+
+      Processes on partitioned cards are attributed to the partition they run in. One gap remains. A process the host owns on a partition is not attributed to a card. Nothing yet maps a partition back to its physical accelerator. Pod and container attribution is unaffected.
+    - Chart `0.7.2` changes no other image, value or object.
+
 <Update label="2026-08-28" description="costgraph-operator v0.5.0">
     ### Breaking Changes
     - **`helm upgrade` fails until the operator Deployments are deleted.** `costgraph-operator-kubernetes`, `costgraph-operator-prometheus`, `costgraph-operator-ai-gateway` and the `costgraph-operator-flowtrace` DaemonSet are now rendered by a shared chart, and their `spec.selector` changes as a result. A selector is immutable, so Kubernetes rejects the patch rather than replacing the object. Delete them before upgrading; they are stateless and are recreated immediately:

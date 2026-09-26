@@ -3,6 +3,12 @@ title: Changelogs
 description: "Release history for the CostGraph Agent"
 ---
 
+<Update label="2026-09-26" description="v1.5.22">
+  - Fixed a crash loop on accelerator nodes with the host NVIDIA driver mounted. Reading accelerator host facts closed the NVML library while the per-process collector still held it, so `v1.5.20` restarted repeatedly on every such node. NVML now stays loaded until the last user releases it.
+  - The per-process accelerator exporter ships as its own image, `ghcr.io/baselinehq/costgraph-gpu-exporter`. The agent image no longer carries it.
+  - Backend and metrics endpoints are configurable.
+</Update>
+
 <Update label="2026-08-13" description="v1.3.1">
   - Auto-detect host cgroup filesystem path, no longer configurable via cli flag.
 </Update>

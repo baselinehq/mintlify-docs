@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 title: Changelogs
+description: "Release history for the CostGraph self-hosted chart"
 ---
 Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own infrastructure. Helm release notes are on our [chart repository](https://github.com/BaselineHQ/costgraph-charts); view the [index.yaml](http://charts.costgraph.ai/index.yaml) for the latest published versions.
 
@@ -9,9 +10,22 @@ Releases of the `costgraph-selfhosted` chart, which runs CostGraph in your own i
 - Customers will be made aware of any breaking changes in any release cycle
 - Chart versions are independent of the `costgraph-operator` series, so the numbers do not run continuously
 
+<Update label="2026-09-26" description="costgraph-selfhosted v0.5.1">
+    ### Added
+    - Accelerator reporting reaches self-hosted installations. The backend moves from `v0.2.0` to `v0.3.1` and the dashboard from `v0.2.0` to `v0.3.0`, which together bring per-card utilization, memory, power and temperature, partitioned cards reported per partition, idle card detection, and model serving and gateway reporting with cost per million tokens
+    - Accelerator charts on virtual machine pages, not only Kubernetes nodes
+
+    ### Fixed
+    - **Accelerator charts were empty on every virtual machine page.** The series are labelled with the instance the host agent reports, but the page looked them up by the agent host that runs on it, so neither the identifier nor the hostname it falls back to ever matched. Nothing errored; the charts rendered as though the card were idle
+    - A virtual machine with no Kubernetes node behind it now names itself, so its accelerator series can be found at all
+
+    ### Changed
+    - Chart `0.5.1` changes no other image, value or object
+</Update>
+
 <Update label="2026-09-02" description="costgraph-selfhosted v0.5.0">
     ### Added
-    - Cloud and SaaS spend that CostGraph manages but does not monitor as a compute resource - object storage, managed databases, egress, ingested provider bills - now appears on your invoice as CostGraph Cloud, itemized per provider
+    - Cloud and SaaS spend that CostGraph manages but does not monitor as a compute resource (object storage, managed databases, egress, ingested provider bills) now appears on your invoice as CostGraph Cloud, itemized per provider
     - Invoice lines for spend billed in a currency other than USD now show the amount in that currency alongside the charge
     - Self-hosted installations now report their own spend, so usage is billed from what the instance measures rather than from resource counts alone
     - The cost view now defaults to the last 30 days

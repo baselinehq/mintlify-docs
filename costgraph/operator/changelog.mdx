@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 title: Changelogs
+description: "Release history for the CostGraph operator"
 ---
 Releases for the CostGraph operator will have helm tags associated that are not tied to the release version. Across helm versions within a major or minor release, patch updates will be made for hotfixes, bugs and business focused updates. Helm release notes are available on our [chart repository](https://github.com/BaselineHQ/costgraph-charts), view the helm [index.yaml](http://charts.costgraph.ai/index.yaml) to find information about the latest releases.
 
@@ -13,6 +14,27 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 <Note>
     Entries labelled `costgraph-operator vX.Y.Z` are releases of the current `costgraph-operator` chart, which deploys the domain-specific operators. Earlier entries labelled `vX.Y.Z` are releases of the deprecated single-binary `costgraph` chart. The two version series are independent, so the numbers do not run continuously.
 </Note>
+
+<Update label="2026-09-26" description="costgraph-operator v0.7.2">
+    ### Breaking Changes
+    - N/A
+
+    ### Updates
+    - **The AI gateway scraper reports latency, capacity and configuration bindings again. Upgrade to get them back.** All three `costgraph-operator-prometheus` images move to `v0.5.1`. Two were pinned to a build identifier and one to `v0.5.0`, all of them one commit behind the usage contract that carries those fields. The scraper had no place to put them, so it dropped them while reading each payload. Token usage kept arriving, because the metric bindings name it explicitly. Latency and capacity stopped without an error anywhere. Any release still on an older tag is missing those signals today, and nothing in the cluster reports a failure.
+    - `costgraph-operator-kubernetes` moves from `v0.1.1` to `v0.1.2`, rebuilt on Go 1.26.6. The rebuild clears the standard library advisories that applied to the previous build, so upgrade even if you need nothing else in this release.
+    - **New accelerator exporter, shipped off by default.** A DaemonSet attributes per-process accelerator usage to the pod and container that owns it, and serves those metrics on port `9405`. Turn it on by upgrading with the values you installed with, because `helm upgrade` returns anything you do not pass back to the chart defaults:
+
+      ```sh
+      helm upgrade <release> costgraph/costgraph-operator \
+        -f your-values.yaml \
+        --set gpuExporter.enabled=true
+      ```
+
+      It reads the host driver from `gpuExporter.driverInstallDir`, which defaults to the GKE path `/home/kubernetes/bin/nvidia`. Set it to your own driver directory on any other distribution. The pod runs as root on accelerator nodes only, and drops every capability.
+
+      Processes on partitioned cards are attributed to the partition they run in. One gap remains. A process the host owns on a partition is not attributed to a card. Nothing yet maps a partition back to its physical accelerator. Pod and container attribution is unaffected.
+    - Chart `0.7.2` changes no other image, value or object.
+</Update>
 
 <Update label="2026-08-28" description="costgraph-operator v0.5.0">
     ### Breaking Changes
@@ -28,7 +50,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
       helm upgrade <release> costgraph/costgraph-operator
       ```
 
-      Omit the ones you do not run - `aiGatewayScraper` is off by default. No metrics are lost: the operators resume from the cluster's current state on restart.
+      Omit the ones you do not run. `aiGatewayScraper` is off by default. No metrics are lost: the operators resume from the cluster's current state on restart.
 
     - **Objects no longer carry the release name.**
 
@@ -55,17 +77,18 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
       The same mapping applies to `operatorKubernetes` and `aiGatewayScraper`. For `flowtrace` the block is `daemonSet:` rather than `deployment:`, and it takes `image`, `resources`, `priorityClassName`, `tolerations` and the scheduling keys.
 
-      `enabled` stays at component level on all four - `<component>.deployment.enabled` (or `.daemonSet.enabled`) is a second, narrower switch that keeps the configuration and drops the pods. `flowtrace.maxUnavailable` and `operatorPrometheus.scrapeTargets` also stay at component level. Settings under `config`, and the top-level `global` and `rbac` values, are otherwise unchanged.
+      `enabled` stays at component level on all four. `<component>.deployment.enabled` (or `.daemonSet.enabled`) is a second, narrower switch that keeps the configuration and drops the pods. `flowtrace.maxUnavailable` and `operatorPrometheus.scrapeTargets` also stay at component level. Settings under `config`, and the top-level `global` and `rbac` values, are otherwise unchanged.
 
     - **`global.namespace` is removed.** It was read by a helper looking at a path that did not exist, so setting it never had an effect. The release namespace is used.
 
     - **`env` is now a map, not a list.** `env.LOG_LEVEL.value: info` rather than `- name: LOG_LEVEL`. A map means `--set` can override one variable without clobbering its siblings. A list at the new path is not read.
 
     ### Updates
-    - All four CostGraph components - `operatorKubernetes`, `operatorPrometheus`, `aiGatewayScraper` and `flowtrace` - are rendered from one shared definition and take one values shape, and enabling, sizing or scheduling any of them is the same operation. The same contract covers the `costgraph-selfhosted` chart; see the [values reference](/costgraph/self-hosted/values)
+    - All four CostGraph components (`operatorKubernetes`, `operatorPrometheus`, `aiGatewayScraper` and `flowtrace`) are rendered from one shared definition and take one values shape, and enabling, sizing or scheduling any of them is the same operation. The same contract covers the `costgraph-selfhosted` chart; see the [values reference](/costgraph/self-hosted/values)
     - `operatorPrometheus` and `aiGatewayScraper` gain a `pprof` container port declaration, and `aiGatewayScraper` gains an explicit `replicas`
     - `flowtrace` withholds its service account token by default, keeping a privileged per-node pod off the chart's cluster-wide read ClusterRole
     - The ClusterRole and its bindings, the ServiceAccount, the RBAC values and every bundled exporter are unchanged
+</Update>
 
 <Update label="2026-08-17" description="costgraph-operator v0.3.0">
     ### Breaking Changes
@@ -93,7 +116,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
 <Update label="2026-07-21" description="costgraph-operator v0.1.14">
     ### Breaking Changes
-    - The `costgraph` chart is deprecated and no longer supported. It receives no further releases and no fixes. Install the `costgraph-operator` chart - see [Overview](/costgraph/operator/overview)
+    - The `costgraph` chart is deprecated and no longer supported. It receives no further releases and no fixes. Install the `costgraph-operator` chart; see [Overview](/costgraph/operator/overview)
 
     ### Updates
     - Both operators now ship as tagged releases, `v0.1.0`, and the chart pins those tags rather than build identifiers. You can now see exactly which operator version a chart release deploys via the chart `appVersion`
@@ -157,12 +180,12 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - N/A
 
     ### Updates
-    - **Beta release of the Kubernetes operator.** The `costgraph-operator` chart now deploys the full split - `costgraph-operator-kubernetes` for cluster inventory and `costgraph-operator-prometheus` for metrics
+    - **Beta release of the Kubernetes operator.** The `costgraph-operator` chart now deploys the full split: `costgraph-operator-kubernetes` for cluster inventory and `costgraph-operator-prometheus` for metrics
     - Resource discovery is restricted to API resources that actually support `watch` and `list`, removing repeated permission errors on clusters with custom aggregated APIs
     - GPU metrics and rightsizing recommendations for GPU-backed nodes
 
     <Note>
-        With this release the `costgraph` chart is superseded. New installations should use the `costgraph-operator` chart.
+        With this release the `costgraph` chart is superseded. New installations must use the `costgraph-operator` chart.
     </Note>
 </Update>
 

@@ -3,10 +3,11 @@ title: AI gateways
 description: "Price token usage from gateways that report telemetry instead of dollars"
 ---
 
-Most integrations read a bill. An AI gateway running in your own cluster has no
-bill to read: it measures the tokens it routes and reports them as metrics.
-CostGraph reads those metrics, prices them, and lands the result beside every
-other cost.
+Most integrations read a bill. An AI gateway you run yourself has no bill to
+read: it measures the tokens it routes and reports them as metrics. CostGraph
+reads those metrics, prices them, and lands the result beside every other cost.
+The gateway can run on a [Kubernetes cluster](#kubernetes-cluster) or on a
+[virtual machine](#virtual-machine).
 
 This is its own way to connect, alongside pull, push, and exports:
 
@@ -41,8 +42,21 @@ built against.
 
 1. Open **Settings > Integrations** and pick your gateway.
 2. Name the connection and pick the tenant this usage belongs to.
-3. Select the cluster the gateway runs in.
+3. Under **Where it runs**, select **A Kubernetes cluster** or **A virtual
+   machine**, then pick the cluster or the instance.
 4. Select **Connect**.
+
+Where it runs decides who scrapes it and how it's located:
+
+| Where it runs | Scraped by | Located by |
+| --- | --- | --- |
+| A Kubernetes cluster | The CostGraph operator in that cluster | Namespace and pod label selector |
+| A virtual machine | The CostGraph agent on that host | A port on the machine's loopback address |
+
+Pick **Neither** and the connection takes the usage you post to it instead. See
+[Send usage yourself](#send-usage-yourself).
+
+### Kubernetes cluster
 
 Enable the AI gateway scraper in your operator values once:
 
@@ -102,6 +116,59 @@ kubectl -n my-namespace get pods --show-labels
 Narrow the list until it selects the gateway's data plane pods and nothing else -
 a selector that also matches other pods pulls their metrics into your gateway's
 usage.
+
+### Virtual machine
+
+A gateway on a virtual machine is scraped by the [CostGraph
+agent](/costgraph/agent) on that machine. The agent reads the gateway's metrics
+endpoint on the machine's own loopback address, so nothing is exposed to the
+network and no credentials are collected.
+
+To connect one:
+
+1. Under **Where it runs**, select **A virtual machine**.
+2. Select the machine under **Instance**.
+3. Confirm **Metrics port**, or change it if the gateway serves its metrics
+   somewhere else.
+
+The **Instance** list holds only machines whose agent is reporting, because an
+agent is what does the scraping. A machine that isn't listed needs the agent
+installed on it first.
+
+#### Default ports
+
+CostGraph prefills **Metrics port** with the port the gateway serves metrics on
+in a stock install:
+
+| Gateway | Default port |
+| --- | --- |
+| vLLM | `8000` |
+| Apache APISIX | `9091` |
+| Solo.io agentgateway | `15020` |
+| Envoy AI Gateway | `1064` |
+
+The prefill is a starting point, not a constraint. Running a gateway on another
+port is ordinary, so change the field to whatever yours serves on. Clearing the
+field falls back to the default.
+
+The port is the only thing that locates the gateway. The agent confirms it found
+the right process by checking the metric names the endpoint serves. You don't
+name a process, a service, or a unit.
+
+#### A wrong port
+
+A port nothing serves fails quietly. The agent finds nothing to scrape, so no
+metrics arrive. The connection stays pending rather than reporting an error, and
+no surface says why. A connection sitting pending with no usage is the symptom,
+and the port is the first thing to check.
+
+Read the port off the running host before you rely on it:
+
+```bash
+curl -s http://127.0.0.1:8000/metrics | head
+```
+
+An empty or failed response is the same signal CostGraph gets.
 
 ## Attribute usage to your customers
 

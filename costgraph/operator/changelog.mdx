@@ -32,6 +32,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
 
       Processes on partitioned cards are attributed to the partition they run in. One gap remains. A process the host owns on a partition is not attributed to a card. Nothing yet maps a partition back to its physical accelerator. Pod and container attribution is unaffected.
     - Chart `0.7.2` changes no other image, value or object.
+</Update>
 
 <Update label="2026-08-28" description="costgraph-operator v0.5.0">
     ### Breaking Changes
@@ -85,6 +86,7 @@ Releases for the CostGraph operator will have helm tags associated that are not 
     - `operatorPrometheus` and `aiGatewayScraper` gain a `pprof` container port declaration, and `aiGatewayScraper` gains an explicit `replicas`
     - `flowtrace` withholds its service account token by default, keeping a privileged per-node pod off the chart's cluster-wide read ClusterRole
     - The ClusterRole and its bindings, the ServiceAccount, the RBAC values and every bundled exporter are unchanged
+</Update>
 
 <Update label="2026-08-17" description="costgraph-operator v0.3.0">
     ### Breaking Changes

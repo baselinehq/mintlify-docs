@@ -46,7 +46,7 @@ every gateway that controller manages shares the mapping.
 ```bash
 helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
   --version v1.1.0 -n envoy-ai-gateway-system --reuse-values \
-  --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
+  --set controller.metricsRequestHeaderAttributes="x-costgraph-customer-id:customer.id"
 ```
 
 <Warning>

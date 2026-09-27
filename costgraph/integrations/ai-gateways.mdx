@@ -184,7 +184,7 @@ per-customer usage shows up wherever you already group by sub-account.
     ```bash
     helm upgrade -i aieg oci://docker.io/envoyproxy/ai-gateway-helm \
       --version v1.1.0 -n envoy-ai-gateway-system --reuse-values \
-      --set controller.metricsRequestHeaderAttributes="x-customer-id:customer.id"
+      --set controller.metricsRequestHeaderAttributes="x-costgraph-customer-id:customer.id"
     ```
 
     The attribute `customer.id` arrives as the label `customer_id`. Dots become
@@ -214,7 +214,7 @@ per-customer usage shows up wherever you already group by sub-account.
           attributes:
             add:
               - name: customer
-                expression: request.headers["x-customer-id"]
+                expression: request.headers["x-costgraph-customer-id"]
     ```
 
     The policy must live in the same namespace as the Gateway it targets.
@@ -420,7 +420,7 @@ The value is a monotonically increasing counter of units consumed.
 | `costgraph_tenant_id` | Yes | Your CostGraph tenant. Together with `costgraph_gateway` this is the key that matches a series to a connection, so usage carrying neither is never claimed by anything. |
 | `costgraph_gateway` | Yes | The connection this usage belongs to. It must equal the gateway name you set when you connected, so two gateways reporting the same model never merge. |
 | `costgraph_model` | Yes | The model the call ran against. This is what resolves a rate, through the connection's model map if you set one. |
-| `costgraph_usage_kind` | Yes | Which side of the call the number counts, so input and output are priced at their own rates rather than a blended one. One of `input`, `output`, `cached_input`, `reasoning`, `image`, `audio_input`, `audio_output`, `embedding`. Anything else is dropped. |
+| `costgraph_usage_kind` | Yes | Which side of the call the number counts, so each side is priced at its own rate rather than a blended one. One of `input`, `output`, `cached_input`, `cache_write`, `reasoning`, `image`, `audio_input`, `audio_output`, `embedding`. A gateway that names its cache buckets `input_cache_read` and `input_cache_write` is understood too - they are read as `cached_input` and `cache_write`. Anything else is dropped. |
 | `costgraph_unit` | Yes | What the value counts: `tokens`, `images`, `seconds`, `characters`. Anything else is dropped. |
 | `costgraph_sub_account` | No | Your customer, when you attribute usage. It lands in the FOCUS sub-account columns, so per-customer spend groups the way the rest of your bill does. |
 | `costgraph_host` | No | Who served the call - `openai`, `anthropic`, your own cluster. Rate lookup prefers a price published for that host, so the same model resolves differently per host. |

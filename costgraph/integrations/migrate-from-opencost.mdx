@@ -1,0 +1,146 @@
+---
+title: Migrate from OpenCost
+description: "Replace OpenCost with the CostGraph operator and keep the clients you already have"
+---
+
+CostGraph serves the OpenCost API, so the tools you built on OpenCost keep
+working after you switch. You install the CostGraph operator in the cluster,
+point each client at a new base URL with an API key, and remove OpenCost.
+
+OpenCost's Prometheus metrics and its Grafana dashboards don't carry over. The
+operator ships its own metrics scrapers and remote-writes to CostGraph, and
+CostGraph doesn't expose an `opencost_*` metric family. If a dashboard reads
+those metrics today, rebuild it on the allocation API or on the CostGraph
+dashboard.
+
+## Before you begin
+
+- A CostGraph account with at least one tenant.
+- An API key with the `operator:read` scope. Create one in **Settings > API keys**.
+- [Helm 3+](https://helm.sh/docs/intro/install/) and `kubectl` pointed at the cluster that runs OpenCost.
+- A list of the clients that read OpenCost. The common ones are a scraper, a
+  CI budget check, and scripts that call `/allocation` directly.
+
+## Install the operator
+
+The operator runs beside OpenCost. Nothing stops until you remove OpenCost in
+the last step, so you can compare the two before you commit.
+
+<Steps>
+  <Step title="Add the Helm repository">
+    ```shell
+    helm repo add costgraph http://charts.costgraph.ai/
+    helm repo update
+    ```
+  </Step>
+
+  <Step title="Install the operator">
+    ```shell
+    helm install costgraph-operator costgraph/costgraph-operator \
+      --namespace costgraph \
+      --create-namespace \
+      --set global.clusterName=<your-cluster-name> \
+      --set global.apiKey=<your-api-key>
+    ```
+
+    For production, store the API key in a Secret and reference it with `global.existingSecret`. See [Configuration](/costgraph/operator/configuration#global-settings).
+  </Step>
+
+  <Step title="Confirm the cluster reports">
+    ```shell
+    kubectl get pods -n costgraph
+    ```
+
+    After every pod is `Running`, the cluster appears under **Kubernetes Clusters** in CostGraph. Allocation data for the cluster starts from this point, so leave OpenCost running until the window you report on is covered.
+  </Step>
+</Steps>
+
+## Point your clients at CostGraph
+
+Each client needs two changes: the base URL and a header that carries the key.
+
+```text
+https://api.costgraph.ai/api/v1/tenant/opencost
+X-API-Key: bl_your_key
+```
+
+A client that hardcodes `http://opencost:9003` needs that value replaced. Nothing
+else changes. The routes, the query parameters, and the response fields are the
+ones OpenCost defines.
+
+To check the switch, run the query your client runs. This one returns the last
+day by namespace:
+
+```shell
+curl -s "https://api.costgraph.ai/api/v1/tenant/opencost/allocation?window=1d&aggregate=namespace" \
+  -H "X-API-Key: $COSTGRAPH_API_KEY" | jq '.data[0] | to_entries[] | {name: .key, totalCost: .value.totalCost}'
+```
+
+The names match what OpenCost returned for the same cluster, and the totals
+match to the extent the two cost models agree. Both bill CPU and memory on the
+greater of request and usage. CostGraph measures idle per node and returns it
+only when you pass `includeIdle=true`.
+
+A CI budget check keeps the same shape it had against OpenCost. This script
+fails the job when a namespace spends more than its budget over the last seven
+days:
+
+```shell
+#!/usr/bin/env sh
+set -eu
+NAMESPACE="$1"
+BUDGET_USD="$2"
+
+spent=$(curl -sf "https://api.costgraph.ai/api/v1/tenant/opencost/allocation?window=7d&aggregate=namespace" \
+  -H "X-API-Key: $COSTGRAPH_API_KEY" \
+  | jq -r --arg ns "$NAMESPACE" '.data[0][$ns].totalCost // 0')
+
+echo "$NAMESPACE spent $spent USD in the last 7 days (budget $BUDGET_USD)"
+awk -v s="$spent" -v b="$BUDGET_USD" 'BEGIN { exit (s > b) }'
+```
+
+## What changes
+
+Most of the API carries over unchanged. The following table lists what a
+client can notice.
+
+| OpenCost | CostGraph |
+| --- | --- |
+| `http://opencost:9003/allocation` | `https://api.costgraph.ai/api/v1/tenant/opencost/allocation` with `X-API-Key` |
+| `filter` parameters | Honored, over cluster, node, namespace, controllerName, controllerKind, pod, and container. |
+| `aggregate` values | Honored, including `controllerKind`, `label:<key>`, and a controller kind by name. |
+| `idleByNode` | Accepted and ignored. Idle is reported for the cluster. |
+| `pvCost`, `networkCost`, `loadBalancerCost` | Filled in from what the vendor charged, alongside CPU and memory. |
+| `gpuCost` | Present and `0`. GPU use is not metered per container yet. |
+| `opencost_*` Prometheus metrics | Not served. |
+| Grafana dashboards on those metrics | Not supported. Read the allocation API or the CostGraph dashboard. |
+| `kubectl cost` | Supported. Turn on the operator's in-cluster Service, which the plugin reaches the same way it reached OpenCost. |
+| `/customCost` routes | Not served. `/cloudCost` reports software service spend with cloud spend. |
+
+The [OpenCost API](/costgraph/integrations/opencost) page has the full parameter
+list, the naming rules for `aggregate`, and the request limits. It also covers
+serving the API from a Service inside the cluster, which is what `kubectl cost`
+reads.
+
+## Remove OpenCost
+
+After your clients read from CostGraph and the reporting window you care about
+is covered, remove OpenCost and the Prometheus you ran for it.
+
+```shell
+helm uninstall opencost --namespace opencost
+helm uninstall prometheus --namespace prometheus-system
+```
+
+If other tools read that Prometheus, keep it and remove only OpenCost.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="OpenCost API" icon="plug" href="/costgraph/integrations/opencost">
+    Every route, parameter, and limit CostGraph serves.
+  </Card>
+  <Card title="CostGraph Operator" icon="server" href="/costgraph/operator/overview">
+    What the operator collects and how to configure it.
+  </Card>
+</CardGroup>

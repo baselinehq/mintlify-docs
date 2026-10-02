@@ -3,7 +3,7 @@ title: Install
 description: "Connect your coding agent to CostGraph over MCP"
 ---
 
-You already debug your infrastructure inside a coding agent. CostGraph's MCP puts cost data, pricing, and recommendations right next to it.
+You already debug your infrastructure inside a coding agent. CostGraph's MCP puts cost data, pricing, and recommendations right next to it. On first connect your browser opens app.costgraph.ai: sign in with your CostGraph account if needed, pick a tenant, and approve.
 
 ## Prerequisites
 
@@ -23,14 +23,10 @@ Pick your agent and drop in the config.
 
 <Tabs>
   <Tab title="Codex" icon="/images/mcp/codex.svg">
-    Add Costgraph to `~/.codex/config.toml` to sign in by using OAuth:
+    Add CostGraph to `~/.codex/config.toml` to sign in by using OAuth:
     ```toml
     [mcp_servers.costgraph]
     url = "https://mcp.costgraph.ai/"
-    
-    [mcp_servers.costgraph.oauth]
-    client_id = "6peb1hopcd2bndd7rbn6e4vhed"
-    callback_url = "http://127.0.0.1/callback"
     ```
     Or, with an API key:
 
@@ -44,10 +40,7 @@ Pick your agent and drop in the config.
     On first connect, Claude Code opens your browser to sign in with your CostGraph account:
     
     ```bash
-    claude mcp add --transport http \
-      --callback-port 9093 \
-      --client-id 6peb1hopcd2bndd7rbn6e4vhed \
-    costgraph https://mcp.costgraph.ai/
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai/
     ```
 
     Or run this and Claude Code registers the server with your API key.
@@ -72,7 +65,7 @@ Pick your agent and drop in the config.
     ```
   </Tab>
   <Tab title="OpenCode" icon="/images/mcp/opencode.svg">
-    Add Costgraph to your `opencode.json` to sign in by using OAuth:
+    Add CostGraph to your `opencode.json` to sign in by using OAuth:
 
     ```json
     {
@@ -80,11 +73,7 @@ Pick your agent and drop in the config.
       "mcp": {
         "costgraph": {
           "type": "remote",
-          "url": "https://mcp.costgraph.ai/",
-          "oauth": {
-            "clientId": "6peb1hopcd2bndd7rbn6e4vhed",
-            "redirectUri": "http://127.0.0.1:19876/callback"
-          }
+          "url": "https://mcp.costgraph.ai/"
         }
       }
     }
@@ -112,9 +101,7 @@ Pick your agent and drop in the config.
     {
       "mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai/",
-          "client_id": "6peb1hopcd2bndd7rbn6e4vhed"
-          "redirect_uri": "http://localhost:3335/callback"
+          "url": "https://mcp.costgraph.ai/"
         }
       }
     }
@@ -147,7 +134,7 @@ After it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
     Interactive clients sign in with your CostGraph account and use a short-lived token that refreshes itself. Headless and CI setups send a `bl_` API key in the `X-API-Key` header. Either way, every read is scoped to your own tenant, so an agent only ever sees your data.
   </Accordion>
   <Accordion title="How do I revoke an agent's access?">
-    Sign-in sessions are managed in your account settings, and revoking a session cuts off that client on its next token refresh. API keys can be deactivated or rotated at any time from [Settings](https://app.costgraph.ai/settings/account/api-keys).
+    Every connected client is listed under [Settings > Connected apps](https://app.costgraph.ai/settings/account/connected-apps). Revoking one cuts off that client immediately. API keys can be deactivated or rotated at any time from [Settings](https://app.costgraph.ai/settings/account/api-keys).
   </Accordion>
   <Accordion title="What can my agent see?">
     Cost recommendations, live pricing, and your tenant's inventory and metrics. See [Usage](/costgraph/mcp/usage) for the kinds of questions that maps to.

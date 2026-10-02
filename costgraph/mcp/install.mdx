@@ -7,13 +7,17 @@ You already debug your infrastructure inside a coding agent. CostGraph's MCP put
 
 ## Prerequisites
 
-- A CostGraph account with an active billing plan.
+- A CostGraph account with an active billing plan. For non-OAuth capable clients, an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys).
 
 <Warning>
   MCP access requires an active billing plan. Set up billing in the [CostGraph platform](https://app.costgraph.ai/billing) before connecting.
 </Warning>
 
-## Connect your agent
+## Connect your agent through OAuth or API key
+
+<Note>
+  Running headless or in CI, where a browser sign-in is not an option? Create an API key from [your account settings](https://app.costgraph.ai/settings/account/api-keys) and send it in the `X-API-Key` header instead, as shown in the following tabs.
+</Note>
 
 Pick your agent and drop in the config.
 
@@ -24,6 +28,13 @@ Pick your agent and drop in the config.
     [mcp_servers.costgraph]
     url = "https://mcp.costgraph.ai/"
     ```
+    Or, with an API key:
+
+    ```toml
+    [mcp_servers.costgraph]
+    url = "https://mcp.costgraph.ai/"
+    http_headers = { "X-API-Key" = "bl_your_key" }
+    ```
   </Tab>
   <Tab title="Claude" icon="/images/mcp/claude.svg">
     On first connect, Claude Code opens your browser to sign in with your CostGraph account:
@@ -32,15 +43,22 @@ Pick your agent and drop in the config.
     claude mcp add --transport http costgraph https://mcp.costgraph.ai/
     ```
 
+    Or run this and Claude Code registers the server with your API key.
+
+    ```bash
+    claude mcp add --transport http costgraph https://mcp.costgraph.ai/ \
+      --header "X-API-Key: bl_your_key"
+    ```
   </Tab>
   <Tab title="Amp" icon="/images/mcp/amp.svg">
-    Add CostGraph to your Amp `settings.json`:
+    Add CostGraph to your Amp `settings.json`, with an API key:
 
     ```json
     {
       "amp.mcpServers": {
         "costgraph": {
-          "url": "https://mcp.costgraph.ai/"
+          "url": "https://mcp.costgraph.ai/",
+          "headers": { "X-API-Key": "bl_your_key" }
         }
       }
     }
@@ -61,9 +79,24 @@ Pick your agent and drop in the config.
     }
     ```
 
+    Or, with an API key:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "costgraph": {
+          "type": "remote",
+          "url": "https://mcp.costgraph.ai/",
+          "headers": { "X-API-Key": "bl_your_key" },
+          "enabled": true
+        }
+      }
+    }
+    ```
   </Tab>
   <Tab title="Generic" icon="plug">
-    Generic MCP configuration:
+    Generic MCP configuration. For OAuth-enabled sign in:
     ```json
     {
       "mcpServers": {
@@ -74,6 +107,18 @@ Pick your agent and drop in the config.
     }
     ```
 
+    Or, with an API key:
+
+    ```json
+    {
+      "mcpServers": {
+        "costgraph": {
+          "url": "https://mcp.costgraph.ai/",
+          "headers": { "X-API-Key": "bl_your_key" }
+        }
+      }
+    }
+    ```
   </Tab>
 </Tabs>
 
@@ -86,10 +131,10 @@ After it's connected, head to [Usage](/costgraph/mcp/usage) to put it to work.
     No. CostGraph is read-only over MCP. It hands back recommendations, pricing, and your inventory. Your agent, using its own git or kubectl access, is what actually applies a change or opens a PR.
   </Accordion>
   <Accordion title="Which credential does it use?">
-    Interactive clients sign in with your CostGraph account and use a short-lived token that refreshes itself. Headless or CI setups can use an API key from [Settings](https://app.costgraph.ai/settings/account/api-keys) sent in the `X-API-Key` header. Either way, every read is scoped to your own tenant, so an agent only ever sees your data.
+    Interactive clients sign in with your CostGraph account and use a short-lived token that refreshes itself. Headless and CI setups send a `bl_` API key in the `X-API-Key` header. Either way, every read is scoped to your own tenant, so an agent only ever sees your data.
   </Accordion>
   <Accordion title="How do I revoke an agent's access?">
-    Every connected client is listed under [Settings > Connected apps](https://app.costgraph.ai/settings/account/connected-apps). Revoking one cuts off that client immediately.
+    Every connected client is listed under [Settings > Connected apps](https://app.costgraph.ai/settings/account/connected-apps). Revoking one cuts off that client immediately. API keys can be deactivated or rotated at any time from [Settings](https://app.costgraph.ai/settings/account/api-keys).
   </Accordion>
   <Accordion title="What can my agent see?">
     Cost recommendations, live pricing, and your tenant's inventory and metrics. See [Usage](/costgraph/mcp/usage) for the kinds of questions that maps to.

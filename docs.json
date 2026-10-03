@@ -158,7 +158,8 @@
                       "costgraph/integrations/github",
                       "costgraph/integrations/blacksmith",
                       "costgraph/integrations/buildkite",
-                      "costgraph/integrations/hatchet"
+                      "costgraph/integrations/hatchet",
+                      "costgraph/integrations/convex"
                     ]
                   },
                   {
@@ -429,6 +430,10 @@
     {
       "source": "/costgraph/focus-exporter/confluent",
       "destination": "/costgraph/integrations/confluent"
+    },
+    {
+      "source": "/costgraph/focus-exporter/convex",
+      "destination": "/costgraph/integrations/convex"
     },
     {
       "source": "/costgraph/focus-exporter/costgraph",
